@@ -1,0 +1,391 @@
+- title: 開發協作規範（AGENTS.md 範本）
+  category: 專案啟動
+  usage: 開新專案時，先讓 AI 遵守這套規矩
+  prompt: |
+    以下是本專案的開發協作規範，請全程遵守：
+    1. 每個任務先看規劃文件再執行
+    2. 一個對話只做一個明確任務
+    3. 不要刪除文件，除非我明確要求
+    4. 需求不清楚時，先提出關鍵問題，不要直接猜著做
+    5. 任務有風險時，先明說風險，再執行
+    6. 修改完成後，總結：改了哪些內容、如何檢查、下一步建議
+    7. 每次回答用小白能聽懂的話解釋
+    8. 遇到技術專有名詞時，用一句簡單的話解釋它的意思和邏輯
+  flow: common
+  stage: ''
+- title: 建立 AGENTS.md 頂層規則文件
+  category: 專案啟動
+  usage: 開新專案的第一步
+  prompt: |
+    請在專案根目錄只建立一個頂層規則文件 AGENTS.md，把我們的協作規範寫進去。
+    之後每次回答都要用我聽得懂的話解釋，不要亂刪文件。
+    專案名稱：【】
+    專案簡介：【】
+  flow: common
+  stage: ''
+- title: 梳理需求並產出 PRD
+  category: 專案啟動
+  usage: 想法還很模糊時，先討論再寫文件
+  prompt: |
+    先和我討論、梳理需求，確認後再建立 PRD.md 檔案，至少包含：
+    ## 1. 專案背景
+    ## 2. 專案目標
+    ## 3. 專案痛點
+    ## 4. 功能清單
+    ## 5. 不做的事
+    我們先討論，先不要寫程式。
+  flow: common
+  stage: ''
+- title: 依 PRD 設計與開發
+  category: 開發過程
+  usage: PRD 確認後，正式開工
+  prompt: |
+    閱讀本專案的 PRD.md 需求文檔，依文件幫我設計系統並寫程式。
+    開始前先列出你的實作計畫給我確認，確認後再動手。
+  flow: common
+  stage: ''
+- title: 功能建構（調用模型／套件／skill）
+  category: 開發過程
+  usage: 要 AI 用特定工具完成特定功能時
+  prompt: |
+    請調用【模型/套件/skill 名稱】，為這個專案【生成/優化】【目標功能】，
+    基於【現有檔案或需求說明】。
+    先說明你打算怎麼做，再動手。
+  flow: common
+  stage: ''
+- title: 上下文壓縮＋接續開發
+  category: 開發過程
+  usage: 對話太長變慢、或要開新對話接續時
+  prompt: |
+    請把目前對話的上下文壓縮成摘要，包含：已完成事項、未完成功能、關鍵決策。
+    然後繼續完善未完成的功能。
+  flow: common
+  stage: ''
+- title: 首次備份到 GitHub（私有）
+  category: 版本控制
+  usage: 專案第一次備份
+  prompt: |
+    幫我把這個專案第一次備份到 GitHub，倉庫設為私有（不公開）。
+    如果碰到權限攔截的提示，改為完整存取權限。
+  flow: common
+  stage: ''
+- title: 存檔當前改動（git 版本）
+  category: 版本控制
+  usage: 完成一個段落就存一次，像遊戲存檔
+  prompt: |
+    將當前改動保存為 git 版本，提交訊息為：【這次改了什麼】
+  flow: common
+  stage: ''
+- title: 列出版本＋退回指定版本
+  category: 版本控制
+  usage: 改壞了想回到之前的狀態
+  prompt: |
+    1. 先列出之前所有 git 存檔版本
+    2. 等我選定後，幫我回到我指定的那個版本
+  flow: common
+  stage: ''
+- title: 接入外部 API
+  category: 整合串接
+  usage: 要串接第三方服務時
+  prompt: |
+    幫我為這個專案接入真實的【API 名稱】。
+    請告訴我：具體怎麼操作與設定、我需要提供給你什麼資訊（帳號/金鑰），
+    並給我詳細的網址和操作步驟。
+  flow: common
+  stage: ''
+- title: 本地資料庫搬上雲端
+  category: 整合串接
+  usage: 資料庫要從本機搬到雲端時
+  prompt: |
+    我想把本地資料庫初始化到雲端資料庫【平台/版本】。
+    我是新手，請推薦適合小白的平台，給我完整步驟；
+    你能先幫我做掉的部分請先做掉。
+  flow: common
+  stage: ''
+- title: 配置 MySQL／MS SQL Server 雲端資料庫
+  category: 整合串接
+  usage: 確定要用這兩種資料庫時
+  prompt: |
+    我要用 MySQL 或 MS SQL Server 這樣的雲端資料庫，該怎麼配置？
+    給我詳細的步驟與設定，用小白聽得懂的方式說明。
+  flow: common
+  stage: ''
+- title: 依上架要求改造專案
+  category: 上線部署
+  usage: 準備上架／上線前的整理
+  prompt: |
+    按照先前規劃好的上架/上線技術要求，先把整個專案改好，
+    方便我後續的上架或上線動作。完成後告訴我改了哪些地方。
+  flow: common
+  stage: ''
+- title: 部署讓別人也能訪問（含 Docker）
+  category: 上線部署
+  usage: 要把成果分享給其他人用時
+  prompt: |
+    我要讓這個專案在【本地設備/雲端伺服器】上，讓所有拿到網址的人都能訪問。
+    我不懂部署，給我偏向小白的詳細步驟或設定；
+    如果適合用 Docker，請一步一步教我怎麼操作。
+  flow: common
+  stage: ''
+- title: 啟動三AI工作流（skill 版，一句話）
+  category: 雙AI協作
+  usage: 入口·已安裝 dual-ai-workflow skill 後，開新任務只要貼這句
+  prompt: |
+    使用 dual-ai-workflow 開始三AI工作流，任務是：【任務描述】
+  flow: dualai
+  stage: entry
+- title: 啟動三AI五階段工作流（手動版，一次貼上）
+  category: 雙AI協作
+  usage: 入口·沒安裝 skill 時，開任務前貼給主力 AI
+  prompt: |
+    我們採用三方 AI 五階段工作流：
+    - Codex：主力工程師，負責規劃、分段實作、跑指令、測試、修正、產出交接摘要
+    - Claude Code（VS Code）：審查員，負責架構審查、程式碼審查、風險檢查、P0/P1/P2 分級與複審
+    - Claude Desktop：顧問／文字助理，負責需求澄清、文件整理、提示詞優化與主管版說明；不安裝第三方 skills
+    - 我：三方之間轉貼，做最終決定
+
+    第一階段：Codex 先讀專案結構與文件，不要修改，提出方案（目標／改哪些檔案／影響／風險／驗證方式），等我確認
+    第二階段：Codex 依確認後的方案分段實作、跑 build.py、回報實際結果
+    第三階段：我把 Codex 的交接摘要、diff 與驗證結果交給 Claude Code（VS Code）審查，請它給 P0/P1/P2 風險與修復建議
+    第四階段：我把審查意見貼回 Codex，讓 Codex 逐條判斷並修正，重新驗證
+    第五階段：我把修正後結果交給 Claude Code（VS Code）複審；通過後由 Codex 做 git 存檔
+
+    現在從第一階段開始，任務是：【任務描述】
+  flow: dualai
+  stage: entry
+- title: ① 第一階段：Codex 規劃
+  category: 雙AI協作
+  usage: 在 Codex 開新任務，先出方案不動手
+  prompt: |
+    請先讀取專案結構與相關文件，不要直接修改。
+    請提出實施方案，說明：
+    1. 任務目標
+    2. 需要修改哪些檔案
+    3. 可能影響哪些功能
+    4. 風險與不確定點
+    5. 修改後如何驗證
+  flow: dualai
+  stage: '1'
+- title: ② 第二階段：Codex 分段實作
+  category: 雙AI協作
+  usage: 方案確認後，讓 Codex 分段修改、build、驗證
+  prompt: |
+    現在由 Codex 負責分段實作，其他 AI 暫停動作。
+    請依照已確認的方案，在真實專案中分段修改。
+    修改完成後請回報：
+    1. 修改了哪些檔案
+    2. 每個檔案改了什麼
+    3. 是否成功執行 build.py
+    4. 真實檔案狀態與未確認事項
+  flow: dualai
+  stage: '2'
+- title: ③ 第三階段：Claude Code（VS Code）審查
+  category: 雙AI協作
+  usage: 把 Codex 的交接摘要、diff 與驗證結果貼給 Claude Code 審查
+  prompt: |
+    現在由 Claude Code（VS Code）負責審查，其他 AI 暫停動作。
+    請審查這次 Codex 的改動、diff 與驗證結果，重點檢查：
+    1. 明顯 bug
+    2. 邊界情況
+    3. 是否影響原有功能
+    4. 是否漏掉測試
+    5. 是否有不必要的重構
+    請用 P0/P1/P2 分級，並輸出給 Codex 的完整修正轉交提示詞。
+  flow: dualai
+  stage: '3'
+- title: ④ 第四階段：Codex 修正
+  category: 雙AI協作
+  usage: 把 Claude Code 的審查意見貼回給 Codex 逐條處理
+  prompt: |
+    現在由 Codex 負責修正，其他 AI 暫停動作。
+    請逐條判斷 Claude Code（VS Code）的 review 意見：
+    1. 問題是否真的存在
+    2. 如果存在，要改什麼、為什麼這樣改
+    3. 如果不成立，請說明理由
+    4. 請只修必要檔案並重新驗證
+    5. 請列出修完後要跑的驗證
+  flow: dualai
+  stage: '4'
+- title: ⑤ 第五階段：Claude Code（VS Code）複審
+  category: 雙AI協作
+  usage: 把修正後結果交給 Claude Code 複審，通過後交回 Codex 存檔
+  prompt: |
+    現在由 Claude Code（VS Code）負責複審，其他 AI 暫停動作。
+    請再次檢查修正後的結果，確認前一輪問題是否已處理，並檢查是否引入新問題。
+    如果通過，請輸出給 Codex 的存檔轉交提示詞，要求 Codex 做最終驗證與 git commit。
+  flow: dualai
+  stage: '5'
+- title: 接續雙AI工作流（貼另一個 AI 的輸出）
+  category: 雙AI協作
+  usage: 把一邊 AI 的產出搬到另一邊時，加這句開頭
+  prompt: |
+    這是另一個 AI 的輸出，請依 dual-ai-workflow 接續下一階段：
+    【貼上對方 AI 的輸出】
+  flow: dualai
+  stage: handoff
+- title: 單一 AI 也能用控制台
+  category: 雙AI協作
+  usage: 同事只用 Codex、Claude Code 或 Claude Desktop 時，讓它照控制台模板工作
+  prompt: |
+    我現在只使用一個 AI，但想用這套 Skill 助手控制台輔助工作。
+    請你先扮演主力助理，依照以下流程處理：
+    1. 先幫我釐清任務目標
+    2. 先提出方案，不要立刻修改
+    3. 等我確認後，再分段執行
+    4. 每完成一段，回報改了什麼、怎麼檢查、下一步是什麼
+    5. 如果是程式或系統修改，請提醒我是否需要找另一個 AI 做審查
+    任務是：【任務描述】
+  flow: solo
+  stage: entry
+- title: 請 Claude Code（VS Code）審查（含系統背景模板）
+  category: 雙AI協作
+  usage: 進階·需要附完整系統背景做嚴謹審查時
+  prompt: |
+    現在由 Claude Code（VS Code）負責審查，其他 AI 暫停動作。
+    請以架構師＋審查員身分審查以下 Codex 改動。
+    【系統背景】
+    - 系統名稱：【】
+    - 使用者：【】
+    - 技術棧：【】
+    - 目前階段：【】
+    - 這次改了什麼：【貼上交接摘要】
+    請回覆：1. 結論 2. 問題分級（P0 不修不能上線／P1 應該修／P2 有空再修）
+    3. 給 Codex 的修正提示詞 4. 驗證要求
+  flow: dualai
+  stage: '3'
+- title: 新增 Skill 到控制台（安檢＋安裝＋收錄）
+  category: Skill 管理
+  usage: 看到新 skill 想安裝時，整段貼給 Claude 一次完成
+  prompt: |
+    我看到一個新 skill 想安裝，位置：【GitHub 網址或資料夾路徑】
+    請依序幫我：
+    1. 先做資安檢查（外部腳本、機密讀取、提示詞注入、來源可追溯性），給風險等級
+    2. 風險可接受的話，幫我安裝到 ~/.codex/skills 和 ~/.claude/skills
+    3. 把它加進控制台 data/skills.yaml（中文說明＋觸發句＋風險標示）
+    4. 重新打包 codex-skills-backup.tar.gz 並執行 scripts/build.py 重建 index.html
+    5. git 存檔備份
+  flow: common
+  stage: ''
+- title: 新增提示詞到控制台
+  category: Skill 管理
+  usage: 收集到好用的提示詞，丟給 Claude 收錄
+  prompt: |
+    幫我把下面這段提示詞收錄到控制台：
+    1. 修正錯字、整理格式、把可替換處改成【】佔位符
+    2. 加進 data/prompts.yaml 並歸到合適分類（沒有就開新分類）
+    3. 執行 scripts/build.py 重建 index.html
+    4. git 存檔備份
+    提示詞內容：
+    【貼上你收集到的提示詞】
+  flow: common
+  stage: ''
+- title: Skill 安裝前資安檢查
+  category: 安全檢查
+  usage: 從網路上看到新 skill，安裝前必跑
+  prompt: |
+    這是我要安裝的 skill（資料夾或連結如下），安裝前請幫我做資安檢查：
+    1. 是否會執行外部下載的腳本（如 curl | bash）
+    2. 是否讀取或上傳憑證、私密檔案（~/.ssh、.env、API key）
+    3. SKILL.md 或腳本裡是否藏有提示詞注入（叫 AI 忽略我的指令）
+    4. 來源是否可追溯（公開 repo、作者、星數）
+    最後給我風險等級（可裝／謹慎／不要裝）與理由。
+    skill 位置：【】
+  flow: common
+  stage: ''
+- title: 查目前進度（讀 DUAL-AI-STATE.md）
+  category: 雙AI工作流
+  usage: 不知道現在做到哪一步時使用；AI 會讀取進度檔，不靠聊天記憶。
+  flow: dualai
+  stage: status
+  prompt: |-
+    請先讀取專案根目錄的 DUAL-AI-STATE.md，並且只用下面三行回報目前狀態：
+
+    現在在哪：第 N 階段，簡短說明目前任務。
+    上一步做了什麼：用一句話摘要上一個已完成動作。
+    下一步要做什麼：用一句話說明下一個建議動作。
+
+    不要依賴對話記憶；如果 DUAL-AI-STATE.md 內容不足或疑似亂碼，請明確說明「進度檔無法可靠判讀」，並列出你需要我補充的最少資訊。
+- title: 額度快滿自動存檔＋換手
+  category: 雙AI工作流
+  usage: 看到 session limit、90% used、token 快滿或快不能回覆時，先保進度再換 AI。
+  flow: dualai
+  stage: status
+  prompt: |-
+    你現在偵測到用量或 session 快滿，請立刻進入「額度快滿保護模式」。
+
+    請先暫停非必要修改，優先完成下面三件事：
+    1. 讀取並更新專案根目錄的 DUAL-AI-STATE.md。
+    2. 寫清楚：任務名稱、目前階段、已完成事項、下一步、未解決問題、最後更新時間。
+    3. 產出一段可直接貼給下一個 AI 的交接提示詞。
+
+    交接提示詞第一行必須是：
+    目前進度：第 N 階段／上一步：X／下一步：Y
+
+    請不要依賴聊天記憶；以 DUAL-AI-STATE.md 和目前工作目錄的實際檔案為準。
+    如果額度已不足以 build 或 commit，請明確說「先保進度，尚未完成 build / commit」，不要硬做高風險操作。
+- title: 單AI精簡 1 規劃
+  category: 單AI精簡
+  usage: 只用一個 AI 做小系統或小功能時，先請它列出最小可行做法。
+  flow: solo
+  stage: '1'
+  prompt: |-
+    請用「單一 AI 精簡流程」協助我規劃這個小功能／小系統。
+
+    請先讀取專案規劃文件（例如 AGENTS.md、PRD.md、docs/ 或我指定的檔案），先不要改檔。
+
+    請輸出：
+    1. 任務目標
+    2. 需要修改哪些檔案
+    3. 最小可行做法
+    4. 可能風險
+    5. 修改後如何驗證
+
+    請用小白能看懂的方式說明，不要一次做太大範圍。
+- title: 單AI精簡 2 實作
+  category: 單AI精簡
+  usage: 規劃確認後，請同一個 AI 直接做最小範圍修改。
+  flow: solo
+  stage: '2'
+  prompt: |-
+    請依照前一步規劃開始實作。
+
+    要求：
+    1. 只修改這次任務需要的檔案
+    2. 不要刪除任何檔案
+    3. 若遇到風險或不確定，先停下來說明
+    4. 修改完成後立即執行可用的檢查或測試
+    5. 若是網頁 UI，請確認畫面真的能看、按鈕真的能用
+
+    完成後請回報：改了哪些內容、如何檢查、是否還有未完成風險。
+- title: 單AI精簡 3 自我檢查
+  category: 單AI精簡
+  usage: 實作後請 AI 自己用審查角度檢查一次。
+  flow: solo
+  stage: '3'
+  prompt: |-
+    請用審查者角度檢查剛剛的修改。
+
+    請優先檢查：
+    1. 有沒有明顯 bug
+    2. 有沒有破壞既有功能
+    3. 有沒有漏掉必要測試
+    4. UI 文字是否容易理解
+    5. 是否有不必要的大改或風險操作
+
+    請用 P0／P1／P2 標示問題嚴重度；如果沒有問題，請明確說「未發現阻擋問題」，並列出仍建議人工確認的地方。
+- title: 單AI精簡 4 存檔
+  category: 單AI精簡
+  usage: 確認功能 OK 後，整理變更摘要，方便存檔或提交版本。
+  flow: solo
+  stage: '4'
+  prompt: |-
+    請整理這次修改的存檔摘要。
+
+    請輸出：
+    1. 修改了哪些檔案
+    2. 使用者看得到的變化
+    3. 已執行的檢查或測試
+    4. 尚未驗證的風險
+    5. 建議的 git commit message
+
+    如果工作目錄還有不是你造成的變更，請分開列出，不要混在本次修改摘要裡。

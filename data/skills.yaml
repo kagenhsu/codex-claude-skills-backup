@@ -1,0 +1,294 @@
+- name: baoyu-translate
+  category: 文章與翻譯
+  risk: 低
+  summary: 中英雙向翻譯，支援快翻／一般／精翻三種模式，可自訂術語表，保留 Markdown 格式
+  triggers:
+  - 使用 baoyu-translate 把這篇文章精翻成繁體中文
+  - 用 baoyu-translate 快翻這個網址的內容
+  notes: 長文會分段處理；「精翻」品質最好但較慢
+- name: baoyu-format-markdown
+  category: 文章與翻譯
+  risk: 低
+  summary: 美化純文字或 Markdown 文件：自動加標題、摘要、粗體、清單、程式碼區塊
+  triggers:
+  - 使用 baoyu-format-markdown 幫我美化排版這個檔案
+  notes: 輸出為 {原檔名}-formatted.md，不會覆蓋原檔
+- name: baoyu-markdown-to-html
+  category: 文章與翻譯
+  risk: 低
+  summary: Markdown 轉成有設計感的 HTML，支援微信公眾號相容主題、程式碼上色、數學式、Mermaid 圖
+  triggers:
+  - 使用 baoyu-markdown-to-html 把這份 md 轉成微信公眾號可用的 HTML
+  notes: Mermaid 圖需要本機 Chrome
+- name: baoyu-url-to-markdown
+  category: 文章與翻譯
+  risk: 低
+  summary: 抓取任何網址內容轉成 Markdown，內建 X/Twitter、YouTube、Hacker News 專用解析
+  triggers:
+  - 使用 baoyu-url-to-markdown 把這個網頁存成 markdown：【網址】
+  notes: 需要本機 Chrome；遇到登入牆會等你手動登入
+- name: baoyu-youtube-transcript
+  category: 文章與翻譯
+  risk: 低
+  summary: 下載 YouTube 影片字幕與封面圖，支援多語言、翻譯、章節、講者辨識
+  triggers:
+  - 使用 baoyu-youtube-transcript 抓這部影片的字幕並整理成摘要：【網址】
+- name: baoyu-danger-x-to-markdown
+  category: 文章與翻譯
+  risk: 高
+  summary: 把 X（Twitter）貼文與文章轉成 Markdown，使用逆向工程 API
+  triggers:
+  - 使用 baoyu-danger-x-to-markdown 把這則推文存成 markdown：【網址】
+  notes: 作者自標 danger：逆向 API 可能違反平台條款，有帳號被停用風險，謹慎使用
+- name: baoyu-danger-gemini-web
+  category: 文章與翻譯
+  risk: 高
+  summary: 透過逆向工程的 Gemini Web API 生成文字與圖片，可作為其他 skill 的圖片生成後端
+  triggers:
+  - 使用 baoyu-danger-gemini-web 幫我生成這張圖片：【描述】
+  notes: 作者自標 danger：非官方 API，有帳號風險與穩定性問題，建議改用官方 API 的 baoyu-image-gen
+- name: baoyu-electron-extract
+  category: 文章與翻譯
+  risk: 中
+  summary: 解開任何已安裝的 Electron 桌面應用，還原其原始碼供研究
+  triggers:
+  - 使用 baoyu-electron-extract 幫我看看【應用名稱】是怎麼做的
+  notes: 反編譯他人軟體可能有授權／法律疑慮，僅供學習研究
+- name: baoyu-image-gen
+  category: 圖像與簡報
+  risk: 低
+  summary: AI 圖片生成，支援 OpenAI、Google、OpenRouter 等多家 API，可用參考圖、指定比例、批次生成
+  triggers:
+  - 使用 baoyu-image-gen 生成一張圖：【描述】，比例 16:9
+  notes: 需要先設定對應平台的 API key
+- name: baoyu-cover-image
+  category: 圖像與簡報
+  risk: 低
+  summary: 生成文章封面圖，可組合 11 種色盤×7 種渲染風格，支援電影寬幅／16:9／方形
+  triggers:
+  - 使用 baoyu-cover-image 幫這篇文章做一張 16:9 封面圖
+  notes: 需要圖片生成後端（API key）
+- name: baoyu-article-illustrator
+  category: 圖像與簡報
+  risk: 低
+  summary: 分析文章結構，找出需要配圖的位置並自動生成插圖
+  triggers:
+  - 使用 baoyu-article-illustrator 為這篇文章配圖
+  notes: 需要圖片生成後端（API key）
+- name: baoyu-infographic
+  category: 圖像與簡報
+  risk: 低
+  summary: 生成專業資訊圖表（信息圖），21 種版型×22 種視覺風格，會先分析內容推薦組合
+  triggers:
+  - 使用 baoyu-infographic 把這份內容做成一張高密度資訊圖
+- name: baoyu-xhs-images
+  category: 圖像與簡報
+  risk: 低
+  summary: 生成小紅書／微信圖文風格的圖卡系列（1–10 張），12 種視覺風格、8 種版型
+  triggers:
+  - 使用 baoyu-xhs-images 把這篇內容做成小紅書圖卡，共 5 張
+- name: baoyu-comic
+  category: 圖像與簡報
+  risk: 低
+  summary: 製作知識漫畫／教育漫畫，支援多種畫風與分鏡，可批次生成
+  triggers:
+  - 使用 baoyu-comic 把這個概念畫成一頁知識漫畫
+- name: baoyu-slide-deck
+  category: 圖像與簡報
+  risk: 低
+  summary: 從內容生成簡報圖片：先出大綱與風格，再逐頁生成投影片圖
+  triggers:
+  - 使用 baoyu-slide-deck 把這份內容做成 10 頁簡報
+- name: baoyu-diagram
+  category: 圖像與簡報
+  risk: 低
+  summary: 畫專業深色系 SVG 圖：架構圖、流程圖、時序圖、心智圖、時間軸等
+  triggers:
+  - 使用 baoyu-diagram 畫一張這個系統的架構圖
+  notes: 輸出為獨立 .svg 檔
+- name: baoyu-compress-image
+  category: 圖像與簡報
+  risk: 低
+  summary: 壓縮圖片成 WebP（預設）或 PNG，自動挑選壓縮工具
+  triggers:
+  - 使用 baoyu-compress-image 壓縮這個資料夾的圖片
+- name: baoyu-post-to-wechat
+  category: 社群發佈
+  risk: 中
+  summary: 發佈內容到微信公眾號（文章或貼圖），支援 Markdown 輸入、外鏈自動轉底部引用
+  triggers:
+  - 使用 baoyu-post-to-wechat 把這篇文章發佈到公眾號草稿
+  notes: 會操作你的公眾號帳號，建議先發草稿確認再正式發佈
+- name: baoyu-post-to-weibo
+  category: 社群發佈
+  risk: 中
+  summary: 發佈微博貼文（文字＋圖片／影片）與頭條文章
+  triggers:
+  - 使用 baoyu-post-to-weibo 把這段內容發到微博
+  notes: 透過 Chrome 操作你的帳號，發佈前先確認內容
+- name: baoyu-post-to-x
+  category: 社群發佈
+  risk: 中
+  summary: 發佈內容到 X（Twitter），支援一般貼文與長文 Article
+  triggers:
+  - 使用 baoyu-post-to-x 把這段內容發成推文
+  notes: 透過瀏覽器操作你的帳號，發佈前先確認內容
+- name: baoyu-wechat-summary
+  category: 社群發佈
+  risk: 中
+  summary: 把微信群聊內容整理成精華摘要，可維護群組歷史與成員畫像，另有毒舌版
+  triggers:
+  - 使用 baoyu-wechat-summary 總結【群名】最近三天聊了什麼
+  notes: 會讀取你的私人群聊內容，注意隱私；需要本機 wx-cli 工具
+- name: tdd
+  category: 開發輔助
+  risk: 低
+  summary: 測試驅動開發（先寫測試、再寫程式、最後重構），適合做新功能或修 bug
+  triggers:
+  - 用 tdd 的方式幫我做這個功能：【功能描述】
+- name: diagnose
+  category: 開發輔助
+  risk: 低
+  summary: 系統化抓蟲流程：重現問題→縮小範圍→假設→驗證→修復→回歸測試
+  triggers:
+  - 用 diagnose 幫我查這個 bug：【錯誤描述】
+- name: prototype
+  category: 開發輔助
+  risk: 低
+  summary: 快速做拋棄式原型驗證想法：可做可執行的小程式，或一次做多種 UI 版本讓你挑
+  triggers:
+  - 用 prototype 幫我做幾個不同設計的原型試試看
+- name: playwright
+  category: 開發輔助
+  risk: 低
+  summary: 從終端機自動操作真實瀏覽器：開網頁、填表單、截圖、抓資料
+  triggers:
+  - 用 playwright 開這個網站幫我截圖：【網址】
+- name: setup-pre-commit
+  category: 開發輔助
+  risk: 低
+  summary: 幫專案裝 git 提交前自動檢查（格式化、型別檢查、測試），擋住有問題的提交
+  triggers:
+  - 用 setup-pre-commit 幫這個專案設定提交前檢查
+- name: git-guardrails-claude-code
+  category: 開發輔助
+  risk: 低
+  summary: 設定 Claude Code 防護欄，自動攔截危險的 git 指令（強制推送、硬重置、刪分支等）
+  triggers:
+  - 用 git-guardrails-claude-code 幫我擋掉危險的 git 操作
+  notes: 新手強烈建議安裝啟用，防止 AI 誤刪你的版本紀錄
+- name: improve-codebase-architecture
+  category: 開發輔助
+  risk: 低
+  summary: 分析整個專案找出架構改善機會：重構、模組整併、提高可測試性
+  triggers:
+  - 用 improve-codebase-architecture 看看這個專案有什麼可以改善的
+- name: migrate-to-shoehorn
+  category: 開發輔助
+  risk: 低
+  summary: 把測試檔中的 TypeScript `as` 型別斷言改成 shoehorn 寫法（TS 專案專用）
+  triggers:
+  - 用 migrate-to-shoehorn 改寫這些測試檔
+- name: scaffold-exercises
+  category: 開發輔助
+  risk: 低
+  summary: 建立教學練習題的目錄結構（題目、解答、說明），適合做課程教材
+  triggers:
+  - 用 scaffold-exercises 幫我建一個新的練習題章節
+- name: setup-matt-pocock-skills
+  category: 開發輔助
+  risk: 低
+  summary: 初始化設定檔，讓 to-issues / to-prd / triage / tdd 等工程 skills 認識你的專案
+  triggers:
+  - 執行 setup-matt-pocock-skills 幫這個專案做初始設定
+  notes: 第一次在新專案使用那批工程 skills 前先跑這個
+- name: ui-ux-pro-max
+  category: 開發輔助
+  risk: 低
+  summary: UI/UX 設計智囊：50+ 風格、161 色盤、57 字型組合，可規劃／審查／優化網頁與 App 介面
+  triggers:
+  - 用 ui-ux-pro-max 幫我設計這個網頁的介面風格
+  - 用 ui-ux-pro-max 檢查這個頁面的 UI/UX 有什麼問題
+- name: design-thinking
+  category: 規劃與協作
+  risk: 低
+  summary: 以人為本的設計思考流程，適合釐清模糊的產品／服務／流程問題
+  triggers:
+  - 用 design-thinking 幫我梳理這個產品想法
+- name: grill-me
+  category: 規劃與協作
+  risk: 低
+  summary: AI 化身面試官連環拷問你的計畫或設計，把每個決策分支都問清楚才放行
+  triggers:
+  - grill me：針對這個計畫拷問我
+- name: grill-with-docs
+  category: 規劃與協作
+  risk: 低
+  summary: 拷問計畫的同時對照專案文件，邊問邊更新文件記錄決策
+  triggers:
+  - 用 grill-with-docs 檢驗這個計畫並更新文件
+- name: to-prd
+  category: 規劃與協作
+  risk: 低
+  summary: 把目前的對話內容整理成 PRD 需求文檔並發到專案的議題追蹤系統
+  triggers:
+  - 用 to-prd 把我們剛剛討論的內容整理成 PRD
+- name: to-issues
+  category: 規劃與協作
+  risk: 低
+  summary: 把計畫／PRD 拆解成一張張可獨立執行的開發任務（issues）
+  triggers:
+  - 用 to-issues 把這份 PRD 拆成開發任務
+- name: triage
+  category: 規劃與協作
+  risk: 低
+  summary: 整理與分流 issues：建立、分類、標籤、決定優先順序
+  triggers:
+  - 用 triage 幫我整理目前的 issues
+- name: zoom-out
+  category: 規劃與協作
+  risk: 低
+  summary: 請 AI 拉高視角，解釋這段程式碼在整個系統中的位置與脈絡
+  triggers:
+  - zoom out：先給我這部分的全局視角
+- name: handoff
+  category: 規劃與協作
+  risk: 低
+  summary: 把目前對話濃縮成交接文件，讓下一個對話／另一個 AI 能無縫接手
+  triggers:
+  - 用 handoff 把這次對話整理成交接文件，下次要繼續做【任務】
+- name: caveman
+  category: 規劃與協作
+  risk: 低
+  summary: 極簡溝通模式，省約 75% token：去掉廢話只留重點，技術內容不打折
+  triggers:
+  - caveman mode
+- name: find-skills
+  category: Skill 管理
+  risk: 低
+  summary: 幫你從開放 skill 生態系搜尋並安裝新 skill（npx skills 指令）
+  triggers:
+  - 用 find-skills 找找有沒有適合【需求】的 skill
+  notes: 安裝任何新 skill 前，記得先用本控制台「安檢 SOP」檢查
+- name: write-a-skill
+  category: Skill 管理
+  risk: 低
+  summary: 教 AI 幫你寫一個新的 skill，含正確結構與資源配置
+  triggers:
+  - 用 write-a-skill 幫我做一個新 skill：【功能描述】
+- name: using-superpowers
+  category: Skill 管理
+  risk: 低
+  summary: 對話開始時建立「先找有沒有合適 skill 再回答」的工作習慣
+  triggers:
+  - （自動觸發）每次對話開始時 AI 會自行套用
+- name: dual-ai-workflow
+  category: 規劃與協作
+  risk: 低
+  summary: 自製 skill：三方 AI 工作流（Codex＝主力工程師，負責規劃、分段實作、測試與修正；Claude Code（VS Code）＝審查員，負責架構審查、風險檢查與複審；Claude Desktop＝顧問／文字助理，使用提示詞版不安裝第三方
+    skills），並用 DUAL-AI-STATE.md 記錄進度
+  triggers:
+  - 使用 dual-ai-workflow 開始雙AI工作流，任務是：【任務描述】
+  - 使用 dual-ai-workflow 開始三AI工作流，任務是：【任務描述】
+  - 這是另一個 AI 的輸出，依 dual-ai-workflow 接續下一階段
+  notes: 本專案自製；Codex 與 Claude Code 需同步到 ~/.codex/skills、~/.claude/skills 或各環境實際 skill 路徑；Claude Desktop 不安裝第三方 skills，請用提示詞庫手動套用

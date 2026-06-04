@@ -6,7 +6,7 @@ ARCHIVE="$SCRIPT_DIR/codex-skills-backup.tar.gz"
 TMP_DIR="$(mktemp -d)"
 
 cleanup() {
-  rm -rf "$TMP_DIR"
+  echo "Temporary extracted files left at: $TMP_DIR"
 }
 trap cleanup EXIT
 
