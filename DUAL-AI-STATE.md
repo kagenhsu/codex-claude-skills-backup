@@ -9,7 +9,7 @@
 - P1-1 已成立並修正：`index.html` 預設頁籤改為「AI 角色導覽」，`backup` 頁籤移到最後；`scripts/build.py` 模板同步改為 `let tab = "guide"`。
 - P1-2 已成立並修正：`skills/dual-ai-workflow/SKILL.md`、備份包內版本、`~/.codex` 安裝版、`~/.claude` 安裝版已統一為 LF 行尾。
 - 已用 `scripts/update_backup_skill.py` 重打 `codex-skills-backup.tar.gz`，保留原備份包其他內容，只替換 `skills/dual-ai-workflow/SKILL.md`。
-- 已同步 LF 版 `SKILL.md` 到 `/Users/xujiayuan/.codex/skills/dual-ai-workflow/SKILL.md` 與 `/Users/xujiayuan/.claude/skills/dual-ai-workflow/SKILL.md`。
+- 已同步 LF 版 `SKILL.md` 到 `~/.codex/skills/dual-ai-workflow/SKILL.md` 與 `~/.claude/skills/dual-ai-workflow/SKILL.md`。
 - 已處理 P2-3：`.gitignore` 補上 `.DS_Store`、`skills/*`、`!skills/dual-ai-workflow/`。
 - 已處理 P2-4：`PRD.md` 的 44 個 skill 改為 45 個（含 1 個自製 dual-ai-workflow）。
 - 已處理 P2-5：`AGENTS.md` 專案檔案結構補上 `index.html`、安裝腳本、角色文件、自製 skill 與維護腳本。
@@ -25,8 +25,8 @@
 - 四份 `SKILL.md` MD5 實測一致：
   - 專案版 `skills/dual-ai-workflow/SKILL.md`：`eeee0b5f5b64758e6bd69fc48c714e03`
   - 備份包解壓版 `codex-skills-backup.tar.gz:skills/dual-ai-workflow/SKILL.md`：`eeee0b5f5b64758e6bd69fc48c714e03`
-  - Codex 安裝版 `/Users/xujiayuan/.codex/skills/dual-ai-workflow/SKILL.md`：`eeee0b5f5b64758e6bd69fc48c714e03`
-  - Claude 安裝版 `/Users/xujiayuan/.claude/skills/dual-ai-workflow/SKILL.md`：`eeee0b5f5b64758e6bd69fc48c714e03`
+  - Codex 安裝版 `~/.codex/skills/dual-ai-workflow/SKILL.md`：`eeee0b5f5b64758e6bd69fc48c714e03`
+  - Claude 安裝版 `~/.claude/skills/dual-ai-workflow/SKILL.md`：`eeee0b5f5b64758e6bd69fc48c714e03`
 - v1.1 已新增快速看板與常用組合包，commit `2422245` 為目前 v1.1 實作版本。
 - 第 3 階段 Claude Code（VS Code）審查結果：P0=0、P1=1、P2=3；本輪進入第 4 階段逐條修正。
 - P1 已成立並修正：三方中控 7 顆按鈕不再把 stage 標題塞進搜尋框，改為切到提示詞庫的三方 AI 協作模式、清空搜尋並嘗試捲到對應 stage section。
