@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [ "$(uname -s)" != "Darwin" ]; then
+  echo "This restore script supports macOS only." >&2
+  exit 1
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ARCHIVE="$SCRIPT_DIR/codex-skills-backup.tar.gz"
 TMP_DIR="$(mktemp -d)"

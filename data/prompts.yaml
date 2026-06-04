@@ -61,6 +61,20 @@
     然後繼續完善未完成的功能。
   flow: common
   stage: ''
+- title: "上下文壓縮接續摘要"
+  category: 三方 AI 協作
+  usage: 上下文壓縮後，固定用這個格式交接，讓下一輪能接續
+  flow: dualai
+  stage: context-compact
+  tags: [上下文, 壓縮, 接續]
+  prompt: |
+    【上下文已壓縮】
+    目前任務：
+    已完成：
+    - 
+    待處理：
+    - 
+    重要結論：
 - title: 首次備份到 GitHub（私有）
   category: 版本控制
   usage: 專案第一次備份

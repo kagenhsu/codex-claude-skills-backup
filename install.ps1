@@ -1,19 +1,30 @@
 param(
     [string]$RepoRawBase = "https://raw.githubusercontent.com/kagenhsu/codex-claude-skills-backup/main",
-    [switch]$KeepTemp
+    [string]$ConsoleDir = ""
 )
 
 $ErrorActionPreference = "Stop"
 
 Write-Host "Codex / Claude skills installer"
 
+if (-not $ConsoleDir) {
+    $ConsoleDir = Join-Path ([Environment]::GetFolderPath("MyDocuments")) "CodexClaudeSkillsConsole"
+}
+
 $archiveName = "codex-skills-backup.tar.gz"
+$indexName = "index.html"
 $localArchive = $null
+$localIndex = $null
 
 if ($PSScriptRoot) {
     $candidate = Join-Path $PSScriptRoot $archiveName
     if (Test-Path -LiteralPath $candidate) {
         $localArchive = $candidate
+    }
+
+    $indexCandidate = Join-Path $PSScriptRoot $indexName
+    if (Test-Path -LiteralPath $indexCandidate) {
+        $localIndex = $indexCandidate
     }
 }
 
@@ -65,12 +76,41 @@ try {
     Install-Skills (Join-Path $HOME ".codex\skills")
     Install-Skills (Join-Path $HOME ".claude\skills")
 
+    New-Item -ItemType Directory -Force -Path $ConsoleDir | Out-Null
+    $consoleIndex = Join-Path $ConsoleDir $indexName
+
+    if ($localIndex) {
+        Copy-Item -LiteralPath $localIndex -Destination $consoleIndex -Force
+        Write-Host "Console copied: $consoleIndex"
+    } else {
+        $indexUrl = "$RepoRawBase/$indexName"
+        Write-Host "Downloading console: $indexUrl"
+        Invoke-WebRequest -Uri $indexUrl -OutFile $consoleIndex
+        Write-Host "Console downloaded: $consoleIndex"
+    }
+
+    $desktopDir = [Environment]::GetFolderPath("DesktopDirectory")
+    if (-not $desktopDir) {
+        $desktopDir = Join-Path $HOME "Desktop"
+    }
+    New-Item -ItemType Directory -Force -Path $desktopDir | Out-Null
+
+    $shortcutBaseName = -join @("Skill ", [char]0x52A9, [char]0x624B, [char]0x63A7, [char]0x5236, [char]0x53F0)
+    $shortcutPath = Join-Path $desktopDir ($shortcutBaseName + ".lnk")
+    $shell = New-Object -ComObject WScript.Shell
+    $shortcut = $shell.CreateShortcut($shortcutPath)
+    $shortcut.TargetPath = $consoleIndex
+    $shortcut.WorkingDirectory = $ConsoleDir
+    $shortcut.Description = "Open local Skill console"
+    $shortcut.Save()
+    Write-Host "Desktop shortcut created: $shortcutPath"
+
     Write-Host ""
     Write-Host "Done. Restart Codex and Claude Code to load the installed skills."
+    Write-Host "Open the console from your desktop shortcut: $shortcutBaseName"
 } finally {
-    if ($KeepTemp) {
+    if (Test-Path -LiteralPath $tmpRoot) {
         Write-Host "Temporary files were left at: $tmpRoot"
-    } elseif (Test-Path -LiteralPath $tmpRoot) {
-        Remove-Item -LiteralPath $tmpRoot -Recurse -Force
+        Write-Host "For safety, this installer does not delete temporary folders automatically."
     }
 }

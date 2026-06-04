@@ -3,32 +3,28 @@ set -euo pipefail
 
 REPO_RAW_BASE="${REPO_RAW_BASE:-https://raw.githubusercontent.com/kagenhsu/codex-claude-skills-backup/main}"
 ARCHIVE_NAME="codex-skills-backup.tar.gz"
-KEEP_TEMP=false
+INDEX_NAME="index.html"
 
-for arg in "$@"; do
-  case "$arg" in
-    --keep-temp)
-      KEEP_TEMP=true
-      ;;
-    *)
-      echo "Usage: $0 [--keep-temp]" >&2
-      exit 1
-      ;;
-  esac
-done
+if [ "$(uname -s)" != "Darwin" ]; then
+  echo "This installer supports macOS only." >&2
+  exit 1
+fi
+
+if [ "$#" -gt 0 ]; then
+  echo "Usage: $0" >&2
+  exit 1
+fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOCAL_ARCHIVE="$SCRIPT_DIR/$ARCHIVE_NAME"
+LOCAL_INDEX="$SCRIPT_DIR/$INDEX_NAME"
 TMP_DIR="$(mktemp -d)"
 EXTRACT_DIR="$TMP_DIR/extract"
 mkdir -p "$EXTRACT_DIR"
 
 cleanup() {
-  if [ "$KEEP_TEMP" = true ]; then
-    echo "Temporary files were left at: $TMP_DIR"
-  else
-    rm -rf "$TMP_DIR"
-  fi
+  echo "Temporary files were left at: $TMP_DIR"
+  echo "For safety, this installer does not delete temporary folders automatically."
 }
 trap cleanup EXIT
 
@@ -84,5 +80,35 @@ install_skills() {
 install_skills "$HOME/.codex/skills"
 install_skills "$HOME/.claude/skills"
 
+CONSOLE_DIR="$HOME/Documents/CodexClaudeSkillsConsole"
+CONSOLE_INDEX="$CONSOLE_DIR/$INDEX_NAME"
+mkdir -p "$CONSOLE_DIR"
+
+if [ -f "$LOCAL_INDEX" ]; then
+  cp "$LOCAL_INDEX" "$CONSOLE_INDEX"
+  echo "Console copied: $CONSOLE_INDEX"
+else
+  INDEX_URL="$REPO_RAW_BASE/$INDEX_NAME"
+  echo "Downloading console: $INDEX_URL"
+  if command -v curl >/dev/null 2>&1; then
+    curl -fsSL "$INDEX_URL" -o "$CONSOLE_INDEX"
+  else
+    echo "Missing curl. Please install curl and retry." >&2
+    exit 1
+  fi
+  echo "Console downloaded: $CONSOLE_INDEX"
+fi
+
+DESKTOP_DIR="$HOME/Desktop"
+LAUNCHER="$DESKTOP_DIR/Skill 助手控制台.command"
+mkdir -p "$DESKTOP_DIR"
+cat > "$LAUNCHER" <<EOF
+#!/usr/bin/env bash
+open "$CONSOLE_INDEX"
+EOF
+chmod +x "$LAUNCHER"
+echo "Desktop launcher created: $LAUNCHER"
+
 echo
 echo "Done. Restart Codex and Claude Code to load the installed skills."
+echo "Open the console from your desktop launcher: Skill 助手控制台.command"

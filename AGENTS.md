@@ -21,7 +21,7 @@ codex-claude-skills-backup/
 ├── AGENTS.md                  # 本文件（頂層規則）
 ├── PRD.md                     # 需求文檔
 ├── index.html                 # 控制台成品（雙擊開啟）
-├── install.sh                 # macOS / Linux / Git Bash 一行安裝腳本
+├── install.sh                 # macOS 一行安裝腳本
 ├── install.ps1                # Windows PowerShell 一行安裝腳本
 ├── data/
 │   ├── skills.yaml            # skill 目錄資料

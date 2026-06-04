@@ -22,7 +22,7 @@
   - 跨地點接續包
 - 提示詞庫新增「專案啟動」快捷篩選。
 - 新增「首次上傳 GitHub：繁體中文專案敘述」提示詞卡。
-- 新增「跨地點 / 跨系統接續」提示詞卡，支援 macOS / Linux / Windows 接續流程。
+- 新增「跨地點 / 跨系統接續」提示詞卡，支援 macOS / Windows 接續流程。
 
 ### 改善與修正
 
@@ -32,7 +32,7 @@
 - 全專案 build 指令統一為 `python3 scripts/build.py`。
 - `skills/dual-ai-workflow/SKILL.md` 統一 LF 行尾，並同步備份包與本機安裝版。
 - 多裝置同步提醒補上：
-  - macOS / Linux 使用 `./restore-skills.sh`
+  - macOS 使用 `./restore-skills.sh`
   - Windows 使用 `install.ps1`
 - `DUAL-AI-STATE.md` 與文件路徑避免暴露本機絕對路徑，改用 `~/` 或相對路徑。
 

@@ -1,8 +1,8 @@
 # DUAL-AI-STATE
 
-任務名稱：AI 工作流控制台 v1 收尾修正
+任務名稱：AI 工作流控制台 v1.5 上下文壓縮觸發規則
 
-目前階段：✅ 已完成（v1 收尾修正第 5 階段複審通過）
+目前階段：✅ v1.5 Claude Code（VS Code）複審通過，待 git commit
 
 已完成事項：
 - 已讀取並依據本檔實際狀態接續，不沿用舊 MD5 聲明。
@@ -14,7 +14,7 @@
 - 已處理 P2-4：`PRD.md` 的 44 個 skill 改為 45 個（含 1 個自製 dual-ai-workflow）。
 - 已處理 P2-5：`AGENTS.md` 專案檔案結構補上 `index.html`、安裝腳本、角色文件、自製 skill 與維護腳本。
 - 已處理 P2-6：`data/skills.yaml` 與 `data/prompts.yaml` 改為三方 AI 命名，並重建 `index.html`。
-- 已處理 P2-7：`install.sh` 與 `install.ps1` 加入暫存目錄 cleanup，並提供 `--keep-temp` / `-KeepTemp` 保留暫存檔。
+- 已處理 P2-7：`install.sh` 與 `install.ps1` 加入暫存目錄提示；安裝器基於安全考量不自動刪除暫存資料夾。
 - 已處理 P2-8：`README.md` 兩段一行安裝下方補上安全安裝提醒。
 - 已處理 P2-9：`index.html` 搜尋 placeholder 補上「角色、分工、導覽」關鍵字。
 - 已執行 `python3 scripts/build.py`，重建結果為 45 skills / 33 prompts；本機沒有未帶版本號的 Python 指令可用。
@@ -30,22 +30,33 @@
 - v1.1 已新增快速看板與常用組合包，commit `2422245` 為目前 v1.1 實作版本。
 - 第 3 階段 Claude Code（VS Code）審查結果：P0=0、P1=1、P2=3；本輪進入第 4 階段逐條修正。
 - P1 已成立並修正：三方中控 7 顆按鈕不再把 stage 標題塞進搜尋框，改為切到提示詞庫的三方 AI 協作模式、清空搜尋並嘗試捲到對應 stage section。
-- P2-2 已成立並修正：`跨地點 / 跨系統接續` 提示詞在 macOS/Linux 與 Windows 指令前補上同步全部 skills 請改用 `restore-skills.sh` / `install.ps1` 的提醒。
+- P2-2 已成立並修正：`跨地點 / 跨系統接續` 提示詞在 macOS 與 Windows 指令前補上同步全部 skills 請改用 `restore-skills.sh` / `install.ps1` 的提醒。
 - P2-3 已成立並修正：搜尋 placeholder 的「三 AI」改為「三方 AI」。
 - P2-4 已成立並修正：全專案舊 build 指令文字統一為 `python3 scripts/build.py`，並重建 `index.html`。
 - v1.1 第 5 階段 Claude Code（VS Code）複審通過，無 P0/P1 殘留；6 項 P2 排入 v1.2 backlog。Commit 2422245 為 v1.1 最終存檔。
 - v1 收尾修正（commit f0fb601）第 5 階段 Claude Code（VS Code）複審通過，無 P0/P1/P2 殘留。
+- v1.2 實作完成（commit 90c6d5b）：combos 引用 build-time 檢查、state board textarea oninput 修正游標失焦、目前階段正則支援中文數字、命名統一。P2 #2/#3/#6 已清除。
+- v1.3 實作完成（待 commit）：Windows/macOS 桌面捷徑、移除 Linux 支援說法、禁止安裝腳本自動刪除暫存。Claude Code（VS Code）複審通過，無 P0/P1。
+- v1.4 實作完成（待 commit）：移除 KeepTemp 參數、`.gitignore` 加入 `server-*.log`、`STATE_SECTIONS` 加維護注釋、重建 `index.html`。Claude Code（VS Code）複審通過，無 P0/P1。
+- v1.5 實作進行中：`skills/dual-ai-workflow/SKILL.md` 已加入「上下文壓縮觸發規則」。
+- v1.5 提示詞卡已新增：`data/prompts.yaml` 加入「上下文壓縮接續摘要」，`flow: dualai`、`stage: context-compact`。
+- v1.5 控制台顯示已同步：`scripts/build.py` 新增 `context-compact` stage metadata 與排序，並重建 `index.html`。
+- v1.5 build 驗證完成：`scripts/build.py` 成功輸出 45 skills / 39 prompts / 3 combos。
+- v1.5 P1 已修正：已執行 `scripts/update_backup_skill.py` 更新 `codex-skills-backup.tar.gz`，備份包內 `skills/dual-ai-workflow/SKILL.md` 已包含「上下文壓縮觸發規則」。
+- v1.5 本機 skill 已同步：`~/.codex/skills/dual-ai-workflow/SKILL.md` 與 `~/.claude/skills/dual-ai-workflow/SKILL.md` 已覆蓋為新版。
+- v1.5 四份 `SKILL.md` MD5 實測一致：repo 版、備份包內版本、Codex 安裝版、Claude 安裝版皆為 `b5ba5093bd1af782a51049cc72660709`。
+- v1.5 Claude Code（VS Code）P1 修正後複審通過，無 P0/P1，允許 commit。
 
 下一步：
-- 等待使用者決定是否 push 到 origin/main；v1.2 backlog 仍在 docs/v1-1-plan.md 或對應 backlog 文件中。
+- 建立 git commit；完成後由使用者決定是否 push 到 origin/main。
 
 未解決問題：
-- v1.2 backlog：
-  - P2 #1 sectionAfter lookahead 改用固定 section 名稱白名單
-  - P2 #2 state board textarea 拆 oninput 路徑避免 re-render 失焦
-  - P2 #3 目前階段正則加入中文數字
-  - P2 #4 v1 沿用未修：control 按鈕 search query 對不到 prompts
-  - P2 #5 v1 沿用未修：placeholder「三 AI」改「三方 AI」
-  - P2 #6 build.py 加 combos 引用 build-time 檢查
+- v1.2 backlog（已清除項目以 ✅ 標記）：
+  - P2 #1 sectionAfter lookahead 改用固定 section 名稱白名單（未解決）
+  - ✅ P2 #2 state board textarea 拆 oninput 路徑（v1.2 commit 90c6d5b 已修）
+  - ✅ P2 #3 目前階段正則加入中文數字（v1.2 commit 90c6d5b 已修）
+  - P2 #4 v1 沿用未修：control 按鈕 search query 對不到 prompts（未解決）
+  - ✅ P2 #5 placeholder「三 AI」改「三方 AI」（v1.1 已修，backlog 條目為誤留）
+  - ✅ P2 #6 build.py 加 combos 引用 build-time 檢查（v1.2 commit 90c6d5b 已修）
 
-最後更新時間：2026-06-04 23:13 +0800
+最後更新時間：2026-06-05 Claude Code（VS Code）v1.5 複審通過，待 git commit

@@ -236,10 +236,10 @@ const FLOW_META = {
   common:{label:"通用",title:"通用提示詞",lead:"日常可直接複製使用的提示詞，例如 Skill 安檢、交接、摘要與一般 AI 工作輔助。"}
 };
 const STAGE_META = {
-  dualai:{entry:["入口","啟動或接續三方 AI 工作流"],"1":["第 1 階段：Codex","規劃、拆任務、建立狀態檔"],"2":["第 2 階段：Codex","分段實作、build、驗證"],"3":["第 3 階段：Claude Code（VS Code）","審查 diff、架構與風險"],"4":["第 4 階段：Codex","逐條修正、重新驗證"],"5":["第 5 階段：Claude Code（VS Code）","複審並確認可收尾"],handoff:["轉交","把目前狀態交給下一方"],status:["狀態檔","讀寫 DUAL-AI-STATE.md"],archive:["存檔收尾","第 5 階段通過後驗證、更新狀態檔與交還 push 決定權"],"desktop-summary":["主管版摘要","請 Claude Desktop 整理給人看的進度摘要"]},
+  dualai:{entry:["入口","啟動或接續三方 AI 工作流"],"1":["第 1 階段：Codex","規劃、拆任務、建立狀態檔"],"2":["第 2 階段：Codex","分段實作、build、驗證"],"3":["第 3 階段：Claude Code（VS Code）","審查 diff、架構與風險"],"4":["第 4 階段：Codex","逐條修正、重新驗證"],"5":["第 5 階段：Claude Code（VS Code）","複審並確認可收尾"],handoff:["轉交","把目前狀態交給下一方"],status:["狀態檔","讀寫 DUAL-AI-STATE.md"],"context-compact":["上下文壓縮","壓縮後輸出可接續摘要"],archive:["存檔收尾","第 5 階段通過後驗證、更新狀態檔與交還 push 決定權"],"desktop-summary":["主管版摘要","請 Claude Desktop 整理給人看的進度摘要"]},
   solo:{entry:["入口","只用一個 AI 時先用這張說明工作方式"],"1":["第 1 步","釐清任務與目標"],"2":["第 2 步","提出方案、先不修改"],"3":["第 3 步","分段執行並自我檢查"],"4":["第 4 步","收尾、整理驗證與 commit 建議"]}
 };
-const FLOW_ORDER = {dualai:["entry","1","2","3","4","5","handoff","status","archive","desktop-summary"],solo:["entry","1","2","3","4"]};
+const FLOW_ORDER = {dualai:["entry","1","2","3","4","5","handoff","status","context-compact","archive","desktop-summary"],solo:["entry","1","2","3","4"]};
 const PAGE_INTROS = {
   backup:{title:"換電腦／同步",lead:"這頁只在換電腦、重裝工具，或要把已整理好的 skills 同步到另一台機器時使用。平常找功能請看 Skills；要複製工作指令請看提示詞庫。",purpose:"把這個專案保存的 skills 備份包，安裝到 Codex 或 Claude Code 可讀的位置。",first:"如果不是換電腦或重裝，通常不用按這頁的還原指令。",when:"換電腦、重裝工具、同步 Mac mini 或 VS Code Claude Code 時使用。"},
   skills:{title:"Skills",lead:"查看每個 skill 的用途、風險與觸發句，直接複製給 AI 使用。",purpose:"快速判斷要叫哪個 AI skill。",first:"搜尋關鍵字，再複製觸發句。",when:"不確定某個任務該用哪個 skill 時。"},
@@ -279,6 +279,7 @@ const CONTROL_STAGES=[
 ];
 function controlPromptInfo(item){let found=null;if(item.stage==="archive")found=DATA.prompts.find(p=>String(p.stage||"")==="archive"||p.title.includes("存檔收尾"));else if(item.stage==="desktop-summary")found=DATA.prompts.find(p=>String(p.stage||"")==="desktop-summary"||p.title.includes("主管版"));else found=DATA.prompts.find(p=>(p.flow||"common")==="dualai"&&String(p.stage||"")===item.stage);return{prompt:found?found.prompt:item.fallback,targetStage:found?String(found.stage||item.stage):item.stage,found:!!found}}
 function stateDraft(){return localStorage.getItem("workflow-state-draft")||""}
+// 必須與 DUAL-AI-STATE.md section 名稱保持同步
 const STATE_SECTIONS=["任務名稱","目前階段","已完成事項","下一步","未解決問題","最後更新時間"];
 function sectionAfter(text,label){const escaped=label.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");const lookahead=STATE_SECTIONS.filter(item=>item!==label).map(item=>item.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|");const match=text.match(new RegExp(`(?:^|\\n)${escaped}：?\\s*([\\s\\S]*?)(?=\\n(?:${lookahead})：?|$)`));return match?match[1].trim():""}
 function parseStageNumber(value){const map={一:"1",二:"2",三:"3",四:"4",五:"5"};return map[value]||value||""}
