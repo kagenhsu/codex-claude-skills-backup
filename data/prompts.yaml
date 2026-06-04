@@ -389,3 +389,113 @@
     5. 建議的 git commit message
 
     如果工作目錄還有不是你造成的變更，請分開列出，不要混在本次修改摘要裡。
+- title: 從討論結果產出 AGENTS.md（設計方向確認後用）
+  category: 專案啟動
+  usage: 已和 AI 討論完設計方向，請 AI 整理成可直接放專案根目錄的 AGENTS.md
+  flow: common
+  stage: ''
+  prompt: |-
+    我們剛剛已經討論完這個專案的設計方向，請依下面資訊產出一份可直接放在專案根目錄的 AGENTS.md。
+
+    【已知資訊（請以對話脈絡為主，下面欄位空白就用對話內容自動補）】
+    - 專案名稱：【】
+    - 專案簡介（一兩句話）：【】
+    - 目標使用者：【】
+    - 技術棧（若已決定）：【】
+    - 是否採用三方 AI 工作流（Codex / Claude Code（VS Code）/ Claude Desktop）：【是 / 否】
+
+    【AGENTS.md 必含段落】
+    1. 第一行：「# AGENTS.md — 專案頂層規則文件」
+    2. 專案名稱與簡介
+    3. 開發協作規範（AI 必須遵守），至少包含：
+       - 每個任務先看規劃文件再執行
+       - 一個對話只做一個明確任務
+       - 不要刪除文件，除非用戶明確要求
+       - 需求不清楚時，先提出關鍵問題，不要直接猜著做
+       - 任務有風險時，先明說風險再執行
+       - 修改完成後總結：改了什麼、如何檢查、下一步建議
+       - 用小白能聽懂的話解釋，遇到技術名詞順手用一句話解釋
+    4. 專案檔案結構（先用樹狀圖列出目前已知的檔案；缺的之後補）
+    5. 若採用三方 AI 工作流：補一段「AI 角色分工」表格（Codex 主力、Claude Code（VS Code）審查、Claude Desktop 顧問／文字助理），並指向 docs/dual-ai-workflow.md 與 docs/ai-role-guide.md
+    6. 技術棧與環境需求（若已決定）
+
+    【寫作要求】
+    - 全程繁體中文
+    - 小白能看懂的語氣，避免行話
+    - AGENTS.md 是給人讀的規範文件，不要塞程式碼
+    - 完成後請告訴我建議的下一步（例如：建立 PRD.md、初始化 git、設定 .gitignore、跑 scripts/build.py）
+- title: 給 Codex 的逐條修正轉交提示詞（模板）
+  category: 三方 AI 協作
+  usage: 第 3 階段審查完成後，固定把意見搬給 Codex 進入第 4 階段時用這張
+  flow: dualai
+  stage: '3'
+  prompt: |-
+    依 dual-ai-workflow 第 4 階段（Codex 修正），請逐條處理 Claude Code（VS Code）複審意見並重新驗證。
+
+    【背景】
+    - 任務：【任務名稱】
+    - 狀態檔：請先讀取 DUAL-AI-STATE.md，根據實際結果更新欄位（不要直接複用舊內容）。
+    - 複審結論：P0=【數量】、P1=【數量】、P2=【數量】。
+
+    【P0/P1 必修，逐條處理】
+    1. 【問題標題】：
+       - 位置：【檔案:行號】或【描述】
+       - 現象／影響：【一句話】
+       - 建議改法：【具體動作】
+       - 驗證方式：【跑什麼指令／怎麼確認】
+
+    【P2 建議處理（若延後請寫進 DUAL-AI-STATE.md 的「未解決問題」）】
+    2. 【問題標題】：【建議改法】
+
+    【驗證清單（修完每項都跑一次）】
+    - 【build／測試指令，例如 python3 scripts/build.py】
+    - 【人工確認步驟，例如雙擊網頁、搜尋特定關鍵字】
+    - git status：除你刻意修改的檔，不應出現新的 untracked。
+
+    【git 存檔規則】
+    - 不要 `git add .`。請逐檔加：【列出本輪預計動到的檔】
+    - commit message 建議：「【動詞】+【主題】」
+    - 不要 push 到 origin/main，本地存檔即可，等使用者決定。
+
+    【輸出格式】
+    完成後請輸出：
+    1. 逐條 P0/P1/P2 處理結果（成立／不成立＋原因）。
+    2. 重新驗證結果（含關鍵 hash 或數據實測值）。
+    3. 新 diff（精簡列出檔案與重點變更）。
+    4. 給 Claude Code（VS Code）的完整轉交提示詞，進入第 5 階段複審。
+- title: 給 Codex 的存檔收尾提示詞（模板）
+  category: 三方 AI 協作
+  usage: 第 5 階段複審通過後，把閉環收尾交回 Codex 時用這張
+  flow: dualai
+  stage: '5'
+  prompt: |-
+    dual-ai-workflow 第 5 階段（Claude Code 複審）已通過，無 P0/P1/P2 殘留問題。
+
+    請執行下列存檔收尾工作（不再做功能修改）：
+
+    【一、最終驗證（任何 push 前必跑）】
+    1. 重新比對本輪關鍵驗證指標（hash／build 結果／檔案路徑），實測值需與 DUAL-AI-STATE.md 一致。
+    2. git status 必須乾淨；確認 `git status --ignored` 中該忽略的項目仍被忽略。
+    3. 人工開啟成品（例如雙擊 index.html）做最後一眼確認。
+
+    【二、DUAL-AI-STATE.md 收尾】
+    - 將「目前階段」改為「✅ 已完成（dual-ai-workflow 第 5 階段複審通過）」。
+    - 「已完成事項」追加一行：「第 5 階段 Claude Code（VS Code）複審通過，無 P0/P1/P2 殘留，commit【hash】為最終存檔。」
+    - 「下一步」改為：「等待使用者決定是否 push 到 origin/main；多裝置同步請以本機標準版覆蓋。」
+    - 「未解決問題」保留尚未處理但已知的小事項。
+    - 更新「最後更新時間」為現在時間。
+    - 此次只改 DUAL-AI-STATE.md，獨立成一個 commit，message 建議：「閉環完成：第 5 階段複審通過」。
+
+    【三、是否 push 由使用者決定】
+    - 不要自動 push origin/main。請輸出兩段給使用者選：
+      (a)「只保留本地存檔」→ 不做任何網路動作。
+      (b)「同步到 GitHub」→ 提供 `git push origin main` 指令並提醒檢查 commit 不含敏感資料。
+
+    【四、多裝置同步指引】
+    請輸出一段可貼給另一台機器（例如 Mac mini）使用者執行的指令，把本機標準版檔案覆蓋過去，避免重新生成造成格式或行尾不一致（例如 LF/CRLF）。
+
+    完成後請輸出：
+    1. 上述驗證的實測結果。
+    2. 新增的 DUAL-AI-STATE.md commit hash。
+    3. 給使用者的 (a)/(b) 兩選一指引。
+    4. 多裝置同步指令。
