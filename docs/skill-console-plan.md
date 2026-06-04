@@ -69,7 +69,7 @@ codex-claude-skills-backup/
 ## 7. 日常使用與維護 SOP
 
 - 使用：開 `index.html` → 搜尋 → 點「複製」→ 貼到 Claude Code/Codex
-- 新增提示詞：編輯 `data/prompts.yaml` → 執行 `python scripts/build.py`（或直接請 Claude 幫你更新）
+- 新增提示詞：編輯 `data/prompts.yaml` → 執行 `python3 scripts/build.py`（或直接請 Claude 幫你更新）
 - 新增 skill：安裝後請 Claude 補一筆到 `skills.yaml` 並重建
 - 備份：照原流程 git push 即可，控制台跟著一起備份
 

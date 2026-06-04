@@ -556,6 +556,8 @@
     3. 下一步：依 DUAL-AI-STATE.md 建議接續哪個任務
 
     【macOS / Linux / Git Bash 指令】
+    若要同步全部 skills，請改用 `./restore-skills.sh`（macOS / Linux）；下面只覆蓋自製 `dual-ai-workflow`。
+
     ```bash
     git pull --ff-only
     git status --short
@@ -566,6 +568,8 @@
     ```
 
     【Windows PowerShell 指令】
+    若要同步全部 skills，請改用 `install.ps1`（Windows）；下面只覆蓋自製 `dual-ai-workflow`。
+
     ```powershell
     git pull --ff-only
     git status --short
