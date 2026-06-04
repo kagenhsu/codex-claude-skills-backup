@@ -2,7 +2,7 @@
 
 任務名稱：AI 工作流控制台 v1 收尾修正
 
-目前階段：第 4 階段 Codex 修正（處理 Claude Code 第 3 階段審查意見）
+目前階段：✅ 已完成（v1.1 dual-ai-workflow 第 5 階段複審通過）
 
 已完成事項：
 - 已讀取並依據本檔實際狀態接續，不沿用舊 MD5 聲明。
@@ -33,11 +33,18 @@
 - P2-2 已成立並修正：`跨地點 / 跨系統接續` 提示詞在 macOS/Linux 與 Windows 指令前補上同步全部 skills 請改用 `restore-skills.sh` / `install.ps1` 的提醒。
 - P2-3 已成立並修正：搜尋 placeholder 的「三 AI」改為「三方 AI」。
 - P2-4 已成立並修正：全專案舊 build 指令文字統一為 `python3 scripts/build.py`，並重建 `index.html`。
+- v1.1 第 5 階段 Claude Code（VS Code）複審通過，無 P0/P1 殘留；6 項 P2 排入 v1.2 backlog。Commit 2422245 為 v1.1 最終存檔。
 
 下一步：
-- 轉交 Claude Code（VS Code）第 5 階段複審，確認 P1/P2 已處理且未引入新問題。
+- 等待使用者決定是否 push 到 origin/main；v1.2 backlog 已記錄在 docs/v1-2-backlog.md。
 
 未解決問題：
-- 暫無本輪已知未解決問題；仍需 Claude Code（VS Code）複審。
+- v1.2 backlog：
+  - P2 #1 sectionAfter lookahead 改用固定 section 名稱白名單
+  - P2 #2 state board textarea 拆 oninput 路徑避免 re-render 失焦
+  - P2 #3 目前階段正則加入中文數字
+  - P2 #4 v1 沿用未修：control 按鈕 search query 對不到 prompts
+  - P2 #5 v1 沿用未修：placeholder「三 AI」改「三方 AI」
+  - P2 #6 build.py 加 combos 引用 build-time 檢查
 
-最後更新時間：2026-06-04 23:05 +0800
+最後更新時間：2026-06-04 23:10 +0800
