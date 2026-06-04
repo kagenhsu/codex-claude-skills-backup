@@ -21,12 +21,20 @@ codex-claude-skills-backup/
 ├── AGENTS.md                  # 本文件（頂層規則）
 ├── PRD.md                     # 需求文檔
 ├── index.html                 # 控制台成品（雙擊開啟）
+├── install.sh                 # macOS / Linux / Git Bash 一行安裝腳本
+├── install.ps1                # Windows PowerShell 一行安裝腳本
 ├── data/
 │   ├── skills.yaml            # skill 目錄資料
 │   └── prompts.yaml           # 提示詞庫資料
 ├── scripts/
-│   └── build.py               # 由 yaml 重建 index.html
+│   ├── build.py               # 由 yaml 重建 index.html
+│   ├── normalize_role_docs.py # 正規化角色導覽文件內容
+│   └── update_backup_skill.py # 更新備份包內自製 workflow skill
 ├── docs/
-│   └── skill-console-plan.md  # 規劃文件
+│   ├── skill-console-plan.md  # 規劃文件
+│   ├── ai-role-guide.md       # AI 角色導覽
+│   └── dual-ai-workflow.md    # 三方 AI 工作流說明
+├── skills/
+│   └── dual-ai-workflow/      # 自製三方 AI 工作流 skill
 ├── codex-skills-backup.tar.gz # 原有 skills 備份（不可刪）
 └── restore-skills.sh          # 原有還原腳本（不可刪）

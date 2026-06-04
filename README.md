@@ -12,11 +12,15 @@ Windows PowerShell：
 powershell -ExecutionPolicy Bypass -NoProfile -Command "irm https://raw.githubusercontent.com/kagenhsu/codex-claude-skills-backup/main/install.ps1 | iex"
 ```
 
+不熟 PowerShell/Bash 的同事，請先看下面「比較安全的安裝方式」。
+
 macOS / Linux / Git Bash：
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/kagenhsu/codex-claude-skills-backup/main/install.sh | bash
 ```
+
+不熟 PowerShell/Bash 的同事，請先看下面「比較安全的安裝方式」。
 
 安裝完成後，重新啟動 Codex 和 Claude Code。
 

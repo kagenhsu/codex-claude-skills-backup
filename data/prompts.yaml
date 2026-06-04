@@ -128,14 +128,14 @@
   flow: common
   stage: ''
 - title: 啟動三AI工作流（skill 版，一句話）
-  category: 雙AI協作
+  category: 三方 AI 協作
   usage: 入口·已安裝 dual-ai-workflow skill 後，開新任務只要貼這句
   prompt: |
     使用 dual-ai-workflow 開始三AI工作流，任務是：【任務描述】
   flow: dualai
   stage: entry
 - title: 啟動三AI五階段工作流（手動版，一次貼上）
-  category: 雙AI協作
+  category: 三方 AI 協作
   usage: 入口·沒安裝 skill 時，開任務前貼給主力 AI
   prompt: |
     我們採用三方 AI 五階段工作流：
@@ -154,7 +154,7 @@
   flow: dualai
   stage: entry
 - title: ① 第一階段：Codex 規劃
-  category: 雙AI協作
+  category: 三方 AI 協作
   usage: 在 Codex 開新任務，先出方案不動手
   prompt: |
     請先讀取專案結構與相關文件，不要直接修改。
@@ -167,7 +167,7 @@
   flow: dualai
   stage: '1'
 - title: ② 第二階段：Codex 分段實作
-  category: 雙AI協作
+  category: 三方 AI 協作
   usage: 方案確認後，讓 Codex 分段修改、build、驗證
   prompt: |
     現在由 Codex 負責分段實作，其他 AI 暫停動作。
@@ -180,7 +180,7 @@
   flow: dualai
   stage: '2'
 - title: ③ 第三階段：Claude Code（VS Code）審查
-  category: 雙AI協作
+  category: 三方 AI 協作
   usage: 把 Codex 的交接摘要、diff 與驗證結果貼給 Claude Code 審查
   prompt: |
     現在由 Claude Code（VS Code）負責審查，其他 AI 暫停動作。
@@ -194,7 +194,7 @@
   flow: dualai
   stage: '3'
 - title: ④ 第四階段：Codex 修正
-  category: 雙AI協作
+  category: 三方 AI 協作
   usage: 把 Claude Code 的審查意見貼回給 Codex 逐條處理
   prompt: |
     現在由 Codex 負責修正，其他 AI 暫停動作。
@@ -207,7 +207,7 @@
   flow: dualai
   stage: '4'
 - title: ⑤ 第五階段：Claude Code（VS Code）複審
-  category: 雙AI協作
+  category: 三方 AI 協作
   usage: 把修正後結果交給 Claude Code 複審，通過後交回 Codex 存檔
   prompt: |
     現在由 Claude Code（VS Code）負責複審，其他 AI 暫停動作。
@@ -215,8 +215,8 @@
     如果通過，請輸出給 Codex 的存檔轉交提示詞，要求 Codex 做最終驗證與 git commit。
   flow: dualai
   stage: '5'
-- title: 接續雙AI工作流（貼另一個 AI 的輸出）
-  category: 雙AI協作
+- title: 接續三方 AI 工作流（貼另一個 AI 的輸出）
+  category: 三方 AI 協作
   usage: 把一邊 AI 的產出搬到另一邊時，加這句開頭
   prompt: |
     這是另一個 AI 的輸出，請依 dual-ai-workflow 接續下一階段：
@@ -224,7 +224,7 @@
   flow: dualai
   stage: handoff
 - title: 單一 AI 也能用控制台
-  category: 雙AI協作
+  category: 三方 AI 協作
   usage: 同事只用 Codex、Claude Code 或 Claude Desktop 時，讓它照控制台模板工作
   prompt: |
     我現在只使用一個 AI，但想用這套 Skill 助手控制台輔助工作。
@@ -238,7 +238,7 @@
   flow: solo
   stage: entry
 - title: 請 Claude Code（VS Code）審查（含系統背景模板）
-  category: 雙AI協作
+  category: 三方 AI 協作
   usage: 進階·需要附完整系統背景做嚴謹審查時
   prompt: |
     現在由 Claude Code（VS Code）負責審查，其他 AI 暫停動作。
@@ -293,7 +293,7 @@
   flow: common
   stage: ''
 - title: 查目前進度（讀 DUAL-AI-STATE.md）
-  category: 雙AI工作流
+  category: 三方 AI 工作流
   usage: 不知道現在做到哪一步時使用；AI 會讀取進度檔，不靠聊天記憶。
   flow: dualai
   stage: status
@@ -306,7 +306,7 @@
 
     不要依賴對話記憶；如果 DUAL-AI-STATE.md 內容不足或疑似亂碼，請明確說明「進度檔無法可靠判讀」，並列出你需要我補充的最少資訊。
 - title: 額度快滿自動存檔＋換手
-  category: 雙AI工作流
+  category: 三方 AI 工作流
   usage: 看到 session limit、90% used、token 快滿或快不能回覆時，先保進度再換 AI。
   flow: dualai
   stage: status

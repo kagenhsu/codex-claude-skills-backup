@@ -167,14 +167,14 @@ TEMPLATE = r'''<!DOCTYPE html>
 </style>
 </head>
 <body>
-<header><div class="head-inner"><h1>Skill 助手控制台 <span class="sub">Codex / Claude Code / Claude Desktop 導覽版</span></h1><div class="tabs"><button class="tab active" data-tab="backup">換電腦／同步</button><button class="tab" data-tab="skills">Skills</button><button class="tab" data-tab="prompts">提示詞庫</button><button class="tab" data-tab="workflow">三方 AI 工作流</button><button class="tab" data-tab="guide">AI 角色導覽</button><button class="tab" data-tab="sop">安檢 SOP</button></div></div></header>
-<main><div class="search"><span class="icon">搜</span><input id="searchBox" type="text" placeholder="搜尋 skill、提示詞、觸發句，例如：git、翻譯、審查、三 AI"></div><div id="pageIntro" class="page-intro"></div><div id="chips" class="chips"></div><div id="countLine" class="count"></div><div id="content"></div></main>
+<header><div class="head-inner"><h1>Skill 助手控制台 <span class="sub">Codex / Claude Code / Claude Desktop 導覽版</span></h1><div class="tabs"><button class="tab active" data-tab="guide">AI 角色導覽</button><button class="tab" data-tab="skills">Skills</button><button class="tab" data-tab="prompts">提示詞庫</button><button class="tab" data-tab="workflow">三方 AI 工作流</button><button class="tab" data-tab="sop">安檢 SOP</button><button class="tab" data-tab="backup">換電腦／同步</button></div></div></header>
+<main><div class="search"><span class="icon">搜</span><input id="searchBox" type="text" placeholder="搜尋 skill、提示詞、觸發句、角色、分工、導覽，例如：git、翻譯、審查、三 AI"></div><div id="pageIntro" class="page-intro"></div><div id="chips" class="chips"></div><div id="countLine" class="count"></div><div id="content"></div></main>
 <footer>資料來源：data/skills.yaml + data/prompts.yaml；修改後執行 python scripts/build.py 重建</footer>
 <script>
 const DATA = __DATA_JSON__;
 const WORKFLOW_HTML = __WORKFLOW_HTML__;
 const GUIDE_HTML = __GUIDE_HTML__;
-let tab = "backup", cat = "全部", q = "", flowMode = "dualai";
+let tab = "guide", cat = "全部", q = "", flowMode = "dualai";
 const FLOW_META = {
   dualai:{label:"三方 AI 協作",title:"三方 AI 工作流提示詞",lead:"適合重要系統修改：Codex 是主力工程師，負責規劃、分段實作、測試與修正；Claude Code（VS Code）是審查員，負責架構審查、風險檢查與複審；Claude Desktop 是顧問／文字助理，負責需求、文件與提示詞。"},
   solo:{label:"單一 AI 使用",title:"單一 AI 使用提示詞",lead:"同事只有單一 AI 時，也能用這些提示詞讓 AI 先釐清、再分段執行、最後提醒是否需要審查。"},

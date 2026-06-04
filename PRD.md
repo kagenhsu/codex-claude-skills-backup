@@ -4,7 +4,7 @@
 
 ## 1. 專案背景
 
-用戶在 Codex 與 Claude Code 兩個 AI CLI 中已安裝 44 個 skills（備份於本 repo），並持續從小紅書等來源發現新 skill 與好用提示詞。
+用戶在 Codex 與 Claude Code 兩個 AI CLI 中已安裝 45 個 skills（含 1 個自製 dual-ai-workflow，備份於本 repo），並持續從小紅書等來源發現新 skill 與好用提示詞。
 
 ## 2. 專案目標
 
@@ -21,7 +21,7 @@
 
 ## 4. 功能清單
 
-1. Skill 目錄：44 個 skill 的中文用途、適用情境、注意事項、1–3 句觸發句（一鍵複製）
+1. Skill 目錄：45 個 skill（含 1 個自製 dual-ai-workflow）的中文用途、適用情境、注意事項、1–3 句觸發句（一鍵複製）
 2. 提示詞庫：5 大分類約 15 張卡（專案啟動／開發過程／版本控制／整合串接／上線部署＋安全檢查），一鍵複製
 3. 全域搜尋：關鍵字即時過濾 skill 與提示詞
 4. 風險標示：每個 skill 標 低／中／高 風險（如 baoyu-danger-* 標高）
@@ -39,4 +39,4 @@
 - 雙擊 index.html 可開啟，搜尋「翻譯」能找到 baoyu-translate
 - 點任一複製按鈕，貼上內容正確
 - danger 系列 skill 顯示高風險紅色標示
-- 44 個 skill 與全部提示詞卡片皆有顯示
+- 45 個 skill（含 1 個自製 dual-ai-workflow）與全部提示詞卡片皆有顯示

@@ -3,12 +3,34 @@ set -euo pipefail
 
 REPO_RAW_BASE="${REPO_RAW_BASE:-https://raw.githubusercontent.com/kagenhsu/codex-claude-skills-backup/main}"
 ARCHIVE_NAME="codex-skills-backup.tar.gz"
+KEEP_TEMP=false
+
+for arg in "$@"; do
+  case "$arg" in
+    --keep-temp)
+      KEEP_TEMP=true
+      ;;
+    *)
+      echo "Usage: $0 [--keep-temp]" >&2
+      exit 1
+      ;;
+  esac
+done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOCAL_ARCHIVE="$SCRIPT_DIR/$ARCHIVE_NAME"
 TMP_DIR="$(mktemp -d)"
 EXTRACT_DIR="$TMP_DIR/extract"
 mkdir -p "$EXTRACT_DIR"
+
+cleanup() {
+  if [ "$KEEP_TEMP" = true ]; then
+    echo "Temporary files were left at: $TMP_DIR"
+  else
+    rm -rf "$TMP_DIR"
+  fi
+}
+trap cleanup EXIT
 
 echo "Codex / Claude skills installer"
 
@@ -64,4 +86,3 @@ install_skills "$HOME/.claude/skills"
 
 echo
 echo "Done. Restart Codex and Claude Code to load the installed skills."
-echo "Temporary files were left at: $TMP_DIR"
