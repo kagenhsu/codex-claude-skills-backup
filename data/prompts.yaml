@@ -499,3 +499,83 @@
     2. 新增的 DUAL-AI-STATE.md commit hash。
     3. 給使用者的 (a)/(b) 兩選一指引。
     4. 多裝置同步指令。
+- title: 首次上傳 GitHub：繁體中文專案敘述
+  category: 版本控制
+  usage: 第一次把專案上傳到 GitHub，或準備更新 repo 說明、README 摘要、commit / release 文字時使用。
+  flow: common
+  stage: ''
+  prompt: |-
+    請協助我準備這個專案首次上傳 GitHub 的繁體中文說明與存檔流程。
+
+    【基本原則】
+    - GitHub repo 名稱、description、README 摘要、commit message、release note 預設全部使用繁體中文。
+    - 除非網友或使用者明確要求多語言，第一版不要主動加入英文或其他語言版本。
+    - push 前請先詢問我「這個版本做了哪些動作」，或依 git diff / git log 自動整理一版繁體中文摘要讓我確認。
+
+    【請依序完成】
+    1. 讀取專案目前檔案與 git status。
+    2. 整理 repo description 建議（一句繁體中文）。
+    3. 整理 README 開頭摘要建議（小白看得懂）。
+    4. 整理本次 commit / release 摘要：新增、修改、驗證、未完成事項。
+    5. push 前提醒檢查敏感資料與不該公開的大檔。
+
+    【敏感資料檢查】
+    請特別檢查是否包含：
+    - API key、token、密碼、.env
+    - SSH key、憑證、私密設定檔
+    - 私人對話、個資、公司內部資訊
+    - 不該公開的壓縮包、備份包或大型二進位檔
+
+    【輸出】
+    請輸出：
+    1. 建議的 GitHub repo description（繁體中文）
+    2. README 摘要段落（繁體中文）
+    3. 本版本做了哪些動作（繁體中文條列）
+    4. push 前敏感資料檢查結果
+    5. 若安全，最後只提供 `git push origin main` 指令；不要替我自動 push。
+- title: 跨地點 / 跨系統接續
+  category: 三方 AI 協作
+  usage: 公司、家裡、Mac mini、Windows 電腦之間接續同一個專案時，用來安全存檔、pull、同步 skills 與交接狀態。
+  flow: dualai
+  stage: handoff
+  prompt: |-
+    請協助我做「跨地點 / 跨系統接續」存檔與交接，本輪不要自動 push，除非我明確確認。
+
+    【本機收尾流程】
+    1. 執行 `git status`，確認哪些檔案是本輪變更。
+    2. 更新 DUAL-AI-STATE.md：目前階段、已完成事項、下一步、未解決問題、最後更新時間。
+    3. 用繁體中文整理 commit message 與本版本做了哪些動作。
+    4. 逐檔 `git add`，不要使用 `git add .`。
+    5. 建立本地 commit。
+    6. 詢問我是否 push；push 前提醒檢查敏感資料與大檔案。
+
+    【另一端接續後回報】
+    另一台電腦完成 `git pull --ff-only` 後，請只用三行回報：
+    1. 目前 commit：`git log --oneline -1`
+    2. 工作目錄狀態：`git status --short`
+    3. 下一步：依 DUAL-AI-STATE.md 建議接續哪個任務
+
+    【macOS / Linux / Git Bash 指令】
+    ```bash
+    git pull --ff-only
+    git status --short
+    git log --oneline -1
+    mkdir -p ~/.codex/skills ~/.claude/skills
+    cp -R skills/dual-ai-workflow ~/.codex/skills/
+    cp -R skills/dual-ai-workflow ~/.claude/skills/
+    ```
+
+    【Windows PowerShell 指令】
+    ```powershell
+    git pull --ff-only
+    git status --short
+    git log --oneline -1
+    New-Item -ItemType Directory -Force "$HOME\.codex\skills", "$HOME\.claude\skills"
+    Copy-Item -Recurse -Force "skills\dual-ai-workflow" "$HOME\.codex\skills\"
+    Copy-Item -Recurse -Force "skills\dual-ai-workflow" "$HOME\.claude\skills\"
+    ```
+
+    【skills 路徑提醒】
+    - Windows：`$HOME\.codex\skills\`、`$HOME\.claude\skills\`
+    - macOS / Linux：`~/.codex/skills/`、`~/.claude/skills/`
+    - `skills/dual-ai-workflow/SKILL.md` 以 LF 行尾為標準；不要重新生成成 CRLF。
