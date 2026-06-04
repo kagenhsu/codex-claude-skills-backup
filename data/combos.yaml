@@ -1,0 +1,30 @@
+- title: 開新專案起手包
+  usage: 開始一個新專案時，快速建立規則、PRD 與繁中 GitHub 說明。
+  category: 專案啟動
+  steps:
+    - prompt_title: 從討論結果產出 AGENTS.md（設計方向確認後用）
+      custom_intro: 第一步，先把討論過的設計方向整理成專案規則文件。
+    - prompt_title: 梳理需求並產出 PRD
+      custom_intro: 第二步，把需求整理成可開發、可驗收的 PRD。
+    - prompt_title: 首次上傳 GitHub：繁體中文專案敘述
+      custom_intro: 第三步，整理繁體中文 repo 說明、版本摘要與 push 前檢查。
+- title: 三方審查修正包
+  usage: Codex 做完實作後，交給 Claude Code 審查，再回到 Codex 修正與收尾。
+  category: 三方 AI 協作
+  steps:
+    - prompt_title: ③ 第三階段：Claude Code（VS Code）審查
+      custom_intro: 先把 Codex 的實作交給 Claude Code 做 P0/P1/P2 審查。
+    - prompt_title: 給 Codex 的逐條修正轉交提示詞（模板）
+      custom_intro: 審查完後，把問題逐條搬回 Codex 修正。
+    - prompt_title: 給 Codex 的存檔收尾提示詞（模板）
+      custom_intro: 複審通過後，請 Codex 做最後驗證、狀態檔與本地 commit。
+- title: 跨地點接續包
+  usage: 公司、家裡、Mac mini、Windows 電腦之間接續同一個專案。
+  category: 三方 AI 協作
+  steps:
+    - prompt_title: 跨地點 / 跨系統接續
+      custom_intro: 下班、換電腦或不同系統接手前，先完成安全存檔與交接。
+    - prompt_title: 查目前進度（讀 DUAL-AI-STATE.md）
+      custom_intro: 另一台電腦接手後，先讀狀態檔確認目前到哪。
+    - prompt_title: 額度快滿自動存檔＋換手
+      custom_intro: 如果 AI 額度快滿，先保進度再換手，避免工作斷掉。
