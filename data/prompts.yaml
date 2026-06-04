@@ -127,14 +127,14 @@
     如果適合用 Docker，請一步一步教我怎麼操作。
   flow: common
   stage: ''
-- title: 啟動三AI工作流（skill 版，一句話）
+- title: 啟動三方 AI 工作流（skill 版，一句話）
   category: 三方 AI 協作
   usage: 入口·已安裝 dual-ai-workflow skill 後，開新任務只要貼這句
   prompt: |
-    使用 dual-ai-workflow 開始三AI工作流，任務是：【任務描述】
+    使用 dual-ai-workflow 開始三方 AI 工作流，任務是：【任務描述】
   flow: dualai
   stage: entry
-- title: 啟動三AI五階段工作流（手動版，一次貼上）
+- title: 啟動三方 AI 五階段工作流（手動版，一次貼上）
   category: 三方 AI 協作
   usage: 入口·沒安裝 skill 時，開任務前貼給主力 AI
   prompt: |
@@ -555,8 +555,8 @@
     2. 工作目錄狀態：`git status --short`
     3. 下一步：依 DUAL-AI-STATE.md 建議接續哪個任務
 
-    【macOS / Linux / Git Bash 指令】
-    若要同步全部 skills，請改用 `./restore-skills.sh`（macOS / Linux）；下面只覆蓋自製 `dual-ai-workflow`。
+    【macOS 指令】
+    若要同步全部 skills，請改用 `./restore-skills.sh`（macOS）；下面只覆蓋自製 `dual-ai-workflow`。
 
     ```bash
     git pull --ff-only
@@ -581,5 +581,5 @@
 
     【skills 路徑提醒】
     - Windows：`$HOME\.codex\skills\`、`$HOME\.claude\skills\`
-    - macOS / Linux：`~/.codex/skills/`、`~/.claude/skills/`
+    - macOS：`~/.codex/skills/`、`~/.claude/skills/`
     - `skills/dual-ai-workflow/SKILL.md` 以 LF 行尾為標準；不要重新生成成 CRLF。

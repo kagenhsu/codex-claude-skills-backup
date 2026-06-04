@@ -13,6 +13,35 @@ skills = yaml.safe_load((ROOT / "data" / "skills.yaml").read_text(encoding="utf-
 prompts = yaml.safe_load((ROOT / "data" / "prompts.yaml").read_text(encoding="utf-8")) or []
 combos = yaml.safe_load((ROOT / "data" / "combos.yaml").read_text(encoding="utf-8")) or []
 
+
+def validate_combos() -> None:
+    prompt_titles = [item.get("title") for item in prompts if item.get("title")]
+    prompt_title_set = set(prompt_titles)
+    duplicate_titles = sorted({title for title in prompt_titles if prompt_titles.count(title) > 1})
+    missing_refs: list[str] = []
+
+    for combo in combos:
+        combo_title = combo.get("title", "未命名組合包")
+        for step in combo.get("steps") or []:
+            prompt_title = step.get("prompt_title")
+            if not prompt_title:
+                missing_refs.append(f"{combo_title}: 有 step 缺少 prompt_title")
+            elif prompt_title not in prompt_title_set:
+                missing_refs.append(f"{combo_title}: 找不到 prompt_title「{prompt_title}」")
+
+    if duplicate_titles or missing_refs:
+        lines = ["combos 引用檢查失敗："]
+        if duplicate_titles:
+            lines.append("重複的 prompt title：")
+            lines.extend(f"- {title}" for title in duplicate_titles)
+        if missing_refs:
+            lines.append("缺少或錯誤的 combos 引用：")
+            lines.extend(f"- {item}" for item in missing_refs)
+        raise SystemExit("\n".join(lines))
+
+
+validate_combos()
+
 data_json = json.dumps({"skills": skills, "prompts": prompts, "combos": combos}, ensure_ascii=False).replace("</", "<\\/")
 
 
@@ -88,7 +117,7 @@ def markdown_to_cards(path: Path, fallback_title: str, fallback_text: str) -> st
 
 
 workflow_json = json.dumps(
-    markdown_to_cards(ROOT / "docs" / "dual-ai-workflow.md", "三 AI 工作流", "尚未設定。"),
+    markdown_to_cards(ROOT / "docs" / "dual-ai-workflow.md", "三方 AI 工作流", "尚未設定。"),
     ensure_ascii=False,
 ).replace("</", "<\\/")
 guide_json = json.dumps(
@@ -193,7 +222,7 @@ TEMPLATE = r'''<!DOCTYPE html>
 </style>
 </head>
 <body>
-<header><div class="head-inner"><h1>Skill 助手控制台 <span class="sub">Codex / Claude Code / Claude Desktop 導覽版</span></h1><div class="tabs"><button class="tab active" data-tab="guide">AI 角色導覽</button><button class="tab" data-tab="skills">Skills</button><button class="tab" data-tab="prompts">提示詞庫</button><button class="tab" data-tab="capture">收錄新內容</button><button class="tab" data-tab="control">三方中控</button><button class="tab" data-tab="workflow">三方 AI 工作流</button><button class="tab" data-tab="sop">安檢 SOP</button><button class="tab" data-tab="backup">換電腦／同步</button></div></div></header>
+<header><div class="head-inner"><h1>Skill 助手控制台 <span class="sub">Codex / Claude Code / Claude Desktop 導覽版</span></h1><div class="tabs"><button class="tab active" data-tab="guide">AI 角色導覽</button><button class="tab" data-tab="workflow">三方 AI 工作流</button><button class="tab" data-tab="control">三方中控</button><button class="tab" data-tab="prompts">提示詞庫</button><button class="tab" data-tab="skills">Skills</button><button class="tab" data-tab="capture">收錄新內容</button><button class="tab" data-tab="sop">安檢 SOP</button><button class="tab" data-tab="backup">換電腦／同步</button></div></div></header>
 <main><div class="search"><span class="icon">搜</span><input id="searchBox" type="text" placeholder="搜尋 skill、提示詞、觸發句、角色、分工、導覽，例如：git、翻譯、審查、三方 AI"></div><div id="pageIntro" class="page-intro"></div><div id="chips" class="chips"></div><div id="countLine" class="count"></div><div id="content"></div></main>
 <footer>資料來源：data/skills.yaml + data/prompts.yaml + data/combos.yaml；修改後執行 python3 scripts/build.py 重建</footer>
 <script>
@@ -210,7 +239,7 @@ const STAGE_META = {
   dualai:{entry:["入口","啟動或接續三方 AI 工作流"],"1":["第 1 階段：Codex","規劃、拆任務、建立狀態檔"],"2":["第 2 階段：Codex","分段實作、build、驗證"],"3":["第 3 階段：Claude Code（VS Code）","審查 diff、架構與風險"],"4":["第 4 階段：Codex","逐條修正、重新驗證"],"5":["第 5 階段：Claude Code（VS Code）","複審並確認可收尾"],handoff:["轉交","把目前狀態交給下一方"],status:["狀態檔","讀寫 DUAL-AI-STATE.md"],archive:["存檔收尾","第 5 階段通過後驗證、更新狀態檔與交還 push 決定權"],"desktop-summary":["主管版摘要","請 Claude Desktop 整理給人看的進度摘要"]},
   solo:{entry:["入口","只用一個 AI 時先用這張說明工作方式"],"1":["第 1 步","釐清任務與目標"],"2":["第 2 步","提出方案、先不修改"],"3":["第 3 步","分段執行並自我檢查"],"4":["第 4 步","收尾、整理驗證與 commit 建議"]}
 };
-const FLOW_ORDER = {dualai:["entry","1","2","3","4","5","handoff","status"],solo:["entry","1","2","3","4"]};
+const FLOW_ORDER = {dualai:["entry","1","2","3","4","5","handoff","status","archive","desktop-summary"],solo:["entry","1","2","3","4"]};
 const PAGE_INTROS = {
   backup:{title:"換電腦／同步",lead:"這頁只在換電腦、重裝工具，或要把已整理好的 skills 同步到另一台機器時使用。平常找功能請看 Skills；要複製工作指令請看提示詞庫。",purpose:"把這個專案保存的 skills 備份包，安裝到 Codex 或 Claude Code 可讀的位置。",first:"如果不是換電腦或重裝，通常不用按這頁的還原指令。",when:"換電腦、重裝工具、同步 Mac mini 或 VS Code Claude Code 時使用。"},
   skills:{title:"Skills",lead:"查看每個 skill 的用途、風險與觸發句，直接複製給 AI 使用。",purpose:"快速判斷要叫哪個 AI skill。",first:"搜尋關鍵字，再複製觸發句。",when:"不確定某個任務該用哪個 skill 時。"},
@@ -238,7 +267,7 @@ function workflowGuide(){if(flowMode==="dualai")return`<div class="workflow-guid
 function flowButtons(){return`<div class="flow-switch">${Object.entries(FLOW_META).map(([key,m])=>`<button class="flow-btn ${flowMode===key?"active":""}" data-flow="${key}">${m.label}</button>`).join("")}</div>`}
 function renderPromptFlow(){const meta=FLOW_META[flowMode];const visible=DATA.prompts.filter(p=>(p.flow||"common")===flowMode&&(cat==="全部"||p.category===cat)&&match(p,["title","usage","category","prompt","flow","stage"]));let html=`<div class="page-intro"><h2>${esc(meta.title)}</h2><div class="lead">${esc(meta.lead)}</div>${workflowGuide()}</div>${flowButtons()}`;if(cat==="全部"&&!q)html+=combosHtml();if(flowMode==="common"){const groups=[...new Set(visible.map(p=>p.category))];html+=groups.map(group=>{const items=visible.filter(p=>p.category===group);return`<section class="flow-section"><div class="section-head"><h2>${esc(group)}</h2><span class="hint">${items.length} 則</span></div><div class="grid">${items.map(promptCard).join("")}</div></section>`}).join("")}else{html+=FLOW_ORDER[flowMode].map(stage=>{const items=visible.filter(p=>String(p.stage||"")===stage);if(!items.length)return"";const[label,hint]=STAGE_META[flowMode][stage]||[stage,""];return`<section class="flow-section" data-stage="${esc(stage)}"><div class="section-head"><h2>${esc(label)}</h2><span class="hint">${esc(hint)}，${items.length} 則</span></div><div class="grid">${items.map(promptCard).join("")}</div></section>`}).join("")}return html||`<div class="empty">找不到符合條件的提示詞。</div>`}
 function cmdRow(label,cmd){return`<div class="trigger"><div style="flex:1"><div class="usage">${esc(label)}</div><code>${esc(cmd)}</code></div><button class="copy-btn" data-copy="${encodeURIComponent(cmd)}">複製</button></div>`}
-function backupHtml(){return`<div class="sop"><div class="card"><h2>這頁是做什麼</h2><div class="summary">簡單說：這頁不是日常功能頁，而是「搬家工具」。當你換電腦、重裝 Codex / Claude Code，或要把同一套 skills 放到另一台機器時才用。</div><ul><li><b>codex-skills-backup.tar.gz</b>：已整理好的 skills 備份包</li><li><b>restore-skills.sh</b>：把備份包安裝到 Codex / Claude Code 的 skills 目錄</li><li><b>平常找功能</b>：請切到 Skills 或提示詞庫，不用執行這裡的指令</li></ul></div><div class="card"><h2>同步到新環境的指令</h2>${cmdRow("只有換電腦／重裝時才執行","./restore-skills.sh")}</div></div>`}
+function backupHtml(){return`<div class="sop"><div class="card"><h2>這頁是做什麼</h2><div class="summary">簡單說：這頁不是日常功能頁，而是「搬家工具」。當你換電腦、重裝 Codex / Claude Code，或要把同一套 skills 放到另一台支援的電腦時才用。</div><ul><li><b>codex-skills-backup.tar.gz</b>：已整理好的 skills 備份包</li><li><b>install.ps1</b>：Windows 安裝 skills、放置本機控制台，並建立桌面捷徑</li><li><b>install.sh / restore-skills.sh</b>：macOS 安裝或離線還原 skills</li><li><b>平常開控制台</b>：請直接用桌面的「Skill 助手控制台」捷徑</li></ul></div><div class="card"><h2>macOS 離線同步指令</h2>${cmdRow("只有 macOS 換電腦／重裝時才執行","./restore-skills.sh")}</div></div>`}
 const CONTROL_STAGES=[
   {stage:"1",role:"Codex",purpose:"規劃與拆任務",plain:"先把需求變成可做的清單，避免一開始就亂改檔。"},
   {stage:"2",role:"Codex",purpose:"分段實作與驗證",plain:"一段一段做，每段 build、檢查、commit。"},
@@ -248,14 +277,18 @@ const CONTROL_STAGES=[
   {stage:"archive",role:"Codex",purpose:"存檔收尾",plain:"複審通過後做最後驗證、更新狀態檔、commit，push 決定權交回使用者。",query:"存檔收尾",fallback:"請依 dual-ai-workflow 第 5 階段通過後的收尾流程，重新驗證、更新 DUAL-AI-STATE.md、建立本地 commit，並把是否 push origin/main 的決定權交回使用者。"},
   {stage:"desktop-summary",role:"Claude Desktop",purpose:"主管版摘要",plain:"把目前進度整理成非工程同事也看得懂的摘要。",query:"Claude Desktop 主管 摘要",fallback:"請整理這個專案目前進度的主管版摘要：用繁體中文列出已完成、正在做、下一步、風險與需要使用者決定的事項。"}
 ];
-function controlPrompt(item){if(item.stage==="archive"){const p=DATA.prompts.find(p=>String(p.stage||"")==="archive"||p.title.includes("存檔收尾"));if(p)return p.prompt}if(item.stage==="desktop-summary"){const p=DATA.prompts.find(p=>String(p.stage||"")==="desktop-summary"||p.title.includes("主管版"));if(p)return p.prompt}const found=DATA.prompts.find(p=>(p.flow||"common")==="dualai"&&String(p.stage||"")===item.stage);return found?found.prompt:item.fallback}
+function controlPromptInfo(item){let found=null;if(item.stage==="archive")found=DATA.prompts.find(p=>String(p.stage||"")==="archive"||p.title.includes("存檔收尾"));else if(item.stage==="desktop-summary")found=DATA.prompts.find(p=>String(p.stage||"")==="desktop-summary"||p.title.includes("主管版"));else found=DATA.prompts.find(p=>(p.flow||"common")==="dualai"&&String(p.stage||"")===item.stage);return{prompt:found?found.prompt:item.fallback,targetStage:found?String(found.stage||item.stage):item.stage,found:!!found}}
 function stateDraft(){return localStorage.getItem("workflow-state-draft")||""}
-function sectionAfter(text,label){const escaped=label.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");const match=text.match(new RegExp(`${escaped}：?\\s*([\\s\\S]*?)(?=\\n[^\\n：]{2,20}：|$)`));return match?match[1].trim():""}
-function parseWorkflowState(text){if(!text.trim())return{ok:false,message:"無法解析，請確認貼上的是 DUAL-AI-STATE.md 全文。"};const current=(text.match(/目前階段：?\s*(.*)/)||[])[1]?.trim()||"";const next=sectionAfter(text,"下一步");const unresolved=sectionAfter(text,"未解決問題");const updated=(text.match(/最後更新時間：?\s*(.*)/)||[])[1]?.trim()||"";const done=sectionAfter(text,"已完成事項").split(/\n/).map(s=>s.trim()).filter(Boolean).slice(-3).join("\n");const stageMatch=current.match(/第\s*([1-5])\s*階段/);const stage=current.includes("已完成")?"5":(stageMatch?stageMatch[1]:"");const ok=!!(current||next||unresolved||updated||done);return{ok,current:current||"尚未判斷",done:done||"尚未解析",next:next||"尚未解析",unresolved:unresolved||"無",updated:updated||"尚未解析",stage,message:ok?"":"無法解析，請確認貼上的是 DUAL-AI-STATE.md 全文。"}}
-function stateBoardHtml(){const draft=stateDraft();const parsed=parseWorkflowState(draft);return`<div class="card state-board"><h2>DUAL-AI-STATE 快速看板</h2><div class="summary">把狀態檔全文貼在這裡，控制台只在瀏覽器本機解析與暫存，不上傳、不寫回檔案。</div><textarea id="workflowStateInput" placeholder="貼上 DUAL-AI-STATE.md 全文">${esc(draft)}</textarea>${parsed.ok?`<div class="state-summary"><div class="state-item"><div class="state-label">目前階段</div><div class="state-value">${esc(parsed.current)}</div></div><div class="state-item"><div class="state-label">最後更新時間</div><div class="state-value">${esc(parsed.updated)}</div></div><div class="state-item full"><div class="state-label">上一步做了什麼</div><div class="state-value">${esc(parsed.done)}</div></div><div class="state-item full"><div class="state-label">下一步</div><div class="state-value">${esc(parsed.next)}</div></div><div class="state-item full"><div class="state-label">未解決問題</div><div class="state-value">${esc(parsed.unresolved)}</div></div></div>`:`<div class="warning">${esc(parsed.message)}</div>`}</div>`}
-function controlHtml(){const parsed=parseWorkflowState(stateDraft());return`${stateBoardHtml()}<div class="grid">${CONTROL_STAGES.map(item=>{const meta=STAGE_META.dualai[item.stage]||[item.stage,item.purpose];const prompt=controlPrompt(item)||`請進入 dual-ai-workflow ${meta[0]}，依目前專案實際狀態接續。`;const active=parsed.stage&&item.stage===parsed.stage?" state-stage-active":"";return`<div class="card${active}"><h3>${esc(meta[0])} <span class="cat-tag">${esc(item.role)}</span></h3><div class="usage">${esc(item.purpose)}</div><div class="summary">${esc(item.plain)}</div><div class="usage">prompt 已複製到剪貼簿，提示詞庫已切到三方 AI 協作，請對照階段瀏覽。</div><button class="copy-btn" data-control-stage="${esc(item.stage)}" data-control-copy="${encodeURIComponent(prompt)}">跳到提示詞庫並複製 prompt</button></div>`}).join("")}</div>`}
+const STATE_SECTIONS=["任務名稱","目前階段","已完成事項","下一步","未解決問題","最後更新時間"];
+function sectionAfter(text,label){const escaped=label.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");const lookahead=STATE_SECTIONS.filter(item=>item!==label).map(item=>item.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|");const match=text.match(new RegExp(`(?:^|\\n)${escaped}：?\\s*([\\s\\S]*?)(?=\\n(?:${lookahead})：?|$)`));return match?match[1].trim():""}
+function parseStageNumber(value){const map={一:"1",二:"2",三:"3",四:"4",五:"5"};return map[value]||value||""}
+function parseWorkflowState(text){if(!text.trim())return{ok:false,message:"無法解析，請確認貼上的是 DUAL-AI-STATE.md 全文。"};const current=(text.match(/目前階段：?\s*(.*)/)||[])[1]?.trim()||"";const next=sectionAfter(text,"下一步");const unresolved=sectionAfter(text,"未解決問題");const updated=(text.match(/最後更新時間：?\s*(.*)/)||[])[1]?.trim()||"";const done=sectionAfter(text,"已完成事項").split(/\n/).map(s=>s.trim()).filter(Boolean).slice(-3).join("\n");const stageMatch=current.match(/第\s*([1-5一二三四五])\s*階段/);const stage=current.includes("已完成")?"5":parseStageNumber(stageMatch?stageMatch[1]:"");const ok=!!(current||next||unresolved||updated||done);return{ok,current:current||"尚未判斷",done:done||"尚未解析",next:next||"尚未解析",unresolved:unresolved||"無",updated:updated||"尚未解析",stage,message:ok?"":"無法解析，請確認貼上的是 DUAL-AI-STATE.md 全文。"}}
+function stateSummaryHtml(parsed){return parsed.ok?`<div class="state-summary"><div class="state-item"><div class="state-label">目前階段</div><div class="state-value">${esc(parsed.current)}</div></div><div class="state-item"><div class="state-label">最後更新時間</div><div class="state-value">${esc(parsed.updated)}</div></div><div class="state-item full"><div class="state-label">上一步做了什麼</div><div class="state-value">${esc(parsed.done)}</div></div><div class="state-item full"><div class="state-label">下一步</div><div class="state-value">${esc(parsed.next)}</div></div><div class="state-item full"><div class="state-label">未解決問題</div><div class="state-value">${esc(parsed.unresolved)}</div></div></div>`:`<div class="warning">${esc(parsed.message)}</div>`}
+function stateBoardHtml(){const draft=stateDraft();const parsed=parseWorkflowState(draft);return`<div class="card state-board"><h2>DUAL-AI-STATE 快速看板</h2><div class="summary">把狀態檔全文貼在這裡，控制台只在瀏覽器本機解析與暫存，不上傳、不寫回檔案。</div><textarea id="workflowStateInput" placeholder="貼上 DUAL-AI-STATE.md 全文">${esc(draft)}</textarea><div id="workflowStateResult">${stateSummaryHtml(parsed)}</div></div>`}
+function updateControlActive(stage){document.querySelectorAll("[data-control-card-stage]").forEach(card=>card.classList.toggle("state-stage-active",!!stage&&card.dataset.controlCardStage===stage))}
+function controlHtml(){const parsed=parseWorkflowState(stateDraft());return`${stateBoardHtml()}<div class="grid">${CONTROL_STAGES.map(item=>{const meta=STAGE_META.dualai[item.stage]||[item.stage,item.purpose];const info=controlPromptInfo(item);const prompt=info.prompt||`請進入 dual-ai-workflow ${meta[0]}，依目前專案實際狀態接續。`;const active=parsed.stage&&item.stage===parsed.stage?" state-stage-active":"";return`<div class="card${active}" data-control-card-stage="${esc(item.stage)}"><h3>${esc(meta[0])} <span class="cat-tag">${esc(item.role)}</span></h3><div class="usage">${esc(item.purpose)}</div><div class="summary">${esc(item.plain)}</div><div class="usage">prompt 已複製到剪貼簿，提示詞庫已切到三方 AI 協作，請對照階段瀏覽。</div><button class="copy-btn" data-control-stage="${esc(info.targetStage)}" data-control-copy="${encodeURIComponent(prompt)}">跳到提示詞庫並複製 prompt</button></div>`}).join("")}</div>`}
 function bindControl(){document.querySelectorAll("[data-control-stage]").forEach(btn=>btn.onclick=()=>{copyText(decodeURIComponent(btn.dataset.controlCopy),btn);const targetStage=btn.dataset.controlStage;setTimeout(()=>{flowMode="dualai";q="";document.getElementById("searchBox").value="";setTab("prompts");setTimeout(()=>{document.querySelector(`[data-stage="${targetStage}"]`)?.scrollIntoView({behavior:"smooth",block:"start"})},80)},260)})}
-function bindStateBoard(){const input=document.getElementById("workflowStateInput");if(input)input.oninput=()=>{localStorage.setItem("workflow-state-draft",input.value);render()}}
+function bindStateBoard(){const input=document.getElementById("workflowStateInput");const result=document.getElementById("workflowStateResult");if(input&&result)input.oninput=()=>{localStorage.setItem("workflow-state-draft",input.value);const parsed=parseWorkflowState(input.value);result.innerHTML=stateSummaryHtml(parsed);updateControlActive(parsed.stage)}}
 const PROMPT_CATEGORIES=["專案啟動","開發過程","版本控制","整合串接","上線部署","三方 AI 協作","Skill 管理","安全檢查","三方 AI 工作流","單AI精簡","其他"];
 function storageKey(){return captureMode==="skill"?"capture-draft-skill":"capture-draft-prompt"}
 function readDraft(){try{return JSON.parse(localStorage.getItem(storageKey())||"{}")}catch{return{}}}

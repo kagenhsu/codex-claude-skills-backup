@@ -289,6 +289,6 @@
     skills），並用 DUAL-AI-STATE.md 記錄進度
   triggers:
   - 使用 dual-ai-workflow 開始三方 AI 工作流（舊稱雙AI），任務是：【任務描述】
-  - 使用 dual-ai-workflow 開始三AI工作流，任務是：【任務描述】
+  - 使用 dual-ai-workflow 開始三方 AI 工作流，任務是：【任務描述】
   - 這是另一個 AI 的輸出，依 dual-ai-workflow 接續下一階段
   notes: 本專案自製；Codex 與 Claude Code 需同步到 ~/.codex/skills、~/.claude/skills 或各環境實際 skill 路徑；Claude Desktop 不安裝第三方 skills，請用提示詞庫手動套用
