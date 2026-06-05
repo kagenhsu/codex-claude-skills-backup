@@ -1,11 +1,11 @@
 # NEXT-AI-TASK
 
-任務名稱：v1.7 收尾完成 + v1.8 規劃啟動
-目前階段：✅ v1.7 收尾完成，v1.8 僅完成規劃文件；本機 workflow skill 已同步
+任務名稱：v1.8 B1 — 啟動前狀態清理
+目前階段：✅ v1.8 B1 清理完成，待使用者決定是否 push 或進入 MVP B
 上一棒 AI：Codex
-下一棒 AI：使用者決定是否啟動 v1.8
-交棒目的：v1.7 已完成本地收尾；v1.8 只建立規劃文件；本機 dual-ai-workflow skill 已同步到 Codex / Claude 安裝版，等待使用者確認是否進入實作或 push。
-最後更新：2026-06-05 Codex 補記本機 dual-ai-workflow skill 同步驗證完成
+下一棒 AI：使用者決定是否 push B1，或交給 Codex 繼續 MVP B
+交棒目的：v1.8 B1 已完成啟動前清理，等待使用者決定是否 push；若繼續實作，下一步先做 MVP B「開發進度」tab。
+最後更新：2026-06-06 Codex v1.8 B1 清理完成
 必讀檔案：
 - AGENTS.md
 - DUAL-AI-STATE.md
@@ -17,6 +17,10 @@
 - scripts/build.py
 - index.html
 已完成：
+- v1.8 B1 已清理 `docs/v1-2-backlog.md` P2 #5，補上 ✅ 並標記為 v1.1 已修、backlog 誤留。
+- v1.8 B1 已將 `data/prompts.yaml` schema 限制歸到 v1.8 啟動注意事項，不再混在 v1.7 收尾驗證段。
+- 已確認 v1.7 兩個 commit 已 push 至 `origin/main`：`3a99992`、`9ab61fe`。
+- 已確認 workflow 小步規則 commit 已 push 至 `origin/main`：`56d13a0`。
 - 已修正本機 skill 同步問題：repo 版、備份包內版本、Codex 安裝版、Claude 安裝版四份 `dual-ai-workflow/SKILL.md` MD5 已一致，皆為 `b7bcf4df2168451ba6486d72723c9c45`。
 - 已確認本機 Codex / Claude 安裝版現在包含「主動交棒規則」與「上下文壓縮觸發規則」。
 - v1.7 收尾已補齊 `docs/v1-2-backlog.md` 的 P2 #2、#3、#6 ✅ 標記。
@@ -41,15 +45,18 @@
 - repo、tar.gz、Codex 安裝版、Claude 安裝版四份 `SKILL.md` MD5 皆為 `b7bcf4df2168451ba6486d72723c9c45`。
 - 已補上 `NEXT-AI-TASK.md` 的最後更新欄位。
 下一棒要做：
-- 使用者決定是否啟動 v1.8；若啟動，先讀 `docs/v1-8-plan.md`，確認「我要做什麼」與「開發進度」兩個 MVP 的實作順序。
-- 使用者決定是否 push 目前本地 commit；不要自動 push origin/main。
+- 使用者決定是否 push v1.8 B1 清理 commit；不要自動 push origin/main。
+- 若繼續 v1.8 實作，先讀 `docs/v1-8-plan.md`，從 MVP B「開發進度」tab 開始。
 驗證要求：
 - `python3 scripts/build.py` 應成功。
 - 四份 `dual-ai-workflow/SKILL.md` MD5 應一致：repo、備份包、`~/.codex`、`~/.claude`。
 - README 與 CHANGELOG 中關於 `.command` 的描述應一致。
-- v1.8 本輪只新增 `docs/v1-8-plan.md`，不應修改 `data/prompts.yaml` 既有 schema，也不應提前寫 v1.8 功能程式碼。
+- `git status --short --branch` 應顯示 B1 commit 是否 ahead origin/main。
+v1.8 啟動注意事項：
+- 不應修改 `data/prompts.yaml` 既有 schema；新增提示詞請走「收錄新內容」流程。
+- MVP B inline `DUAL-AI-STATE.md` / `NEXT-AI-TASK.md` 時，沿用既有 markdown rendering，不 fork 第二份解析邏輯。
 回報格式：
-- 回報 v1.7 commit hash、build 結果、目前 `git status --short`，並提醒不要自動 push。
+- 回報 B1 commit hash、build 結果、目前 `git status --short --branch`，並提醒不要自動 push。
 注意事項：
 - 不要依賴對話記憶，請以 DUAL-AI-STATE.md、NEXT-AI-TASK.md 和目前 git diff 為準。
 - 不要自動 push，除非使用者明確要求。

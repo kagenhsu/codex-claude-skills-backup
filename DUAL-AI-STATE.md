@@ -1,10 +1,14 @@
 # DUAL-AI-STATE
 
-任務名稱：v1.7 — 三方中控與狀態解析收尾
+任務名稱：v1.8 B1 — 啟動前狀態清理
 
-目前階段：✅ v1.7 收尾完成，v1.8 規劃文件已建立
+目前階段：✅ v1.8 B1 清理完成，待使用者決定是否 push 或進入 MVP B
 
 已完成事項：
+- v1.8 B1 已清理 `docs/v1-2-backlog.md` P2 #5，補上 ✅ 並標記為 v1.1 已修、backlog 誤留。
+- v1.8 B1 已校正 `NEXT-AI-TASK.md`：將 `data/prompts.yaml` schema 限制歸到 v1.8 啟動注意事項，不再混在 v1.7 收尾驗證段。
+- 已確認 v1.7 兩個 commit 已 push 至 `origin/main`：`3a99992`、`9ab61fe`。
+- 已確認 workflow 小步規則 commit 已 push 至 `origin/main`：`56d13a0`。
 - 已修正本機 skill 同步問題：repo 版、備份包內版本、Codex 安裝版、Claude 安裝版四份 `dual-ai-workflow/SKILL.md` MD5 已一致，皆為 `b7bcf4df2168451ba6486d72723c9c45`。
 - 已確認本機 Codex / Claude 安裝版現在包含「主動交棒規則」與「上下文壓縮觸發規則」。
 - v1.7 收尾已補齊 `docs/v1-2-backlog.md` 的 P2 #2、#3、#6 ✅ 標記。
@@ -76,8 +80,8 @@
 - v1.5 Claude Code（VS Code）P1 修正後複審通過，無 P0/P1，允許 commit。
 
 下一步：
-- 等待使用者決定是否啟動 v1.8；若啟動，先依 `docs/v1-8-plan.md` 確認 MVP 範圍，再開始實作。
-- 若要同步 GitHub，需由使用者明確決定是否 push；不要自動 push。
+- 等待使用者決定是否 push v1.8 B1 清理 commit。
+- 若繼續 v1.8 實作，下一步依 `docs/v1-8-plan.md` 先做 MVP B「開發進度」tab。
 
 未解決問題：
 - v1.2 backlog（已清除項目以 ✅ 標記）：
@@ -88,4 +92,4 @@
   - ✅ P2 #5 placeholder「三 AI」改「三方 AI」（v1.1 已修，backlog 條目為誤留）
   - ✅ P2 #6 build.py 加 combos 引用 build-time 檢查（v1.2 commit 90c6d5b 已修）
 
-最後更新時間：2026-06-05 Codex 補記本機 dual-ai-workflow skill 同步驗證完成
+最後更新時間：2026-06-06 Codex v1.8 B1 清理完成，待使用者決定是否 push
