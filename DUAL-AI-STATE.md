@@ -1,10 +1,23 @@
 # DUAL-AI-STATE
 
-任務名稱：AI 工作流控制台 v1.5 上下文壓縮觸發規則
+任務名稱：v1.6 — NEXT-AI-TASK 自動交棒檔與提示詞卡
 
-目前階段：✅ v1.5 Claude Code（VS Code）複審通過，待 git commit
+目前階段：v1.6 第 4 階段 Codex 修正完成，等待 Claude Code（VS Code）複審
 
 已完成事項：
+- v1.6 第 4 階段已處理 Claude Code（VS Code）審查：P0=0、P1=1、P2=2。
+- P1 已成立並修正：已執行 `scripts/update_backup_skill.py` 更新 `codex-skills-backup.tar.gz`，輸出 `replaced=True`，新版 `SKILL.md` MD5 為 `b7bcf4df2168451ba6486d72723c9c45`。
+- P1 本機同步已完成：已覆蓋 `~/.codex/skills/dual-ai-workflow/SKILL.md` 與 `~/.claude/skills/dual-ai-workflow/SKILL.md`。
+- P1 驗證完成：repo、tar.gz、Codex 安裝版、Claude 安裝版四份 `SKILL.md` MD5 皆為 `b7bcf4df2168451ba6486d72723c9c45`。
+- P2 已處理：`NEXT-AI-TASK.md` 已補上「最後更新：2026-06-05 Codex v1.6 實作完成」。
+- v1.6 第 4 階段 build 驗證完成：使用 Codex 內建 Python runtime 執行 `scripts/build.py`，輸出 45 skills / 40 prompts / 3 combos。
+- v1.6 第 4 階段搜尋驗證完成：`index.html` 內可搜尋到 `NEXT-AI-TASK`。
+- v1.6 已新增專案根目錄 `NEXT-AI-TASK.md`，作為固定半自動 AI 交棒檔。
+- v1.6 已在 `skills/dual-ai-workflow/SKILL.md` 新增「主動交棒規則」，要求階段完成後主動輸出交接提示詞，並在存在 `NEXT-AI-TASK.md` 時同步更新。
+- v1.6 已在 `data/prompts.yaml` 新增提示詞卡「讀取 NEXT-AI-TASK.md 並接續」，分類為三方 AI 協作，`flow: dualai`、`stage: handoff`。
+- v1.6 未修改 `scripts/build.py`；原因是既有 `handoff` stage metadata 已可顯示 handoff 提示詞卡。
+- v1.6 已使用 Codex 內建 Python runtime 執行 `scripts/build.py`，重建結果為 45 skills / 40 prompts / 3 combos。
+- v1.6 已更新 `NEXT-AI-TASK.md`，下一棒指定為 Claude Code（VS Code）審查。
 - 已讀取並依據本檔實際狀態接續，不沿用舊 MD5 聲明。
 - P1-1 已成立並修正：`index.html` 預設頁籤改為「AI 角色導覽」，`backup` 頁籤移到最後；`scripts/build.py` 模板同步改為 `let tab = "guide"`。
 - P1-2 已成立並修正：`skills/dual-ai-workflow/SKILL.md`、備份包內版本、`~/.codex` 安裝版、`~/.claude` 安裝版已統一為 LF 行尾。
@@ -48,7 +61,7 @@
 - v1.5 Claude Code（VS Code）P1 修正後複審通過，無 P0/P1，允許 commit。
 
 下一步：
-- 建立 git commit；完成後由使用者決定是否 push 到 origin/main。
+- 交給 Claude Code（VS Code）複審本輪 P1/P2 修正，確認無 P0/P1 後再回交 Codex 存檔或依新意見修正。
 
 未解決問題：
 - v1.2 backlog（已清除項目以 ✅ 標記）：
@@ -59,4 +72,4 @@
   - ✅ P2 #5 placeholder「三 AI」改「三方 AI」（v1.1 已修，backlog 條目為誤留）
   - ✅ P2 #6 build.py 加 combos 引用 build-time 檢查（v1.2 commit 90c6d5b 已修）
 
-最後更新時間：2026-06-05 Claude Code（VS Code）v1.5 複審通過，待 git commit
+最後更新時間：2026-06-05 Codex v1.6 第 4 階段修正完成，待 Claude Code（VS Code）複審

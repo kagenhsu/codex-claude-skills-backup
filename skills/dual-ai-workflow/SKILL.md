@@ -31,6 +31,22 @@ description: Three-tool AI engineering loop. Codex is the lead engineer for plan
 
 任務閉環完成時，不刪除 `DUAL-AI-STATE.md`，只把目前階段標記為「✅ 已完成」。
 
+## 主動交棒規則
+
+每個階段完成後，必須主動輸出給下一棒 AI 的交接提示詞，不能只寫「完成」或只依賴目前對話。
+
+如果專案根目錄存在 `NEXT-AI-TASK.md`，必須同步更新這份固定交棒檔，讓下一棒 AI 不用翻聊天紀錄也能接續。
+
+`NEXT-AI-TASK.md` 至少要寫清楚：
+
+- 下一棒 AI 是誰
+- 下一棒要做什麼
+- 必讀檔案
+- 驗證要求
+- 回報格式
+
+如果因權限、環境或其他原因無法更新 `NEXT-AI-TASK.md`，至少要在回應中完整輸出 `NEXT-AI-TASK.md` 內容，讓使用者可以手動貼入。
+
 ## 五階段工作流
 
 ### 第一階段：Codex 規劃

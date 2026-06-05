@@ -237,6 +237,26 @@
     【貼上對方 AI 的輸出】
   flow: dualai
   stage: handoff
+- title: "讀取 NEXT-AI-TASK.md 並接續"
+  category: 三方 AI 協作
+  usage: 讓下一棒 AI 讀取固定交棒檔並接續任務
+  flow: dualai
+  stage: handoff
+  tags: [交棒, 接續, NEXT-AI-TASK]
+  prompt: |
+    請讀取專案根目錄的 NEXT-AI-TASK.md 與 DUAL-AI-STATE.md。
+    請不要依賴對話記憶，以檔案內容與目前 git 狀態為準接續任務。
+
+    請先回報：
+    1. 目前任務是什麼
+    2. 下一棒 AI 是誰
+    3. 你現在要做什麼
+    4. 需要讀取哪些檔案
+    5. 是否有不清楚或高風險事項
+
+    如果你是 Claude Code（VS Code），請依 NEXT-AI-TASK.md 做 P0/P1/P2 審查。
+    如果你是 Codex，請依 NEXT-AI-TASK.md 做修正、驗證或存檔。
+    未經使用者明確要求，不要 push。
 - title: 單一 AI 也能用控制台
   category: 三方 AI 協作
   usage: 同事只用 Codex、Claude Code 或 Claude Desktop 時，讓它照控制台模板工作
