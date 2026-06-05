@@ -1,10 +1,22 @@
 # DUAL-AI-STATE
 
-任務名稱：v1.6 — NEXT-AI-TASK 自動交棒檔與提示詞卡
+任務名稱：v1.7 — 三方中控與狀態解析收尾
 
-目前階段：✅ 已完成（dual-ai-workflow 第 5 階段複審通過）
+目前階段：✅ v1.7 收尾完成，v1.8 規劃文件已建立
 
 已完成事項：
+- v1.7 收尾已補齊 `docs/v1-2-backlog.md` 的 P2 #2、#3、#6 ✅ 標記。
+- v1.7 收尾已在 `README.md` 補上 macOS quarantine 提醒，說明第一次雙擊 `.command` 被擋時可右鍵打開或執行 `xattr -d com.apple.quarantine 更新並開啟控制台.command`。
+- v1.7 收尾已更新 `CHANGELOG.md`，記錄 backlog 標記補齊與 README quarantine 提醒。
+- v1.8 規劃文件已新增 `docs/v1-8-plan.md`，只做規劃，不提前實作功能程式碼。
+- v1.7 已接續開發，目標是清除 v1.2 backlog 剩餘兩項 P2。
+- v1.7 已將三方中控按鈕改為優先定位到實際提示詞卡，若找不到才退回階段 section。
+- v1.7 已將 `sectionAfter` 改為使用固定欄位白名單 `STATE_SECTION_PATTERN`。
+- v1.7 已新增 macOS 中文入口 `更新並開啟控制台.command`，讓使用者不用記 `python3 scripts/build.py`。
+- v1.7 已更新 `docs/v1-2-backlog.md`，將 P2 #1 與 P2 #4 標記為已修。
+- v1.7 已更新 `README.md`、`CHANGELOG.md` 與 `NEXT-AI-TASK.md`。
+- v1.7 已執行 `python3 scripts/build.py`，重建結果為 45 skills / 40 prompts / 3 combos。
+- v1.7 目前工作區包含 7 個已修改檔與 1 個新增檔，皆屬本輪修改範圍。
 - 第 5 階段 Claude Code（VS Code）複審通過，無 P0/P1/P2 殘留，commit 6278e23 為 v1.6 最終存檔。
 - v1.6 第 4 階段已處理 Claude Code（VS Code）審查：P0=0、P1=1、P2=2。
 - P1 已成立並修正：已執行 `scripts/update_backup_skill.py` 更新 `codex-skills-backup.tar.gz`，輸出 `replaced=True`，新版 `SKILL.md` MD5 為 `b7bcf4df2168451ba6486d72723c9c45`。
@@ -62,15 +74,15 @@
 - v1.5 Claude Code（VS Code）P1 修正後複審通過，無 P0/P1，允許 commit。
 
 下一步：
-- 等待使用者決定是否 push 到 origin/main；多裝置同步請以本機標準版覆蓋。
+- 等待使用者決定是否啟動 v1.8；若啟動，先依 `docs/v1-8-plan.md` 確認 MVP 範圍，再開始實作。
 
 未解決問題：
 - v1.2 backlog（已清除項目以 ✅ 標記）：
-  - P2 #1 sectionAfter lookahead 改用固定 section 名稱白名單（未解決）
+  - ✅ P2 #1 sectionAfter lookahead 改用固定 section 名稱白名單（v1.7 已修）
   - ✅ P2 #2 state board textarea 拆 oninput 路徑（v1.2 commit 90c6d5b 已修）
   - ✅ P2 #3 目前階段正則加入中文數字（v1.2 commit 90c6d5b 已修）
-  - P2 #4 v1 沿用未修：control 按鈕 search query 對不到 prompts（未解決）
+  - ✅ P2 #4 v1 沿用未修：control 按鈕 search query 對不到 prompts（v1.7 已修）
   - ✅ P2 #5 placeholder「三 AI」改「三方 AI」（v1.1 已修，backlog 條目為誤留）
   - ✅ P2 #6 build.py 加 combos 引用 build-time 檢查（v1.2 commit 90c6d5b 已修）
 
-最後更新時間：2026-06-05 Codex v1.6 第 5 階段收尾完成，待使用者決定是否 push
+最後更新時間：2026-06-05 Codex v1.7 收尾完成，v1.8 規劃啟動

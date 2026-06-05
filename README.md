@@ -58,7 +58,17 @@ bash install.sh
 
 ## 本機控制台
 
-安裝後或下載 repo 後，可以直接雙擊：
+安裝後或下載 repo 後，建議直接雙擊：
+
+```text
+更新並開啟控制台.command
+```
+
+這個檔案會先更新網頁，再自動打開控制台。也就是幫你執行原本比較難記的 `python3 scripts/build.py`，然後開啟 `index.html`。
+
+若第一次雙擊出現「來自無法識別的開發者」或「已損毀」，請在 Finder 對檔案按右鍵→打開；或在 Terminal 執行 `xattr -d com.apple.quarantine 更新並開啟控制台.command`。
+
+如果只是想直接看目前已產生好的網頁，也可以雙擊：
 
 ```text
 index.html
@@ -75,6 +85,7 @@ index.html
 - `install.ps1` - Windows 一行安裝腳本。
 - `install.sh` - macOS 一行安裝腳本。
 - `restore-skills.sh` - macOS 離線還原腳本，適合已經完整下載 repo 的情境。
+- `更新並開啟控制台.command` - macOS 用，一鍵更新並打開本機控制台。
 - `data/skills.yaml` - 控制台的 skill 目錄資料。
 - `data/prompts.yaml` - 控制台的提示詞庫資料。
 - `scripts/build.py` - 由 YAML 重建 `index.html`。
