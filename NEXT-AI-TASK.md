@@ -1,11 +1,11 @@
 # NEXT-AI-TASK
 
 任務名稱：v1.7 收尾完成 + v1.8 規劃啟動
-目前階段：✅ v1.7 收尾完成，v1.8 僅完成規劃文件
+目前階段：✅ v1.7 收尾完成，v1.8 僅完成規劃文件；本機 workflow skill 已同步
 上一棒 AI：Codex
 下一棒 AI：使用者決定是否啟動 v1.8
-交棒目的：v1.7 已完成本地收尾；v1.8 只建立規劃文件，等待使用者確認是否進入實作。
-最後更新：2026-06-05 Codex v1.7 收尾完成，v1.8 規劃啟動
+交棒目的：v1.7 已完成本地收尾；v1.8 只建立規劃文件；本機 dual-ai-workflow skill 已同步到 Codex / Claude 安裝版，等待使用者確認是否進入實作或 push。
+最後更新：2026-06-05 Codex 補記本機 dual-ai-workflow skill 同步驗證完成
 必讀檔案：
 - AGENTS.md
 - DUAL-AI-STATE.md
@@ -17,6 +17,8 @@
 - scripts/build.py
 - index.html
 已完成：
+- 已修正本機 skill 同步問題：repo 版、備份包內版本、Codex 安裝版、Claude 安裝版四份 `dual-ai-workflow/SKILL.md` MD5 已一致，皆為 `b7bcf4df2168451ba6486d72723c9c45`。
+- 已確認本機 Codex / Claude 安裝版現在包含「主動交棒規則」與「上下文壓縮觸發規則」。
 - v1.7 收尾已補齊 `docs/v1-2-backlog.md` 的 P2 #2、#3、#6 ✅ 標記。
 - v1.7 收尾已在 `README.md` 補上 macOS quarantine 提醒，說明第一次雙擊 `.command` 被擋時可右鍵打開或執行 `xattr -d com.apple.quarantine 更新並開啟控制台.command`。
 - v1.7 收尾已更新 `CHANGELOG.md`，記錄 backlog 標記補齊與 README quarantine 提醒。
@@ -40,8 +42,10 @@
 - 已補上 `NEXT-AI-TASK.md` 的最後更新欄位。
 下一棒要做：
 - 使用者決定是否啟動 v1.8；若啟動，先讀 `docs/v1-8-plan.md`，確認「我要做什麼」與「開發進度」兩個 MVP 的實作順序。
+- 使用者決定是否 push 目前本地 commit；不要自動 push origin/main。
 驗證要求：
 - `python3 scripts/build.py` 應成功。
+- 四份 `dual-ai-workflow/SKILL.md` MD5 應一致：repo、備份包、`~/.codex`、`~/.claude`。
 - README 與 CHANGELOG 中關於 `.command` 的描述應一致。
 - v1.8 本輪只新增 `docs/v1-8-plan.md`，不應修改 `data/prompts.yaml` 既有 schema，也不應提前寫 v1.8 功能程式碼。
 回報格式：

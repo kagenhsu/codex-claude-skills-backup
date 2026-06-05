@@ -5,6 +5,8 @@
 目前階段：✅ v1.7 收尾完成，v1.8 規劃文件已建立
 
 已完成事項：
+- 已修正本機 skill 同步問題：repo 版、備份包內版本、Codex 安裝版、Claude 安裝版四份 `dual-ai-workflow/SKILL.md` MD5 已一致，皆為 `b7bcf4df2168451ba6486d72723c9c45`。
+- 已確認本機 Codex / Claude 安裝版現在包含「主動交棒規則」與「上下文壓縮觸發規則」。
 - v1.7 收尾已補齊 `docs/v1-2-backlog.md` 的 P2 #2、#3、#6 ✅ 標記。
 - v1.7 收尾已在 `README.md` 補上 macOS quarantine 提醒，說明第一次雙擊 `.command` 被擋時可右鍵打開或執行 `xattr -d com.apple.quarantine 更新並開啟控制台.command`。
 - v1.7 收尾已更新 `CHANGELOG.md`，記錄 backlog 標記補齊與 README quarantine 提醒。
@@ -75,6 +77,7 @@
 
 下一步：
 - 等待使用者決定是否啟動 v1.8；若啟動，先依 `docs/v1-8-plan.md` 確認 MVP 範圍，再開始實作。
+- 若要同步 GitHub，需由使用者明確決定是否 push；不要自動 push。
 
 未解決問題：
 - v1.2 backlog（已清除項目以 ✅ 標記）：
@@ -85,4 +88,4 @@
   - ✅ P2 #5 placeholder「三 AI」改「三方 AI」（v1.1 已修，backlog 條目為誤留）
   - ✅ P2 #6 build.py 加 combos 引用 build-time 檢查（v1.2 commit 90c6d5b 已修）
 
-最後更新時間：2026-06-05 Codex v1.7 收尾完成，v1.8 規劃啟動
+最後更新時間：2026-06-05 Codex 補記本機 dual-ai-workflow skill 同步驗證完成
