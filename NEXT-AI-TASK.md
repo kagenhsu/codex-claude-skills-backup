@@ -1,11 +1,11 @@
 # NEXT-AI-TASK
 
 任務名稱：v1.6 — NEXT-AI-TASK 自動交棒檔與提示詞卡
-目前階段：Codex 已完成 v1.6 第 4 階段修正與驗證，等待 Claude Code（VS Code）複審
+目前階段：✅ v1.6 閉環完成
 上一棒 AI：Codex
-下一棒 AI：Claude Code（VS Code）
-交棒目的：請複審 v1.6 P1/P2 修正是否完整，尤其是備份包與本機安裝版 SKILL.md 是否已同步。
-最後更新：2026-06-05 Codex v1.6 第 4 階段修正完成
+下一棒 AI：使用者決定是否 push 到 origin/main
+交棒目的：v1.6 已完成本地存檔，等待使用者決定是否同步到 GitHub。
+最後更新：2026-06-05 Codex v1.6 閉環完成
 必讀檔案：
 - AGENTS.md
 - DUAL-AI-STATE.md
@@ -17,6 +17,7 @@
 - scripts/build.py
 - index.html
 已完成：
+- 第 5 階段 Claude Code（VS Code）複審通過，無 P0/P1/P2 殘留，commit 6278e23 為 v1.6 最終存檔。
 - 新增專案根目錄 `NEXT-AI-TASK.md` 固定交棒檔。
 - `skills/dual-ai-workflow/SKILL.md` 新增「主動交棒規則」section。
 - `data/prompts.yaml` 新增「讀取 NEXT-AI-TASK.md 並接續」提示詞卡，`flow: dualai`、`stage: handoff`。
@@ -28,22 +29,13 @@
 - repo、tar.gz、Codex 安裝版、Claude 安裝版四份 `SKILL.md` MD5 皆為 `b7bcf4df2168451ba6486d72723c9c45`。
 - 已補上 `NEXT-AI-TASK.md` 的最後更新欄位。
 下一棒要做：
-- 以 Claude Code（VS Code）審查員角色複審本輪 diff。
-- 確認 P1「codex-skills-backup.tar.gz 未更新」已完全修正。
-- 確認 P2「NEXT-AI-TASK.md 最後更新」已處理。
-- 確認 build 與四份 MD5 驗證結果可信。
+- 使用者決定是否 push 到 origin/main。
+- 如要同步到 GitHub，push 前先確認 commit 不含敏感資料。
 驗證要求：
-- 檢查 `git diff -- NEXT-AI-TASK.md skills/dual-ai-workflow/SKILL.md codex-skills-backup.tar.gz data/prompts.yaml index.html DUAL-AI-STATE.md`。
-- 確認 build 輸出為 `45 skills / 40 prompts / 3 combos`。
-- 確認 `index.html` 內可搜尋到「讀取 NEXT-AI-TASK.md 並接續」與 `NEXT-AI-TASK`。
-- 確認四份 `SKILL.md` MD5 皆為 `b7bcf4df2168451ba6486d72723c9c45`。
-- 確認本輪已建立本地 commit，但沒有 push。
+- `git status` 應乾淨。
+- `git log --oneline -3` 應顯示收尾 commit 在最上方，且 v1.6 功能 commit `6278e23` 在其後。
 回報格式：
-- 結論：可通過 / 需修正
-- P0：不修不能交付
-- P1：建議本輪修
-- P2：可延後或優化
-- 給 Codex 的下一步修正提示詞
+- 選擇 (a) 只保留本地，或 (b) 同步 GitHub。
 注意事項：
 - 不要依賴對話記憶，請以 DUAL-AI-STATE.md、NEXT-AI-TASK.md 和目前 git diff 為準。
 - 不要自動 push，除非使用者明確要求。

@@ -2,9 +2,10 @@
 
 任務名稱：v1.6 — NEXT-AI-TASK 自動交棒檔與提示詞卡
 
-目前階段：v1.6 第 4 階段 Codex 修正完成，等待 Claude Code（VS Code）複審
+目前階段：✅ 已完成（dual-ai-workflow 第 5 階段複審通過）
 
 已完成事項：
+- 第 5 階段 Claude Code（VS Code）複審通過，無 P0/P1/P2 殘留，commit 6278e23 為 v1.6 最終存檔。
 - v1.6 第 4 階段已處理 Claude Code（VS Code）審查：P0=0、P1=1、P2=2。
 - P1 已成立並修正：已執行 `scripts/update_backup_skill.py` 更新 `codex-skills-backup.tar.gz`，輸出 `replaced=True`，新版 `SKILL.md` MD5 為 `b7bcf4df2168451ba6486d72723c9c45`。
 - P1 本機同步已完成：已覆蓋 `~/.codex/skills/dual-ai-workflow/SKILL.md` 與 `~/.claude/skills/dual-ai-workflow/SKILL.md`。
@@ -61,7 +62,7 @@
 - v1.5 Claude Code（VS Code）P1 修正後複審通過，無 P0/P1，允許 commit。
 
 下一步：
-- 交給 Claude Code（VS Code）複審本輪 P1/P2 修正，確認無 P0/P1 後再回交 Codex 存檔或依新意見修正。
+- 等待使用者決定是否 push 到 origin/main；多裝置同步請以本機標準版覆蓋。
 
 未解決問題：
 - v1.2 backlog（已清除項目以 ✅ 標記）：
@@ -72,4 +73,4 @@
   - ✅ P2 #5 placeholder「三 AI」改「三方 AI」（v1.1 已修，backlog 條目為誤留）
   - ✅ P2 #6 build.py 加 combos 引用 build-time 檢查（v1.2 commit 90c6d5b 已修）
 
-最後更新時間：2026-06-05 Codex v1.6 第 4 階段修正完成，待 Claude Code（VS Code）複審
+最後更新時間：2026-06-05 Codex v1.6 第 5 階段收尾完成，待使用者決定是否 push
