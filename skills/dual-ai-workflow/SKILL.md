@@ -47,6 +47,25 @@ description: Three-tool AI engineering loop. Codex is the lead engineer for plan
 
 如果因權限、環境或其他原因無法更新 `NEXT-AI-TASK.md`，至少要在回應中完整輸出 `NEXT-AI-TASK.md` 內容，讓使用者可以手動貼入。
 
+## 小步存檔與上傳規則
+
+每完成一個可驗證的小項目，就應該先做一次穩定點，而不是累積到大版本才存檔。
+
+小項目完成時必須：
+
+1. 執行對應的 build / test / lint 或本專案指定驗證。
+2. 檢查 `git status --short`，確認只包含本輪相關檔案。
+3. 若驗證通過，建立本地 commit，commit message 使用繁體中文並說清楚本輪做了什麼。
+4. commit 後主動回報 commit hash、驗證結果、目前 git status。
+5. 詢問使用者是否 push；若使用者已明確授權本階段可上傳，才可執行 `git push`。
+
+原則：
+
+- 小步 commit / push 是為了能在開發誤入歧途時回到上一個穩定版本。
+- 不要把多個不相干改動塞進同一個 commit。
+- 不要自動 push origin/main；任何 push / PR / 寫 origin 的動作都必須先得到使用者明確同意。
+- push 後必須再次確認 `git status --short --branch`，並把遠端同步結果寫入 `DUAL-AI-STATE.md` / `NEXT-AI-TASK.md` 或交接提示詞。
+
 ## 五階段工作流
 
 ### 第一階段：Codex 規劃
