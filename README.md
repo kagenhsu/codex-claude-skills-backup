@@ -1,34 +1,39 @@
 # 二刀流開發助手控制台
 
-本專案是一個可攜式的 Codex / Claude Code skills 安裝包，加上一個本機 HTML 控制台：Codex × Claude Code 開發系統。
+這是一個給 **Codex + Claude Code** 使用的提示詞與 skills 小工具。  
+你可以先用線上版試玩，也可以安裝到自己的電腦，變成本機控制台。
 
-線上試用版（demo）：<https://kagenhsu.github.io/codex-claude-skills-backup/>
+線上試用版 demo：<https://kagenhsu.github.io/codex-claude-skills-backup/>
 
-線上版可以先看介面、複製日常提示詞與瀏覽 skills；要讀取你自己電腦上的專案進度，請安裝本機版後使用。
+![二刀流控制台是什麼](docs/images/readme-demo-overview.svg)
 
-同事可以直接下載本 repo，或用一行指令把 skills 安裝到自己的電腦。
+## 先看這裡：這個工具可以幫你做什麼？
 
-## 一行安裝
+如果你剛開始用 AI 寫程式，最常卡住的是：
 
-Windows PowerShell：
+- 不知道要怎麼跟 Codex 說清楚需求。
+- 不知道什麼時候該找 Claude Code 幫忙審查。
+- 不知道新專案、修 bug、整理資料時該從哪個提示詞開始。
+- 每次都要重新想提示詞，很累，也容易漏掉重要步驟。
 
-```powershell
-powershell -ExecutionPolicy Bypass -NoProfile -Command "irm https://raw.githubusercontent.com/kagenhsu/codex-claude-skills-backup/main/install.ps1 | iex"
-```
+這個控制台就是把常用提示詞、二刀流流程、skills 入口整理成一個網頁。  
+你只要打開網頁，按下複製按鈕，再貼給 Codex 或 Claude Code 使用。
 
-不熟 PowerShell/Bash 的同事，請先看下面「比較安全的安裝方式」。
+## 新手建議使用方式
 
-macOS：
+1. 先打開線上 demo 看介面。
+2. 找到首頁的「新手先按：複製分工細節說明」。
+3. 把複製好的提示詞貼給 AI，先請 AI 解釋 Codex / Claude Code 怎麼分工。
+4. 如果覺得會用，再照下面的安裝教學裝到自己的電腦。
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/kagenhsu/codex-claude-skills-backup/main/install.sh | bash
-```
+線上 demo 可以看介面與複製提示詞。  
+如果你想讀取自己電腦裡的 skills、開本機控制台、保留自己的工作流程，才需要安裝本機版。
 
-不熟 PowerShell/Bash 的同事，請先看下面「比較安全的安裝方式」。
+## 安裝會發生什麼事？
 
-安裝完成後，重新啟動 Codex 和 Claude Code。Windows 會在桌面建立 `二刀流開發助手控制台` 捷徑；macOS 會在桌面建立 `二刀流開發助手控制台.command`。
+![安裝流程圖](docs/images/readme-install-flow.svg)
 
-## 這個指令做了什麼
+簡單說，安裝腳本會幫你做這幾件事：
 
 | 動作 | 說明 |
 |---|---|
@@ -37,14 +42,46 @@ curl -fsSL https://raw.githubusercontent.com/kagenhsu/codex-claude-skills-backup
 | 安裝 Codex skills | 複製到 `~/.codex/skills` |
 | 安裝 Claude Code skills | 複製到 `~/.claude/skills` |
 | 安裝本機控制台 | 複製或下載 `index.html` 到使用者文件資料夾 |
-| 建立桌面入口 | Windows 建立 `.lnk`，macOS 建立 `.command` |
-| 保護既有資料 | 如果同名 skill 已存在，會跳過，不覆蓋 |
+| 建立桌面入口 | Windows 建立捷徑，macOS 建立 `.command` |
+| 保護既有資料 | 如果同名 skill 已存在，會跳過，不會直接覆蓋 |
 
-簡單說：這不是安裝一個大型軟體，只是把整理好的 skills 放到 Codex / Claude Code 會讀取的位置。
+它不是安裝大型軟體，也不會替你設定 API key。  
+它主要是把整理好的 skills 和控制台放到 Codex / Claude Code 會讀取的位置。
+
+## 一行安裝
+
+如果你只是想最快安裝，可以複製下面對應你電腦系統的指令。
+
+### Windows PowerShell
+
+1. 打開 Windows 的 PowerShell。
+2. 貼上下面這行。
+3. 按 Enter 執行。
+
+```powershell
+powershell -ExecutionPolicy Bypass -NoProfile -Command "irm https://raw.githubusercontent.com/kagenhsu/codex-claude-skills-backup/main/install.ps1 | iex"
+```
+
+### macOS
+
+1. 打開 Terminal。
+2. 貼上下面這行。
+3. 按 Enter 執行。
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/kagenhsu/codex-claude-skills-backup/main/install.sh | bash
+```
+
+安裝完成後，請重新啟動 Codex 和 Claude Code。
+
+Windows 會在桌面建立 `二刀流開發助手控制台` 捷徑。  
+macOS 會在桌面建立 `二刀流開發助手控制台.command`。
 
 ## 比較安全的安裝方式
 
-如果你不想直接執行網路上的腳本，可以先下載並檢查：
+如果你不想直接執行網路上的腳本，可以先下載，打開看過內容，再執行。
+
+### Windows PowerShell
 
 ```powershell
 irm https://raw.githubusercontent.com/kagenhsu/codex-claude-skills-backup/main/install.ps1 -OutFile install.ps1
@@ -52,7 +89,7 @@ notepad install.ps1
 powershell -ExecutionPolicy Bypass -File .\install.ps1
 ```
 
-macOS：
+### macOS
 
 ```bash
 curl -fsSLO https://raw.githubusercontent.com/kagenhsu/codex-claude-skills-backup/main/install.sh
@@ -60,27 +97,58 @@ less install.sh
 bash install.sh
 ```
 
-## 本機控制台
+## 安裝後怎麼打開？
 
-安裝後或下載 repo 後，建議直接雙擊：
+### Windows
+
+請到桌面找：
 
 ```text
-更新並開啟控制台.command
+二刀流開發助手控制台
 ```
 
-這個檔案會先更新網頁，再自動打開控制台。也就是幫你執行原本比較難記的 `python3 scripts/build.py`，然後開啟 `index.html`。
+雙擊打開即可。
 
-若第一次雙擊出現「來自無法識別的開發者」或「已損毀」，請在 Finder 對檔案按右鍵→打開；或在 Terminal 執行 `xattr -d com.apple.quarantine 更新並開啟控制台.command`。
+### macOS
 
-如果只是想直接看目前已產生好的網頁，也可以雙擊：
+請到桌面找：
+
+```text
+二刀流開發助手控制台.command
+```
+
+雙擊打開即可。
+
+如果第一次雙擊出現「來自無法識別的開發者」或「已損毀」，可以用其中一種方式處理：
+
+- 在 Finder 對檔案按右鍵，選擇「打開」。
+- 在 Terminal 執行 `xattr -d com.apple.quarantine 更新並開啟控制台.command`。
+
+如果你是下載整個 repo，也可以直接雙擊：
 
 ```text
 index.html
 ```
 
-它是本機 HTML 單頁控制台，用來查詢 skills、複製觸發句、查看提示詞庫和二刀流工作流。
+`index.html` 是本機 HTML 單頁控制台，可以查 skills、複製提示詞、看二刀流工作流。
 
-安裝腳本也會建立桌面捷徑，之後建議直接從桌面開啟，不用自己找資料夾。
+## 適合誰使用？
+
+- 你剛開始用 Codex 或 Claude Code，還不知道怎麼下指令。
+- 你想用 Codex 實作，Claude Code 幫忙審查。
+- 你常常要整理需求、規劃功能、修 bug、寫 PRD。
+- 你想把常用提示詞收在同一個地方，不想每次重打。
+
+## 有問題怎麼辦？
+
+這是一個持續整理中的小工具。  
+如果你安裝失敗、按鈕不能用、提示詞看不懂，或有希望新增的功能，可以到 GitHub 留言：
+
+- 用 `Issues` 回報問題：<https://github.com/kagenhsu/codex-claude-skills-backup/issues>
+- 也可以在 repo 留下你的使用情境與建議。
+
+作者會不定期整理回饋並改善。  
+如果你是新手，留言時可以直接貼上「你做到哪一步、看到什麼畫面、出現什麼錯誤」，不用先判斷是哪裡壞掉。
 
 ## 專案內容
 
@@ -95,6 +163,8 @@ index.html
 - `scripts/build.py` - 由 YAML 重建 `index.html`。
 
 ## Restore On A New Mac
+
+如果你是換新 Mac，要整包還原，可以使用：
 
 ```bash
 git clone https://github.com/kagenhsu/codex-claude-skills-backup.git
