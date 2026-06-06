@@ -166,6 +166,28 @@
     現在從第一階段開始，任務是：【任務描述】
   flow: dualai
   stage: entry
+- title: 二刀流分工細節說明
+  category: 二刀流協作
+  usage: 給新手或同事看的分工說明，先理解 Codex 和 Claude Code 各自該做什麼
+  prompt: |
+    請用小白能懂的方式，說明這套「二刀流」裡 Codex 和 Claude Code（VS Code）的分工細節。
+
+    請用下面格式回答：
+    1. 先用 5 句話講清楚整體分工
+    2. Codex 適合做什麼、不適合做什麼
+    3. Claude Code（VS Code）適合做什麼、不適合做什麼
+    4. 使用者在兩邊之間要怎麼轉貼資訊
+    5. 哪些情況要先停下來，不要讓兩邊同時改
+    6. 一個最簡單的實際例子：從「我要改一個功能」到「審查通過並存檔」
+
+    請特別提醒：
+    - Codex 是主力工程師，負責讀檔、規劃、實作、跑測試、修正與整理交接。
+    - Claude Code（VS Code）是審查員，負責看 diff、找 bug、抓風險、分 P0/P1/P2、複審。
+    - 使用者是最後決策者，負責確認方向、轉貼重點、決定是否 commit / push。
+    - 同一時間只讓一邊主動改，另一邊負責看與審，避免兩邊同時亂改。
+    - 交接時優先靠 DUAL-AI-STATE.md、NEXT-AI-TASK.md、AGENTS.md、PRD.md，不要只靠聊天記憶。
+  flow: dualai
+  stage: entry
 - title: ① 第一階段：Codex 規劃
   category: 二刀流協作
   usage: 在 Codex 開新任務，先出方案不動手

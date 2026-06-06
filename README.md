@@ -2,6 +2,10 @@
 
 本專案是一個可攜式的 Codex / Claude Code skills 安裝包，加上一個本機 HTML 控制台：Codex × Claude Code 開發系統。
 
+線上試用版（demo）：<https://kagenhsu.github.io/codex-claude-skills-backup/>
+
+線上版可以先看介面、複製日常提示詞與瀏覽 skills；要讀取你自己電腦上的專案進度，請安裝本機版後使用。
+
 同事可以直接下載本 repo，或用一行指令把 skills 安裝到自己的電腦。
 
 ## 一行安裝

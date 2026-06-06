@@ -2,6 +2,40 @@
 
 本文件用繁體中文記錄每次推到 GitHub 的主要變更，方便之後回頭看「這一版增加了什麼功能」。
 
+## v2.1.0 — 新手分工提示與雙 AI 專案討論
+
+發布日期：2026-06-06
+
+### 新增功能
+
+- 首頁「二刀流最簡單分工」新增可直接複製的分工說明、Codex 開工、Claude Code 審查與單一 AI 提示詞。
+- 「新手先按：複製分工細節說明」按鈕獨立置中顯示，讓第一次使用的人先理解 Codex / Claude Code 分工。
+- 提示詞庫新增「二刀流分工細節說明」，用來向新手或同事說明兩個 AI 的角色、交接方式與注意事項。
+- 日常提示詞「開發系統」新增「雙 AI 討論新專案方向」，可從模糊想法開始，透過 Codex 工程視角與 Claude Code 審查視角互動討論出專案規劃。
+- README 開頭新增線上試用版（demo）連結，讓 GitHub repo 首頁能直接進入 GitHub Pages demo。
+
+### 驗證結果
+
+- `python3 scripts/build.py` 成功輸出：`45 skills / 41 prompts / 3 combos`
+- `node --check` 抽出的 inline script 通過語法檢查。
+
+## v2.0.0 — 日常提示詞新手版與 GitHub Pages demo
+
+發布日期：2026-06-06
+
+### 新增功能
+
+- 新增「日常提示詞」頁籤，提供新手可直接複製的日常 AI 交辦提示詞。
+- 新增開發系統、找資料 / 做比對、整理資料、整理電腦檔案等分類。
+- 首頁調整為「首頁 / 快速開始」，更適合第一次使用的人理解二刀流流程。
+- 加入 GitHub Pages demo banner，線上試用版會提醒使用者這是 demo。
+- 新增 `robots.txt`，避免 demo 頁被搜尋引擎收錄本機開發狀態內容。
+
+### 驗證結果
+
+- `python3 scripts/build.py` 成功輸出：`45 skills / 40 prompts / 3 combos`
+- `node --check` 抽出的 inline script 通過語法檢查。
+
 ## v1.9.0 — 二刀流命名統一
 
 發布日期：2026-06-06

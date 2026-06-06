@@ -1,10 +1,17 @@
 # DUAL-AI-STATE
 
-任務名稱：v2.0 — 日常提示詞新手版
+任務名稱：v2.1 — 新手分工提示與雙 AI 專案討論
 
-目前階段：✅ v2.0 日常提示詞新手版 + GitHub Pages demo banner 已完成，待使用者授權 push origin/main 並於 GitHub Settings → Pages 啟用站點
+目前階段：✅ v2.1 新手分工提示與雙 AI 專案討論已完成，待 push origin/main 觸發 GitHub Pages 重新部署
 
 已完成事項：
+- Codex 已新增 README 線上試用版（demo）連結，讓 GitHub repo 首頁能直接進入 `https://kagenhsu.github.io/codex-claude-skills-backup/`。
+- Codex 已在首頁「二刀流最簡單分工」區新增分工說明、Codex 開工、Claude Code 審查與單一 AI 提示詞複製按鈕。
+- Codex 已將「新手先按：複製分工細節說明」按鈕改為獨立第一排、置中、深藍醒目樣式。
+- Codex 已在 `data/prompts.yaml` 新增「二刀流分工細節說明」正式提示詞。
+- Codex 已在「日常提示詞」→「開發系統」新增「雙 AI 討論新專案方向」卡片，支援從模糊想法互動討論到專案規劃。
+- Codex 已更新 `CHANGELOG.md` 與控制台版本地圖，補上 v2.0 / v2.1。
+- Codex 已執行 `python3 scripts/build.py`，重建 `index.html` 成功，輸出為 `45 skills / 41 prompts / 3 combos`。
 - Claude Code（VS Code）已在小範圍授權下新增 GitHub Pages demo 上線準備：在 `scripts/build.py` 加入 `.online-banner` CSS、`<div id="onlineBanner">` 掛載點、`renderOnlineBanner()`（偵測 `*.github.io` 才顯示）、`render()` 內呼叫；新增 `robots.txt`（`Disallow: /`，避免本機開發狀態檔被搜尋引擎收錄）；重 build `index.html`。本機 `file://` 與 `localhost` 體驗未受影響。
 - Claude Code（VS Code）已執行隱私 sanity check：DUAL-AI-STATE.md / NEXT-AI-TASK.md / AGENTS.md / PRD.md 無 API key、token、私人路徑或 email 外洩；最大「痕跡」為 PROJECT_PATH 顯示 `/Users/xujiayuan/...`，無安全風險但會公開 username（與 GitHub 本來已可見一致）。
 - Claude Code（VS Code）已完成 v2.0 日常提示詞新手版第 3 階段複核：P0=0、P1=0、P2=5 項新增（搜尋不過濾 daily、DAILY_PROMPT_SECTIONS hardcoded、PROJECT_STAGES 未補 v2.0、首頁 4 CTA 密度、CSS 視覺未在桌面瀏覽器人工確認），全部排入後續優化，不阻擋 commit。
@@ -184,4 +191,4 @@
   - ✅ P2 #5 placeholder「二刀流」改「二刀流」（v1.1 已修，backlog 條目為誤留）
   - ✅ P2 #6 build.py 加 combos 引用 build-time 檢查（v1.2 commit 90c6d5b 已修）
 
-最後更新時間：2026-06-06 18:00 CST Codex 已完成驗證並建立 v2.0 本機 commit，等待使用者授權 push 與啟用 GitHub Pages
+最後更新時間：2026-06-06 18:00 CST Codex 已完成 v2.1 功能更新驗證，等待 push 觸發 GitHub Pages 重新部署
