@@ -2,9 +2,11 @@
 
 任務名稱：v1.9 — 二刀流開發助手控制台命名統一
 
-目前階段：🔍 v1.9 已完成 Codex 命名統一，等待 Claude Code（VS Code）審查後再決定是否 push
+目前階段：✅ v1.9 命名統一完成並 push origin/main
 
 已完成事項：
+- v1.9 已完成 Claude Code（VS Code）複審：P0=0、P1=0，P2=2 + 4 項 v1.8 遺留 backlog，均排入後續優化，不阻擋 push。
+- v1.9 已於 2026-06-06 11:50 CST push `origin/main`，遠端已同步至 commit `535021c`。
 - v1.9 已依使用者決定，將專案／網頁主標統一為「二刀流開發助手控制台」，副標為「Codex × Claude Code 開發系統」。
 - v1.9 已更新 `scripts/build.py` 的瀏覽器 title、頁首 h1、副標與換電腦／同步頁捷徑文案。
 - v1.9 已更新 `AGENTS.md`、`PRD.md`、`README.md`、`docs/skill-console-plan.md`、`install.sh`、`install.ps1`、`更新並開啟控制台.command` 的顯示名稱。
@@ -109,14 +111,20 @@
 - v1.5 Claude Code（VS Code）P1 修正後複審通過，無 P0/P1，允許 commit。
 
 下一步：
-- 請 Claude Code（VS Code）審查 v1.9 命名統一與 v1.8 開發進度／排版修改，依 P0/P1/P2 回報。
-- 若 Claude Code（VS Code）審查 OK，使用者再決定是否讓 Codex push `origin/main`。
-- 後續若繼續 v1.8，可把 2 項 P2 與下一個任務（MVP A 或 v1.8 收尾）一併處理。
+- 使用者決定下一個任務（MVP A、v1.9 收尾 prompt 命名統一、或 v1.8 backlog 清理）。
+- 後續若繼續清理，可把本輪 P2 與 v1.8 遺留 backlog 一併處理。
 
 未解決問題：
+- v1.9 後續優化：
+  - P2-V19-1：`data/prompts.yaml:264`「單一 AI 也能用控制台」prompt body 仍寫「Skill 助手控制台」，建議下一輪統一改為「二刀流開發助手控制台」。
+  - P2-V19-2：`install.ps1` shortcut Description 使用 ASCII `x`，屬可接受折衷，可不改。
 - v1.8 後續優化：
   - P2-1：`progressHtml()` 未解決問題警示對「全部 ✅」backlog 仍會觸發；建議後續加入「全部 ✅ 視為無」判斷。
   - P2-2：`summary.replace(/<\/div>$/, ...)` 隱性依賴 `stateSummaryHtml()` 結尾；建議後續改為將 `nextCard` 作為參數或在 `progressHtml()` 直接拼裝。
+  - P2-3：`PROJECT_PATH` 絕對路徑會寫入 `index.html`，後續可改為相對／顯示用路徑。
+  - P2-4：`STATE_HTML.html`、`NEXT_HTML.html` 與 `PROJECT_URL` 目前為死碼，後續可移除或接上顯示／連結。
+  - P2-5：使用者選擇的 `AGENTS.md` / `PRD.md` 與 inline 版視覺落差，後續可統一渲染策略。
+  - P2-6：`progressPickerHtml()` 即使檔案齊全仍使用 warning 黃底，後續可改中性 panel。
 - v1.2 backlog（已清除項目以 ✅ 標記）：
   - ✅ P2 #1 sectionAfter lookahead 改用固定 section 名稱白名單（v1.7 已修）
   - ✅ P2 #2 state board textarea 拆 oninput 路徑（v1.2 commit 90c6d5b 已修）
@@ -125,4 +133,4 @@
   - ✅ P2 #5 placeholder「三 AI」改「三方 AI」（v1.1 已修，backlog 條目為誤留）
   - ✅ P2 #6 build.py 加 combos 引用 build-time 檢查（v1.2 commit 90c6d5b 已修）
 
-最後更新時間：2026-06-06 Codex v1.9 命名統一完成，等待 Claude Code（VS Code）審查後再決定是否 push
+最後更新時間：2026-06-06 11:50 CST Codex v1.9 命名統一完成並 push origin/main

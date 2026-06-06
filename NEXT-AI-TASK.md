@@ -1,11 +1,11 @@
 # NEXT-AI-TASK
 
 任務名稱：v1.9 — 二刀流開發助手控制台命名統一
-目前階段：🔍 v1.9 已完成 Codex 命名統一，等待 Claude Code（VS Code）審查後再決定是否 push
+目前階段：✅ v1.9 命名統一完成並 push origin/main
 上一棒 AI：Codex
-下一棒 AI：Claude Code（VS Code）
-交棒目的：請審查 v1.9 命名統一，以及 v1.8 MVP B 開發進度功能與後續多頁排版修正；若 P0/P1 = 0，請回報可讓 Codex push origin/main。
-最後更新：2026-06-06 Codex v1.9 命名統一完成，等待 Claude Code（VS Code）審查後再決定是否 push
+下一棒 AI：
+交棒目的：v1.9 命名統一已完成並 push origin/main；等待決定下一個任務。
+最後更新：2026-06-06 11:50 CST Codex v1.9 命名統一完成並 push origin/main
 必讀檔案：
 - AGENTS.md
 - DUAL-AI-STATE.md
@@ -18,6 +18,8 @@
 - scripts/build.py
 - index.html
 已完成：
+- v1.9 已完成 Claude Code（VS Code）複審：P0=0、P1=0，P2=2 + 4 項 v1.8 遺留 backlog，均排入後續優化，不阻擋 push。
+- v1.9 已於 2026-06-06 11:50 CST push `origin/main`，遠端已同步至 commit `535021c`。
 - v1.9 已依使用者決定，將專案／網頁主標統一為「二刀流開發助手控制台」，副標為「Codex × Claude Code 開發系統」。
 - v1.9 已更新 `scripts/build.py` 的瀏覽器 title、頁首 h1、副標與換電腦／同步頁捷徑文案。
 - v1.9 已更新 `AGENTS.md`、`PRD.md`、`README.md`、`docs/skill-console-plan.md`、`install.sh`、`install.ps1`、`更新並開啟控制台.command` 的顯示名稱。
@@ -77,11 +79,9 @@
 - repo、tar.gz、Codex 安裝版、Claude 安裝版四份 `SKILL.md` MD5 皆為 `b7bcf4df2168451ba6486d72723c9c45`。
 - 已補上 `NEXT-AI-TASK.md` 的最後更新欄位。
 下一棒要做：
-- 請 Claude Code（VS Code）審查目前 HEAD 與 `origin/main` 的差異。
-- 審查範圍：`scripts/build.py`、`index.html`、`DUAL-AI-STATE.md`、`NEXT-AI-TASK.md`、`AGENTS.md`、`PRD.md`、`README.md`、`docs/skill-console-plan.md`、`install.sh`、`install.ps1`、`更新並開啟控制台.command`。
-- 請確認 v1.9 名稱「二刀流開發助手控制台」與副標「Codex × Claude Code 開發系統」是否一致。
-- 請確認「開發進度」資料夾選擇／缺檔提示／必備檔案檢查，以及各導覽頁滿寬排版沒有破壞既有功能。
-- 請依 P0/P1/P2 分級回報；若 P0/P1 = 0，請明確寫「可 push origin/main」。
+- 使用者決定下一個任務（MVP A、v1.9 收尾 prompt 命名統一、或 v1.8 backlog 清理）。
+- 若選擇 v1.9 收尾，優先處理 `data/prompts.yaml:264`「Skill 助手控制台」命名殘留。
+- 若選擇 v1.8 backlog 清理，優先處理 PROJECT_PATH 絕對路徑、死碼、渲染風格落差與 picker warning 樣式。
 驗證要求：
 - `python3 scripts/build.py` 應成功。
 - build 輸出應為 45 skills / 40 prompts / 3 combos。
@@ -96,9 +96,8 @@ v1.8 啟動注意事項：
 - 不應修改 `data/prompts.yaml` 既有 schema；新增提示詞請走「收錄新內容」流程。
 - MVP B inline `DUAL-AI-STATE.md` / `NEXT-AI-TASK.md` 時，沿用既有 markdown rendering，不 fork 第二份解析邏輯。
 回報格式：
-- P0 / P1 / P2 清單。
-- 是否允許 Codex push `origin/main`。
-- 若不允許 push，請給 Codex 的修正提示詞。
+- 指定下一個任務。
+- 若要 push 後續變更，仍需使用者再次明確授權。
 注意事項：
 - 不要依賴對話記憶，請以 DUAL-AI-STATE.md、NEXT-AI-TASK.md 和目前 git diff 為準。
 - 不要自動 push，除非使用者明確要求。
