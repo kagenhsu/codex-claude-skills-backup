@@ -1,22 +1,50 @@
 # NEXT-AI-TASK
 
-任務名稱：v1.8 B1 — 啟動前狀態清理
-目前階段：✅ v1.8 B1 清理完成，待使用者決定是否 push 或進入 MVP B
+任務名稱：v1.8 MVP B — 開發進度 tab
+目前階段：✅ v1.8 MVP B 已完成第 5 階段複審，P0/P1 = 0，2 項 P2 排入 v1.8 後續優化
 上一棒 AI：Codex
-下一棒 AI：使用者決定是否 push B1，或交給 Codex 繼續 MVP B
-交棒目的：v1.8 B1 已完成啟動前清理，等待使用者決定是否 push；若繼續實作，下一步先做 MVP B「開發進度」tab。
-最後更新：2026-06-06 Codex v1.8 B1 清理完成
+下一棒 AI：Claude Code（VS Code）
+交棒目的：請審查 v1.8 MVP B 開發進度功能與後續多頁排版修正；若 P0/P1 = 0，請回報可讓 Codex push origin/main。
+最後更新：2026-06-06 Codex v1.8 MVP B 排版修正完成，交給 Claude Code（VS Code）審查後再決定是否 push
 必讀檔案：
 - AGENTS.md
 - DUAL-AI-STATE.md
 - NEXT-AI-TASK.md
 - PRD.md
 - docs/skill-console-plan.md
+- docs/v1-8-plan.md
 - skills/dual-ai-workflow/SKILL.md
 - data/prompts.yaml
 - scripts/build.py
 - index.html
 已完成：
+- v1.8 MVP B 已依使用者要求完成多頁排版收斂：AI 角色導覽、三方 AI 工作流、開發進度、收錄新內容、安檢 SOP、換電腦／同步等內容卡片寬度已調整為與上方搜尋／導覽區一致。
+- v1.8 MVP B Browser comment 已處理：換電腦／同步頁改用 `wide-sop` 版面 class，搬家工具說明與同步指令卡片寬度與上方搜尋／導覽區一致。
+- v1.8 MVP B Browser comment 已處理：安檢 SOP 頁改用 `wide-sop` 版面 class，安檢說明與提示詞卡片寬度與上方搜尋／導覽區一致。
+- v1.8 MVP B Browser comment 已處理：收錄新內容頁改用 `wide-sop` 版面 class，提示詞／Skill 表單卡片寬度與上方搜尋／導覽區一致。
+- v1.8 MVP B Browser comment 已處理：三方 AI 工作流改用獨立 `wide-sop` 版面 class，內容卡片明確撐滿主欄寬度，避免仍受一般 SOP 寬度限制。
+- v1.8 MVP B Browser comment 已處理：AI 角色導覽與三方 AI 工作流內容區改用滿寬顯示，資訊卡寬度與上方搜尋／導覽區一致。
+- v1.8 MVP B Browser comment 已處理：開發進度新增「必備檔案檢查」，會判斷所選專案資料夾是否缺 DUAL-AI-STATE.md、NEXT-AI-TASK.md、AGENTS.md、PRD.md；缺檔時提供可複製給 AI 的補檔提示詞。
+- v1.8 MVP B Browser comment 已處理：開發進度內容區新增 `progress-sop` 版面 class，讓資料夾選擇卡與下方資料卡寬度撐滿主欄，和上方搜尋／導覽區一致。
+- v1.8 MVP B Browser comment 已處理：開發進度「目前狀態」摘要移除「下一棒 AI」卡片；交棒資訊仍保留在 NEXT-AI-TASK.md 原檔，不放在主摘要。
+- v1.8 MVP B Browser comment 已處理：開發進度上方動作改為「選擇專案資料夾」，使用者主動選取資料夾後，狀態、專案敘述、開發階段與 AGENTS / PRD 卡會改讀該資料夾內的 DUAL-AI-STATE.md、NEXT-AI-TASK.md、AGENTS.md、PRD.md。
+- v1.8 MVP B Browser comment 已處理：開發進度「目前狀態」摘要移除「最後更新時間」卡片，改為只顯示目前階段、上一步、下一步與未解決問題；三方中控 `stateSummaryHtml()` 保持不動。
+- v1.8 MVP B Browser comment 已處理：開發進度「目前狀態」的地圖改為專案版本地圖，顯示 v1.0～v1.8 各版本標題與簡述，並以藍框標出目前 v1.8。
+- v1.8 MVP B Browser comment 已處理：開發進度「目前狀態」移除完整 DUAL-AI-STATE.md / NEXT-AI-TASK.md 檔案卡，保留階段地圖與摘要，避免頁面過長干擾新手。
+- v1.8 MVP B Browser comment 已處理：開發進度「目前狀態」新增開發階段地圖，顯示第 1～5 階段標題與簡述，並以藍框標出目前階段。
+- v1.8 MVP B Browser comment 已處理：開發進度警示區新增「打開目前專案資料夾」與「複製資料夾路徑」操作，讓使用者可直接進入專案資料夾查 DUAL-AI-STATE.md / NEXT-AI-TASK.md。
+- v1.8 MVP B Browser comment 已處理：開發進度 tab 在警示下方新增「目前狀態／專案敘述／開發階段／AGENTS / PRD」切換檢視，可查看專案描述、開發階段與 AGENTS.md / PRD.md 資料。
+- v1.8 MVP B 第 5 階段 Claude Code（VS Code）複審完成：P0=0、P1=0、P2=2，P2 均為後續優化建議，不阻擋。
+- v1.8 MVP B P2-1 已排入後續優化：`progressHtml()` 未解決問題警示對「全部 ✅」backlog 仍會觸發，後續可加入「全部 ✅ 視為無」判斷。
+- v1.8 MVP B P2-2 已排入後續優化：`summary.replace(/<\/div>$/, ...)` 隱性依賴 `stateSummaryHtml()` 結尾，後續可改為參數化或在 `progressHtml()` 直接拼裝。
+- v1.8 MVP B 已在 `scripts/build.py` build-time inline `DUAL-AI-STATE.md` 與 `NEXT-AI-TASK.md`，資料格式為 `{raw, html}`，並保留 `</` escape。
+- v1.8 MVP B 已新增「開發進度」tab，位置在「AI 角色導覽」後方；預設 `let tab = "guide"` 未改。
+- v1.8 MVP B 已新增 `PAGE_INTROS.progress` 新手文案。
+- v1.8 MVP B 已新增 `progressHtml()`，沿用既有 `parseWorkflowState()` 與 `stateSummaryHtml()`，並用單行 regex 從 `NEXT_HTML.raw` 解析「下一棒 AI」。
+- v1.8 MVP B 已在 `render()` 的 guide 分支後、capture 分支前加入 progress 分支。
+- v1.8 MVP B 已執行 `python3 scripts/build.py`，結果仍為 45 skills / 40 prompts / 3 combos。
+- v1.8 MVP B 已驗證「開發進度」tab 顯示目前階段、下一棒 AI、backlog、最後更新時間，且三方中控 textarea fallback 仍存在。
+- v1.8 MVP B 已建立本地 commit，尚未 push `origin/main`。
 - v1.8 B1 已清理 `docs/v1-2-backlog.md` P2 #5，補上 ✅ 並標記為 v1.1 已修、backlog 誤留。
 - v1.8 B1 已將 `data/prompts.yaml` schema 限制歸到 v1.8 啟動注意事項，不再混在 v1.7 收尾驗證段。
 - 已確認 v1.7 兩個 commit 已 push 至 `origin/main`：`3a99992`、`9ab61fe`。
@@ -45,18 +73,25 @@
 - repo、tar.gz、Codex 安裝版、Claude 安裝版四份 `SKILL.md` MD5 皆為 `b7bcf4df2168451ba6486d72723c9c45`。
 - 已補上 `NEXT-AI-TASK.md` 的最後更新欄位。
 下一棒要做：
-- 使用者決定是否 push v1.8 B1 清理 commit；不要自動 push origin/main。
-- 若繼續 v1.8 實作，先讀 `docs/v1-8-plan.md`，從 MVP B「開發進度」tab 開始。
+- 請 Claude Code（VS Code）審查目前 HEAD 與 `origin/main` 的差異。
+- 審查範圍：`scripts/build.py`、`index.html`、`DUAL-AI-STATE.md`、`NEXT-AI-TASK.md`。
+- 請確認「開發進度」資料夾選擇／缺檔提示／必備檔案檢查，以及各導覽頁滿寬排版沒有破壞既有功能。
+- 請依 P0/P1/P2 分級回報；若 P0/P1 = 0，請明確寫「可 push origin/main」。
 驗證要求：
 - `python3 scripts/build.py` 應成功。
-- 四份 `dual-ai-workflow/SKILL.md` MD5 應一致：repo、備份包、`~/.codex`、`~/.claude`。
-- README 與 CHANGELOG 中關於 `.command` 的描述應一致。
-- `git status --short --branch` 應顯示 B1 commit 是否 ahead origin/main。
+- build 輸出應為 45 skills / 40 prompts / 3 combos。
+- `node --check` 抽出的 inline script 應通過。
+- 「開發進度」tab 可選擇專案資料夾，並檢查 DUAL-AI-STATE.md / NEXT-AI-TASK.md / AGENTS.md / PRD.md 是否存在。
+- AI 角色導覽、三方 AI 工作流、收錄新內容、安檢 SOP、換電腦／同步頁的資訊卡寬度應與上方搜尋／導覽區一致。
+- 三方中控 tab 的 `workflowStateInput` textarea fallback 應仍可用、未受污染。
+- `git status --short --branch` 應顯示本地分支 ahead origin/main，且本輪尚未 push。
 v1.8 啟動注意事項：
 - 不應修改 `data/prompts.yaml` 既有 schema；新增提示詞請走「收錄新內容」流程。
 - MVP B inline `DUAL-AI-STATE.md` / `NEXT-AI-TASK.md` 時，沿用既有 markdown rendering，不 fork 第二份解析邏輯。
 回報格式：
-- 回報 B1 commit hash、build 結果、目前 `git status --short --branch`，並提醒不要自動 push。
+- P0 / P1 / P2 清單。
+- 是否允許 Codex push `origin/main`。
+- 若不允許 push，請給 Codex 的修正提示詞。
 注意事項：
 - 不要依賴對話記憶，請以 DUAL-AI-STATE.md、NEXT-AI-TASK.md 和目前 git diff 為準。
 - 不要自動 push，除非使用者明確要求。
