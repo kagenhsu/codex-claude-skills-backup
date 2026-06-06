@@ -95,13 +95,13 @@ try {
     }
     New-Item -ItemType Directory -Force -Path $desktopDir | Out-Null
 
-    $shortcutBaseName = -join @("Skill ", [char]0x52A9, [char]0x624B, [char]0x63A7, [char]0x5236, [char]0x53F0)
+    $shortcutBaseName = "二刀流開發助手控制台"
     $shortcutPath = Join-Path $desktopDir ($shortcutBaseName + ".lnk")
     $shell = New-Object -ComObject WScript.Shell
     $shortcut = $shell.CreateShortcut($shortcutPath)
     $shortcut.TargetPath = $consoleIndex
     $shortcut.WorkingDirectory = $ConsoleDir
-    $shortcut.Description = "Open local Skill console"
+    $shortcut.Description = "Open local Codex x Claude Code development console"
     $shortcut.Save()
     Write-Host "Desktop shortcut created: $shortcutPath"
 

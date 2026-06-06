@@ -1,10 +1,14 @@
 # DUAL-AI-STATE
 
-任務名稱：v1.8 MVP B — 開發進度 tab
+任務名稱：v1.9 — 二刀流開發助手控制台命名統一
 
-目前階段：🔍 v1.8 MVP B 已完成 Codex 排版修正，等待 Claude Code（VS Code）審查後再決定是否 push
+目前階段：🔍 v1.9 已完成 Codex 命名統一，等待 Claude Code（VS Code）審查後再決定是否 push
 
 已完成事項：
+- v1.9 已依使用者決定，將專案／網頁主標統一為「二刀流開發助手控制台」，副標為「Codex × Claude Code 開發系統」。
+- v1.9 已更新 `scripts/build.py` 的瀏覽器 title、頁首 h1、副標與換電腦／同步頁捷徑文案。
+- v1.9 已更新 `AGENTS.md`、`PRD.md`、`README.md`、`docs/skill-console-plan.md`、`install.sh`、`install.ps1`、`更新並開啟控制台.command` 的顯示名稱。
+- v1.9 已在開發進度「專案版本地圖」補上 v1.9「二刀流命名」階段，讓目前版本可被藍框標出。
 - v1.8 MVP B 已依使用者要求完成多頁排版收斂：AI 角色導覽、三方 AI 工作流、開發進度、收錄新內容、安檢 SOP、換電腦／同步等內容卡片寬度已調整為與上方搜尋／導覽區一致。
 - v1.8 MVP B Browser comment 已處理：換電腦／同步頁改用 `wide-sop` 版面 class，搬家工具說明與同步指令卡片寬度與上方搜尋／導覽區一致。
 - v1.8 MVP B Browser comment 已處理：安檢 SOP 頁改用 `wide-sop` 版面 class，安檢說明與提示詞卡片寬度與上方搜尋／導覽區一致。
@@ -105,7 +109,7 @@
 - v1.5 Claude Code（VS Code）P1 修正後複審通過，無 P0/P1，允許 commit。
 
 下一步：
-- 請 Claude Code（VS Code）審查本輪排版與開發進度功能修改，依 P0/P1/P2 回報。
+- 請 Claude Code（VS Code）審查 v1.9 命名統一與 v1.8 開發進度／排版修改，依 P0/P1/P2 回報。
 - 若 Claude Code（VS Code）審查 OK，使用者再決定是否讓 Codex push `origin/main`。
 - 後續若繼續 v1.8，可把 2 項 P2 與下一個任務（MVP A 或 v1.8 收尾）一併處理。
 
@@ -121,4 +125,4 @@
   - ✅ P2 #5 placeholder「三 AI」改「三方 AI」（v1.1 已修，backlog 條目為誤留）
   - ✅ P2 #6 build.py 加 combos 引用 build-time 檢查（v1.2 commit 90c6d5b 已修）
 
-最後更新時間：2026-06-06 Codex v1.8 MVP B 排版修正完成，已交給 Claude Code（VS Code）審查後再決定是否 push
+最後更新時間：2026-06-06 Codex v1.9 命名統一完成，等待 Claude Code（VS Code）審查後再決定是否 push

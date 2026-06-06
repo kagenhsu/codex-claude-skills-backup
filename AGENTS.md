@@ -1,6 +1,6 @@
 # AGENTS.md — 專案頂層規則文件
 
-專案名稱：Codex / Claude Skills 管理系統＋提示詞庫（Skill 助手控制台）
+專案名稱：二刀流開發助手控制台（Codex × Claude Code 開發系統）
 專案簡介：本機 HTML 單頁控制台，管理已安裝的 Codex / Claude Code skills（中文說明＋觸發句一鍵複製）、常用提示詞庫，以及 skill 安裝前的資安檢查 SOP。
 
 ## 開發協作規範（AI 必須遵守）

@@ -164,7 +164,7 @@ TEMPLATE = r'''<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Skill 助手控制台｜Codex / Claude Code / Claude Desktop</title>
+<title>二刀流開發助手控制台｜Codex × Claude Code 開發系統</title>
 <style>
   :root{--bg:#f4f6fb; --panel:#eef1f8; --card:#ffffff; --border:#d9e0ef; --text:#1f2937; --muted:#657085; --accent:#3b6fe0; --accent-soft:#e8eefc; --green:#168a55; --amber:#a66a00; --red:#c23b3b; --shadow:0 1px 3px rgba(30,40,80,.07);}
   *{box-sizing:border-box; margin:0; padding:0;}
@@ -258,7 +258,7 @@ TEMPLATE = r'''<!DOCTYPE html>
 </style>
 </head>
 <body>
-<header><div class="head-inner"><h1>Skill 助手控制台 <span class="sub">Codex / Claude Code / Claude Desktop 導覽版</span></h1><div class="tabs"><button class="tab active" data-tab="guide">AI 角色導覽</button><button class="tab" data-tab="progress">開發進度</button><button class="tab" data-tab="workflow">三方 AI 工作流</button><button class="tab" data-tab="control">三方中控</button><button class="tab" data-tab="prompts">提示詞庫</button><button class="tab" data-tab="skills">Skills</button><button class="tab" data-tab="capture">收錄新內容</button><button class="tab" data-tab="sop">安檢 SOP</button><button class="tab" data-tab="backup">換電腦／同步</button></div></div></header>
+<header><div class="head-inner"><h1>二刀流開發助手控制台 <span class="sub">Codex × Claude Code 開發系統</span></h1><div class="tabs"><button class="tab active" data-tab="guide">AI 角色導覽</button><button class="tab" data-tab="progress">開發進度</button><button class="tab" data-tab="workflow">三方 AI 工作流</button><button class="tab" data-tab="control">三方中控</button><button class="tab" data-tab="prompts">提示詞庫</button><button class="tab" data-tab="skills">Skills</button><button class="tab" data-tab="capture">收錄新內容</button><button class="tab" data-tab="sop">安檢 SOP</button><button class="tab" data-tab="backup">換電腦／同步</button></div></div></header>
 <main><div class="search"><span class="icon">搜</span><input id="searchBox" type="text" placeholder="搜尋 skill、提示詞、觸發句、角色、分工、導覽，例如：git、翻譯、審查、三方 AI"></div><div id="pageIntro" class="page-intro"></div><div id="chips" class="chips"></div><div id="countLine" class="count"></div><div id="content"></div></main>
 <footer>資料來源：data/skills.yaml + data/prompts.yaml + data/combos.yaml；修改後執行 python3 scripts/build.py 重建</footer>
 <script>
@@ -292,7 +292,8 @@ const PROJECT_STAGES = [
   ["v1.5","上下文壓縮","新增壓縮接續規則、提示詞卡與 skill 同步。"],
   ["v1.6","固定交棒檔","新增 NEXT-AI-TASK.md，讓下一棒 AI 能接續。"],
   ["v1.7","三方中控收尾","提示詞定位、狀態解析與 backlog 標記補齊。"],
-  ["v1.8","新手入口與開發進度","新增開發進度 tab，整理目前狀態與下一步。"]
+  ["v1.8","新手入口與開發進度","新增開發進度 tab，整理目前狀態與下一步。"],
+  ["v1.9","二刀流命名","統一控制台名稱為二刀流開發助手控制台。"]
 ];
 const PAGE_INTROS = {
   backup:{title:"換電腦／同步",lead:"這頁只在換電腦、重裝工具，或要把已整理好的 skills 同步到另一台機器時使用。平常找功能請看 Skills；要複製工作指令請看提示詞庫。",purpose:"把這個專案保存的 skills 備份包，安裝到 Codex 或 Claude Code 可讀的位置。",first:"如果不是換電腦或重裝，通常不用按這頁的還原指令。",when:"換電腦、重裝工具、同步 Mac mini 或 VS Code Claude Code 時使用。"},
@@ -323,7 +324,7 @@ function workflowGuide(){if(flowMode==="dualai")return`<div class="workflow-guid
 function flowButtons(){return`<div class="flow-switch">${Object.entries(FLOW_META).map(([key,m])=>`<button class="flow-btn ${flowMode===key?"active":""}" data-flow="${key}">${m.label}</button>`).join("")}</div>`}
 function renderPromptFlow(){const meta=FLOW_META[flowMode];const visible=DATA.prompts.filter(p=>(p.flow||"common")===flowMode&&(cat==="全部"||p.category===cat)&&match(p,["title","usage","category","prompt","flow","stage"]));let html=`<div class="page-intro"><h2>${esc(meta.title)}</h2><div class="lead">${esc(meta.lead)}</div>${workflowGuide()}</div>${flowButtons()}`;if(cat==="全部"&&!q)html+=combosHtml();if(flowMode==="common"){const groups=[...new Set(visible.map(p=>p.category))];html+=groups.map(group=>{const items=visible.filter(p=>p.category===group);return`<section class="flow-section"><div class="section-head"><h2>${esc(group)}</h2><span class="hint">${items.length} 則</span></div><div class="grid">${items.map(promptCard).join("")}</div></section>`}).join("")}else{html+=FLOW_ORDER[flowMode].map(stage=>{const items=visible.filter(p=>String(p.stage||"")===stage);if(!items.length)return"";const[label,hint]=STAGE_META[flowMode][stage]||[stage,""];return`<section class="flow-section" data-stage="${esc(stage)}"><div class="section-head"><h2>${esc(label)}</h2><span class="hint">${esc(hint)}，${items.length} 則</span></div><div class="grid">${items.map(promptCard).join("")}</div></section>`}).join("")}return html||`<div class="empty">找不到符合條件的提示詞。</div>`}
 function cmdRow(label,cmd){return`<div class="trigger"><div style="flex:1"><div class="usage">${esc(label)}</div><code>${esc(cmd)}</code></div><button class="copy-btn" data-copy="${encodeURIComponent(cmd)}">複製</button></div>`}
-function backupHtml(){return`<div class="sop wide-sop"><div class="card"><h2>這頁是做什麼</h2><div class="summary">簡單說：這頁不是日常功能頁，而是「搬家工具」。當你換電腦、重裝 Codex / Claude Code，或要把同一套 skills 放到另一台支援的電腦時才用。</div><ul><li><b>codex-skills-backup.tar.gz</b>：已整理好的 skills 備份包</li><li><b>install.ps1</b>：Windows 安裝 skills、放置本機控制台，並建立桌面捷徑</li><li><b>install.sh / restore-skills.sh</b>：macOS 安裝或離線還原 skills</li><li><b>平常開控制台</b>：請直接用桌面的「Skill 助手控制台」捷徑</li></ul></div><div class="card"><h2>macOS 離線同步指令</h2>${cmdRow("只有 macOS 換電腦／重裝時才執行","./restore-skills.sh")}</div></div>`}
+function backupHtml(){return`<div class="sop wide-sop"><div class="card"><h2>這頁是做什麼</h2><div class="summary">簡單說：這頁不是日常功能頁，而是「搬家工具」。當你換電腦、重裝 Codex / Claude Code，或要把同一套 skills 放到另一台支援的電腦時才用。</div><ul><li><b>codex-skills-backup.tar.gz</b>：已整理好的 skills 備份包</li><li><b>install.ps1</b>：Windows 安裝 skills、放置本機控制台，並建立桌面捷徑</li><li><b>install.sh / restore-skills.sh</b>：macOS 安裝或離線還原 skills</li><li><b>平常開控制台</b>：請直接用桌面的「二刀流開發助手控制台」捷徑</li></ul></div><div class="card"><h2>macOS 離線同步指令</h2>${cmdRow("只有 macOS 換電腦／重裝時才執行","./restore-skills.sh")}</div></div>`}
 function wideHtml(html){return html.replace('<div class="sop">','<div class="sop wide-sop">')}
 const CONTROL_STAGES=[
   {stage:"1",role:"Codex",purpose:"規劃與拆任務",plain:"先把需求變成可做的清單，避免一開始就亂改檔。"},

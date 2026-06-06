@@ -1,6 +1,6 @@
-# Codex / Claude Skills Console
+# 二刀流開發助手控制台
 
-本專案是一個可攜式的 Codex / Claude Code skills 安裝包，加上一個本機 HTML 控制台。
+本專案是一個可攜式的 Codex / Claude Code skills 安裝包，加上一個本機 HTML 控制台：Codex × Claude Code 開發系統。
 
 同事可以直接下載本 repo，或用一行指令把 skills 安裝到自己的電腦。
 
@@ -22,7 +22,7 @@ curl -fsSL https://raw.githubusercontent.com/kagenhsu/codex-claude-skills-backup
 
 不熟 PowerShell/Bash 的同事，請先看下面「比較安全的安裝方式」。
 
-安裝完成後，重新啟動 Codex 和 Claude Code。Windows 會在桌面建立 `Skill 助手控制台` 捷徑；macOS 會在桌面建立 `Skill 助手控制台.command`。
+安裝完成後，重新啟動 Codex 和 Claude Code。Windows 會在桌面建立 `二刀流開發助手控制台` 捷徑；macOS 會在桌面建立 `二刀流開發助手控制台.command`。
 
 ## 這個指令做了什麼
 
@@ -80,7 +80,7 @@ index.html
 
 ## 專案內容
 
-- `index.html` - 本機 Skill 助手控制台，雙擊開啟。
+- `index.html` - 本機二刀流開發助手控制台，雙擊開啟。
 - `codex-skills-backup.tar.gz` - 可攜式 skills 備份包。
 - `install.ps1` - Windows 一行安裝腳本。
 - `install.sh` - macOS 一行安裝腳本。

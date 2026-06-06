@@ -100,7 +100,7 @@ else
 fi
 
 DESKTOP_DIR="$HOME/Desktop"
-LAUNCHER="$DESKTOP_DIR/Skill 助手控制台.command"
+LAUNCHER="$DESKTOP_DIR/二刀流開發助手控制台.command"
 mkdir -p "$DESKTOP_DIR"
 cat > "$LAUNCHER" <<EOF
 #!/usr/bin/env bash
@@ -111,4 +111,4 @@ echo "Desktop launcher created: $LAUNCHER"
 
 echo
 echo "Done. Restart Codex and Claude Code to load the installed skills."
-echo "Open the console from your desktop launcher: Skill 助手控制台.command"
+echo "Open the console from your desktop launcher: 二刀流開發助手控制台.command"
