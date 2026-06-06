@@ -1,10 +1,23 @@
 # DUAL-AI-STATE
 
-任務名稱：v1.9.1 — 首頁 / 開發進度 / 二刀流入口收斂
+任務名稱：v2.0 — 日常提示詞新手版
 
-目前階段：✅ v1.9.1 功能複核通過，等待使用者決定是否 commit / push
+目前階段：✅ v2.0 日常提示詞新手版 + GitHub Pages demo banner 已完成，待使用者授權 push origin/main 並於 GitHub Settings → Pages 啟用站點
 
 已完成事項：
+- Claude Code（VS Code）已在小範圍授權下新增 GitHub Pages demo 上線準備：在 `scripts/build.py` 加入 `.online-banner` CSS、`<div id="onlineBanner">` 掛載點、`renderOnlineBanner()`（偵測 `*.github.io` 才顯示）、`render()` 內呼叫；新增 `robots.txt`（`Disallow: /`，避免本機開發狀態檔被搜尋引擎收錄）；重 build `index.html`。本機 `file://` 與 `localhost` 體驗未受影響。
+- Claude Code（VS Code）已執行隱私 sanity check：DUAL-AI-STATE.md / NEXT-AI-TASK.md / AGENTS.md / PRD.md 無 API key、token、私人路徑或 email 外洩；最大「痕跡」為 PROJECT_PATH 顯示 `/Users/xujiayuan/...`，無安全風險但會公開 username（與 GitHub 本來已可見一致）。
+- Claude Code（VS Code）已完成 v2.0 日常提示詞新手版第 3 階段複核：P0=0、P1=0、P2=5 項新增（搜尋不過濾 daily、DAILY_PROMPT_SECTIONS hardcoded、PROJECT_STAGES 未補 v2.0、首頁 4 CTA 密度、CSS 視覺未在桌面瀏覽器人工確認），全部排入後續優化，不阻擋 commit。
+- Codex 已新增 `docs/2026-06-06-daily-prompts-design.md`，整理「日常提示詞新手版」設計，並單獨建立 commit `3e00663`。
+- Codex 已新增 `docs/superpowers/plans/2026-06-06-daily-prompts-implementation.md`，記錄本輪實作計畫。
+- Codex 已在 `scripts/build.py` 新增 `日常提示詞` header 頁籤，位置在 `首頁 / 快速開始` 後、`開發進度` 前。
+- Codex 已在首頁新增 `我要日常提示詞` 快速入口，並將首頁常用入口補上日常提示詞說明。
+- Codex 已新增 `DAILY_PROMPT_SECTIONS` 與 `dailyHtml()` / `dailyPromptCard()`，第一版包含 `開發系統`、`找資料 / 做比對`、`整理資料`、`整理電腦檔案` 四區。
+- Codex 已在 `整理電腦檔案` 提示詞中明確加入安全限制：不要刪除、不要搬移、不要改名，先列整理計畫與受影響檔案，等使用者確認後才產生下一步指令。
+- Codex 已執行 `python3 scripts/build.py`，重建 `index.html` 成功，輸出仍為 `45 skills / 40 prompts / 3 combos`。
+- Codex 已用 `rg` 驗證 `scripts/build.py` 與 `index.html` 皆包含 `日常提示詞`、`data-tab="daily"`、`data-home-tab="daily"`、`整理電腦檔案` 與安全句 `不要刪除`。
+- Codex 已抽出 `index.html` inline script 至 `/tmp/codex-console-inline.js`，並執行 `node --check /tmp/codex-console-inline.js`，語法檢查通過。
+- Codex 已嘗試使用 in-app Browser 驗證 `file://.../index.html`，但 Browser Use 安全政策阻擋 `file://` 導航；未繞過限制。
 - Claude Code（VS Code）已完成 v1.9.1「首頁／開發進度／二刀流入口收斂」功能複核：P0=0、P1=0；6 項使用者重點全數通過，新增 P2-V19G-1～4 排入下一版網頁修正。
 - Codex 已將原本「AI 角色導覽」改為真正的「首頁 / 快速開始」入口，整合系統說明、三步上手、角色分工、常用入口與完整二刀流流程摘要。
 - Codex 已移除獨立「二刀流工作流」頁籤，避免與首頁重複；二刀流流程摘要已回收至首頁，`二刀流中控` 保留作為操作入口。
@@ -140,11 +153,13 @@
 - v1.5 Claude Code（VS Code）P1 修正後複審通過，無 P0/P1，允許 commit。
 
 下一步：
-- Claude Code（VS Code）複核首頁、開發進度、選資料夾、file:// 啟動提示與頁籤收斂是否正常可用。
-- 若複核通過，再由使用者決定是否保存本輪修改，或繼續做下一個任務。
-- 若複核發現問題，Codex 再接手逐條修正。
+- 使用者決定何時 `git push origin main`（本次 commit 已在本機完成、尚未 push）。
+- push 後使用者親自到 GitHub Settings → Pages 啟用：Source `Deploy from a branch`、Branch `main` / `(root)`、Save；網址為 `https://kagenhsu.github.io/codex-claude-skills-backup/`。
+- 上線後在無痕視窗驗收 5 項：banner 出現、按鈕跳 backup、日常提示詞 4 區、Skill 觸發句複製、開發進度選資料夾。
+- 接下來進入「使用週」：除非真實使用發現具體不便，否則不開新功能；P2-V20 與遺留 P2 全部凍結。
 
 未解決問題：
+- 本輪 in-app Browser 無法直接導向 `file://.../index.html`，原因是 Browser Use URL policy 阻擋；目前已用 build、生成內容搜尋與 inline JS check 作為替代驗證。
 - v1.9.1 無 P0/P1 阻擋項；目前等待使用者決定是否分組 commit / push。
 - 下一版網頁修正優先項：
   - P2-V19G-1：`guide` 的 PAGE_INTRO 與首頁 hero 訊息重複；下一版可擇一精簡。
@@ -169,4 +184,4 @@
   - ✅ P2 #5 placeholder「二刀流」改「二刀流」（v1.1 已修，backlog 條目為誤留）
   - ✅ P2 #6 build.py 加 combos 引用 build-time 檢查（v1.2 commit 90c6d5b 已修）
 
-最後更新時間：2026-06-06 14:57 CST Codex 已將本輪標記為 v1.9.1 並收錄複核 P2
+最後更新時間：2026-06-06 18:00 CST Codex 已完成驗證並建立 v2.0 本機 commit，等待使用者授權 push 與啟用 GitHub Pages

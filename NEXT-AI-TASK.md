@@ -1,11 +1,11 @@
 # NEXT-AI-TASK
 
-任務名稱：v1.9.1 — 首頁 / 開發進度 / 二刀流入口收斂
-目前階段：✅ v1.9.1 功能複核通過，等待使用者決定是否 commit / push
+任務名稱：v2.0 — 日常提示詞新手版 + GitHub Pages demo
+目前階段：✅ Claude Code 複核通過、加入 demo banner 與 robots.txt、本機 commit 完成，等待使用者授權 push origin/main 並啟用 GitHub Pages
 上一棒 AI：Claude Code（VS Code）
 下一棒 AI：使用者
-交棒目的：v1.9.1 功能複核已通過，請使用者決定是否分組 commit / push，或先繼續下一版網頁修正。
-最後更新：2026-06-06 14:57 CST Codex 已將本輪標記為 v1.9.1 並收錄複核 P2
+交棒目的：使用者決定何時 `git push origin main`，並親自到 GitHub Settings → Pages 啟用站點（Source: Deploy from a branch / Branch: main / (root)）；上線後在無痕視窗驗收 5 項；之後進入「使用週」凍結期。
+最後更新：2026-06-06 18:00 CST Codex 已完成驗證並建立 v2.0 本機 commit；等待使用者決定何時 push 與啟用 GitHub Pages
 必讀檔案：
 - AGENTS.md
 - DUAL-AI-STATE.md
@@ -18,6 +18,16 @@
 - scripts/build.py
 - index.html
 已完成：
+- Codex 已新增 `docs/2026-06-06-daily-prompts-design.md`，整理「日常提示詞新手版」設計，並單獨建立 commit `3e00663`。
+- Codex 已新增 `docs/superpowers/plans/2026-06-06-daily-prompts-implementation.md`，記錄本輪實作計畫。
+- Codex 已在 `scripts/build.py` 新增 `日常提示詞` header 頁籤，位置在 `首頁 / 快速開始` 後、`開發進度` 前。
+- Codex 已在首頁新增 `我要日常提示詞` 快速入口，並將首頁常用入口補上日常提示詞說明。
+- Codex 已新增 `DAILY_PROMPT_SECTIONS` 與 `dailyHtml()` / `dailyPromptCard()`，第一版包含 `開發系統`、`找資料 / 做比對`、`整理資料`、`整理電腦檔案` 四區。
+- Codex 已在 `整理電腦檔案` 提示詞中明確加入安全限制：不要刪除、不要搬移、不要改名，先列整理計畫與受影響檔案，等使用者確認後才產生下一步指令。
+- Codex 已執行 `python3 scripts/build.py`，重建 `index.html` 成功，輸出仍為 `45 skills / 40 prompts / 3 combos`。
+- Codex 已用 `rg` 驗證 `scripts/build.py` 與 `index.html` 皆包含 `日常提示詞`、`data-tab="daily"`、`data-home-tab="daily"`、`整理電腦檔案` 與安全句 `不要刪除`。
+- Codex 已抽出 `index.html` inline script 至 `/tmp/codex-console-inline.js`，並執行 `node --check /tmp/codex-console-inline.js`，語法檢查通過。
+- Codex 已嘗試使用 in-app Browser 驗證 `file://.../index.html`，但 Browser Use 安全政策阻擋 `file://` 導航；未繞過限制。
 - Claude Code（VS Code）已完成 v1.9.1「首頁／開發進度／二刀流入口收斂」功能複核：P0=0、P1=0；6 項使用者重點全數通過，新增 P2-V19G-1～4 排入下一版網頁修正。
 - Codex 已依使用者要求，將原本「AI 角色導覽」改成真正的「首頁 / 快速開始」入口：首頁現在直接說明這套系統在做什麼、怎麼分工、三步上手、最常用入口與完整二刀流流程摘要。
 - Codex 已移除獨立「二刀流工作流」頁籤，避免與首頁重複；流程重點已濃縮回首頁，保留「二刀流中控」作為已知階段時的操作入口。
@@ -108,13 +118,18 @@
 - repo、tar.gz、Codex 安裝版、Claude 安裝版四份 `SKILL.md` MD5 皆為 `b7bcf4df2168451ba6486d72723c9c45`。
 - 已補上 `NEXT-AI-TASK.md` 的最後更新欄位。
 下一棒要做：
+- Claude Code（VS Code）請優先複核 `日常提示詞` 新頁籤：header 是否出現在 `首頁 / 快速開始` 後、`開發進度` 前，點擊後是否顯示新手版日常提示詞頁。
+- Claude Code（VS Code）請複核首頁：`我要日常提示詞` 按鈕是否能正確跳到 `日常提示詞`。
+- Claude Code（VS Code）請複核四個區塊：`開發系統`、`找資料 / 做比對`、`整理資料`、`整理電腦檔案` 是否都有清楚的新手用途與可複製提示詞。
+- Claude Code（VS Code）請特別複核 `整理電腦檔案`：提示詞是否明確要求不要刪除、不要搬移、不要改名，必須先列整理計畫與受影響檔案，等使用者確認後才產生下一步指令。
+- Claude Code（VS Code）請複核本輪沒有改動 `data/prompts.yaml` schema，也沒有讓 build 的 skills / prompts / combos 數量異常增加。
 - 使用者決定是否保存 v1.9.1：可選單一 commit，或拆成「首頁與頁籤收斂」／「開發進度 picker 強化與 file:// 提示」兩個 commit；未經授權不要 commit / push。
 - 下一版網頁修正請優先處理 P2-V19G-1：`guide` 的 PAGE_INTRO 與首頁 hero 訊息重複，下一版可擇一精簡。
 - 下一版網頁修正請優先處理 P2-V19G-2：內部 tab id `guide` 與 UI 標籤「首頁 / 快速開始」、`homeHtml` / `bindHome` 命名落差，下一版可整理為 `home`。
 - 下一版網頁修正請優先處理 P2-V19G-3：首頁 3 個 CTA 沿用 `.copy-btn` class，語意略偏，下一版可改為 `.home-cta`。
 - 下一版網頁修正請優先處理 P2-V19G-4：`launchTip` 提到的桌面捷徑名稱需與 `install.sh` / `install.ps1` 保持同步。
 - Claude Code（VS Code）請優先複核首頁：是否已清楚成為新手入口，且首頁文案與按鈕不會和其他頁籤功能衝突。
-- Claude Code（VS Code）請複核 header：應只剩 `首頁 / 快速開始`、`開發進度`、`二刀流中控`、`提示詞庫`、`Skills`、`收錄新內容`、`換電腦／同步`，不應再有獨立 `二刀流工作流` 頁籤。
+- Claude Code（VS Code）請複核 header：應包含 `首頁 / 快速開始`、`日常提示詞`、`開發進度`、`二刀流中控`、`提示詞庫`、`Skills`、`收錄新內容`、`換電腦／同步`，不應再有獨立 `二刀流工作流` 頁籤。
 - Claude Code（VS Code）請複核開發進度：選其他專案時，不應再顯示控制台自己的版本地圖；若缺少四個 `.md`，頁面應明確提示缺檔與補檔方向。
 - Claude Code（VS Code）請複核資料夾選擇：若瀏覽器不支援或沒有成功打開資料夾選取，畫面應該有提示文字，而不是完全沒反應。
 - Claude Code（VS Code）請複核 file:// 啟動提示：直接用書籤開 `index.html` 時，頁面應清楚說明不會自動先更新。
@@ -134,6 +149,10 @@
 驗證要求：
 - `python3 scripts/build.py` 應成功。
 - build 輸出應為 45 skills / 40 prompts / 3 combos。
+- header 應出現 `日常提示詞`，且位置在 `首頁 / 快速開始` 後、`開發進度` 前。
+- 首頁應能直接跳到 `日常提示詞`。
+- `日常提示詞` 頁應顯示 `開發系統`、`找資料 / 做比對`、`整理資料`、`整理電腦檔案` 四區。
+- `整理電腦檔案` 提示詞必須包含「不要刪除 / 不要搬移 / 不要改名 / 先列計畫 / 等使用者確認」等安全限制。
 - 首頁第一個頁籤應顯示 `首頁 / 快速開始`，且內容不再只是舊版 AI 角色導覽表。
 - header 不應再出現獨立 `二刀流工作流` 頁籤。
 - 首頁應能直接跳到 `開發進度` / `提示詞庫` / `Skills`。

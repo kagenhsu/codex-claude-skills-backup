@@ -282,14 +282,32 @@ TEMPLATE = r'''<!DOCTYPE html>
   .combo-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:12px; margin-bottom:16px;}
   .combo-card{background:var(--card); border:1px solid var(--border); border-radius:10px; padding:12px; display:flex; flex-direction:column; gap:8px; box-shadow:var(--shadow);}
   .combo-steps{font-size:.78rem; color:var(--muted); padding-left:1.2em;}
+  .daily-hero{background:linear-gradient(135deg,#fff8e8,#eaf4ff 58%,#eef8ef); border:1px solid rgba(185,127,16,.22); border-radius:18px; padding:20px; box-shadow:var(--shadow);}
+  .daily-hero h2{font-size:1.55rem; margin-bottom:8px;}
+  .daily-hero p{color:var(--muted); max-width:820px; line-height:1.75;}
+  .daily-principles{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-top:14px;}
+  .daily-principle{background:rgba(255,255,255,.72); border:1px solid rgba(47,111,237,.15); border-radius:14px; padding:12px;}
+  .daily-section{margin-top:16px;}
+  .daily-section-head{display:flex; justify-content:space-between; align-items:flex-end; gap:12px; margin-bottom:10px;}
+  .daily-section-head h3{font-size:1.1rem;}
+  .daily-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px;}
+  .daily-card{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:10px;}
+  .daily-card h4{font-size:1rem;}
+  .daily-safety{background:rgba(46,164,79,.1); border:1px solid rgba(46,164,79,.22); border-radius:12px; padding:10px; color:#17612d; font-size:.84rem; line-height:1.6;}
+  .online-banner{background:linear-gradient(135deg,#eaf3ff,#f3e8ff); border:1px solid #c7d5ee; border-radius:10px; padding:12px 14px; margin-bottom:14px; box-shadow:var(--shadow); display:flex; gap:12px; align-items:flex-start; flex-wrap:wrap;}
+  .online-banner b{display:block; margin-bottom:4px;}
+  .online-banner .grow{flex:1; min-width:240px;}
+  .online-banner a{color:var(--accent); text-decoration:none; border-bottom:1px solid currentColor;}
+  .online-banner button{border:none; border-radius:8px; background:var(--accent); color:#fff; padding:8px 14px; font-size:.86rem; cursor:pointer; white-space:nowrap;}
+  .online-banner button:hover{background:#2f5cc4;}
   .empty{color:var(--muted); text-align:center; padding:36px 0;}
   footer{text-align:center; color:var(--muted); font-size:.75rem; padding:20px;}
-  @media (max-width:760px){main,header{padding-left:14px; padding-right:14px;} .grid,.intro-grid,.workflow-guide,.state-summary,.form-grid,.capture-link,.home-kpis,.home-steps,.home-split,.role-grid{grid-template-columns:1fr;} .capture-arrow{transform:rotate(90deg); justify-self:center;} .capture-status{justify-self:start;} .section-head{display:block;} }
+  @media (max-width:760px){main,header{padding-left:14px; padding-right:14px;} .grid,.intro-grid,.workflow-guide,.state-summary,.form-grid,.capture-link,.home-kpis,.home-steps,.home-split,.role-grid,.daily-principles{grid-template-columns:1fr;} .capture-arrow{transform:rotate(90deg); justify-self:center;} .capture-status{justify-self:start;} .section-head,.daily-section-head{display:block;} }
 </style>
 </head>
 <body>
-<header><div class="head-inner"><h1>二刀流開發助手控制台 <span class="sub">Codex × Claude Code 開發系統</span></h1><div class="tabs"><button class="tab active" data-tab="guide">首頁 / 快速開始</button><button class="tab" data-tab="progress">開發進度</button><button class="tab" data-tab="control">二刀流中控</button><button class="tab" data-tab="prompts">提示詞庫</button><button class="tab" data-tab="skills">Skills</button><button class="tab" data-tab="capture">收錄新內容</button><button class="tab" data-tab="backup">換電腦／同步</button></div></div></header>
-<main><div id="launchTip"></div><div class="search"><span class="icon">搜</span><input id="searchBox" type="text" placeholder="搜尋 skill、提示詞、觸發句、角色、分工、導覽，例如：git、翻譯、審查、二刀流"></div><div id="pageIntro" class="page-intro"></div><div id="chips" class="chips"></div><div id="countLine" class="count"></div><div id="content"></div></main>
+<header><div class="head-inner"><h1>二刀流開發助手控制台 <span class="sub">Codex × Claude Code 開發系統</span></h1><div class="tabs"><button class="tab active" data-tab="guide">首頁 / 快速開始</button><button class="tab" data-tab="daily">日常提示詞</button><button class="tab" data-tab="progress">開發進度</button><button class="tab" data-tab="control">二刀流中控</button><button class="tab" data-tab="prompts">提示詞庫</button><button class="tab" data-tab="skills">Skills</button><button class="tab" data-tab="capture">收錄新內容</button><button class="tab" data-tab="backup">換電腦／同步</button></div></div></header>
+<main><div id="onlineBanner"></div><div id="launchTip"></div><div class="search"><span class="icon">搜</span><input id="searchBox" type="text" placeholder="搜尋 skill、提示詞、觸發句、角色、分工、導覽，例如：git、翻譯、審查、二刀流"></div><div id="pageIntro" class="page-intro"></div><div id="chips" class="chips"></div><div id="countLine" class="count"></div><div id="content"></div></main>
 <footer>資料來源：data/skills.yaml + data/prompts.yaml + data/combos.yaml；修改後執行 python3 scripts/build.py 重建</footer>
 <script>
 const DATA = __DATA_JSON__;
@@ -313,6 +331,155 @@ const STAGE_META = {
   solo:{entry:["入口","只用一個 AI 時先用這張說明工作方式"],"1":["第 1 步","釐清任務與目標"],"2":["第 2 步","提出方案、先不修改"],"3":["第 3 步","分段執行並自我檢查"],"4":["第 4 步","收尾、整理驗證與 commit 建議"]}
 };
 const FLOW_ORDER = {dualai:["entry","1","2","3","4","5","handoff","status","context-compact","archive"],solo:["entry","1","2","3","4"]};
+const DAILY_PROMPT_SECTIONS = [
+  {title:"開發系統",hint:"寫程式、修 bug、讀專案時先用這區。",cards:[
+    {title:"請先讀懂這個專案",when:"接手舊專案，或第一次打開一個專案時。",prompt:`請先讀懂這個專案，但先不要修改任何檔案。
+
+請依序幫我做：
+1. 先讀 README、AGENTS、PRD、目錄結構與重要設定檔。
+2. 用新手能懂的方式說明這個專案是做什麼。
+3. 列出最重要的資料夾與檔案，各自負責什麼。
+4. 判斷如果我要開始開發，第一步應該看哪裡。
+5. 如果資訊不足，請列出你還需要我補充什麼。
+
+限制：
+- 先不要修改任何檔案。
+- 先不要執行破壞性指令。
+- 不確定的地方請明講，不要自己猜。`},
+    {title:"幫我規劃一個功能",when:"想新增功能，但還不知道怎麼拆任務時。",prompt:`我想新增一個功能，請你先幫我規劃，不要直接改檔案。
+
+功能想法：
+【在這裡貼上你的功能想法】
+
+請幫我：
+1. 先用新手能懂的話重述我的需求。
+2. 如果需求不清楚，先問最多 3 個必要問題。
+3. 拆成可以一步一步完成的小任務。
+4. 說明會影響哪些檔案或模組。
+5. 列出可能風險與驗證方式。
+
+等我確認規劃後，再進入實作。`},
+    {title:"幫我修 bug",when:"畫面壞掉、功能不動、指令報錯時。",prompt:`我遇到一個 bug，請你用穩健方式幫我處理。
+
+問題描述：
+【貼上錯誤訊息、畫面狀況、重現步驟】
+
+請依序處理：
+1. 先整理你理解到的問題。
+2. 找出最可能的原因，並說明判斷依據。
+3. 先提出最小修正方案。
+4. 經我同意後再修改檔案。
+5. 修完後請執行可行的驗證，並回報結果。
+
+限制：
+- 不要一次大改。
+- 不要順手重構無關程式。
+- 如果需要危險指令，先停下來問我。`}
+  ]},
+  {title:"找資料 / 做比對",hint:"查文件、比工具、整理外部資訊時用這區。",cards:[
+    {title:"幫我找相關資料並整理",when:"想理解工具、文件、範例或做資料蒐集時。",prompt:`請幫我找相關資料並整理成新手看得懂的摘要。
+
+我要了解的主題：
+【貼上主題或問題】
+
+請幫我：
+1. 先列出查找方向與關鍵字。
+2. 整理重點、限制、適用情境。
+3. 如果有來源，請標示來源名稱或連結。
+4. 把不確定或可能過時的資訊標出來。
+5. 最後給我一段「我現在該怎麼做」的建議。
+
+限制：
+- 不要把推測說成事實。
+- 找不到可靠來源時要明講。`},
+    {title:"幫我比較幾個方案",when:"要選技術、工具、流程或做決策前。",prompt:`請幫我比較下面幾個方案，並用新手能懂的方式整理。
+
+我要比較的方案：
+【方案 A】
+【方案 B】
+【方案 C，可留空】
+
+請用表格列出：
+1. 適合情境。
+2. 優點。
+3. 缺點。
+4. 成本或學習門檻。
+5. 風險。
+6. 你的建議。
+
+最後請補一句：如果我是新手，應該先選哪個，以及為什麼。
+請記得：你可以給建議，但最後決定權留給我。`}
+  ]},
+  {title:"整理資料",hint:"整理筆記、會議、文章、雜亂文字時用這區。",cards:[
+    {title:"幫我整理這段資料",when:"貼上一大段文字、筆記、會議紀錄後使用。",prompt:`請幫我整理下面這段資料，讓它變得清楚、好讀、可執行。
+
+資料內容：
+【貼上資料】
+
+請輸出：
+1. 一段短摘要。
+2. 重點條列。
+3. 待辦事項。
+4. 重要決定。
+5. 還不清楚、需要補問的地方。
+
+限制：
+- 不要自行補不存在的資訊。
+- 如果原文有矛盾，請標出來。`},
+    {title:"幫我把資料整理成表格",when:"想把雜亂文字變成欄位、表格或清單時。",prompt:`請幫我把下面資料整理成表格。
+
+資料內容：
+【貼上資料】
+
+請先建議適合的欄位，然後輸出表格。
+
+要求：
+1. 保留原始意思。
+2. 不要自行補不存在的資料。
+3. 缺資料的欄位請填「待補」。
+4. 如果資料太亂，請先列出你會怎麼分類。`}
+  ]},
+  {title:"整理電腦檔案",hint:"風險最高，只先規劃，不直接動你的檔案。",safety:"這區所有提示詞都要求 AI 先列計畫，不刪除、不搬移、不改名，等你確認後才進下一步。",cards:[
+    {title:"先幫我規劃資料夾分類",when:"資料夾很亂，但你還不想讓 AI 動檔案。",prompt:`請先幫我規劃資料夾分類，但不要直接修改任何檔案。
+
+資料夾或檔案清單：
+【貼上資料夾路徑或檔案清單】
+
+請幫我：
+1. 只根據資料夾名稱與檔名分析。
+2. 建議分類規則。
+3. 建議要建立哪些資料夾。
+4. 列出哪些檔案可能放在哪一類。
+5. 標出你不確定的檔案，讓我自己判斷。
+
+安全限制：
+- 不要刪除任何檔案。
+- 不要搬移任何檔案。
+- 不要改任何檔名。
+- 請先列出整理計畫與受影響檔案。
+- 等我確認後，再產生下一步指令。`},
+    {title:"幫我產生安全整理計畫",when:"準備整理大量檔案前，先做 dry-run 計畫。",prompt:`請幫我產生一份安全的電腦檔案整理計畫，但現在只做 dry-run，不要真的動檔案。
+
+目標資料夾：
+【貼上資料夾路徑或檔案清單】
+
+我希望整理成：
+【例如：依專案、日期、檔案類型、用途分類】
+
+請輸出：
+1. 建議分類結構。
+2. 受影響檔案清單。
+3. 每個檔案建議搬到哪裡。
+4. 可能重複或不確定的檔案。
+5. 執行前備份建議。
+6. 需要我確認的問題。
+
+安全限制：
+- 不要刪除、不要搬移、不要改名。
+- 請先列出整理計畫與受影響檔案，等我確認後再產生下一步指令。
+- 如果你需要執行任何指令，必須先問我。`}
+  ]}
+];
 const PROJECT_STAGES = [
   ["v1.0","控制台初版","Skill 目錄、提示詞庫、搜尋與安檢流程。"],
   ["v1.1","快速看板與組合包","二刀流中控快速看板與常用流程一包複製。"],
@@ -332,6 +499,7 @@ const PAGE_INTROS = {
   capture:{title:"收錄新內容",lead:"看到好用提示詞或 skill 時，先填表產生交辦提示詞與 YAML 片段，再交給 Codex 寫入、重建、驗證與 commit。",purpose:"安全收錄新內容，不需要你手寫 YAML。",first:"先選提示詞或 Skill；新手請複製「給 Codex 的完整交辦提示詞」。",when:"看到新 skill、實用提示詞，或想把工作流模板收入控制台時。"},
   control:{title:"二刀流中控",lead:"v1 是靜態教學頁，不讀取 DUAL-AI-STATE.md；按鈕只會跳到提示詞庫並複製對應提示詞。",purpose:"讓每個階段知道要找誰、做什麼、複製哪張提示詞。",first:"先看目前要進哪一階段，再按卡片按鈕複製對應提示詞。",when:"要從規劃、實作、審查、修正、複審到存檔收尾一路接續時。"},
   progress:{title:"開發進度",lead:"這頁把目前專案做到哪裡、下一步要做什麼一次整理出來。",purpose:"不用翻文件也能快速知道現在進度、是否有卡點，以及下一步該做什麼。",first:"先看目前階段與下一步；如果有未解決問題，先處理警示區。",when:"接續開發、換 AI 接手、或想確認這個專案現在是不是可以往下一步走時。"},
+  daily:{title:"日常提示詞",lead:"不知道怎麼開口時，先從這裡複製。這頁把開發、查資料、整理資料與整理電腦檔案整理成新手可直接使用的提示詞。",purpose:"把日常最常用的 AI 交辦方式整理成安全、直接可複製的新手版。",first:"先選你現在想做什麼，再複製對應卡片。整理電腦檔案時，只先規劃，不直接動檔。",when:"開發系統、找資料比對、整理文字資料、或想分類電腦檔案但怕弄壞時。"},
   guide:{title:"首頁 / 快速開始",lead:"這裡先用最簡單的方式說明這套輔助系統在做什麼、怎麼分工、第一步該按哪裡。",purpose:"讓新手一進來就知道 Codex 做什麼、Claude Code 做什麼，以及怎麼開始。",first:"先看下方 3 步驟；如果你正在接續專案，直接去「開發進度」。",when:"第一次打開控制台，或想快速教同事這套系統怎麼用時。"}
 };
 const riskCls = {"低":"low","中":"mid","高":"high"};
@@ -341,9 +509,12 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-copy]");if
 function match(obj,fields){if(!q)return true;const hay=fields.map(f=>Array.isArray(obj[f])?obj[f].join(" "):(obj[f]||"")).join(" ").toLowerCase();return hay.includes(q.toLowerCase())}
 function cats(){if(tab==="skills")return["全部",...new Set(DATA.skills.map(s=>s.category))];if(tab==="prompts")return["全部","專案啟動"];return[]}
 function renderLaunchTip(){const tip=document.getElementById("launchTip");if(!tip)return;const isFile=location.protocol==="file:";if(!isFile){tip.innerHTML="";return}tip.innerHTML=`<div class="launch-tip"><b>目前是直接用書籤／檔案打開控制台</b><div class="summary">這種開法只會打開 <code>index.html</code>，不會先執行「更新並開啟控制台.command」或 <code>python3 scripts/build.py</code>。如果你希望每次都先更新再開頁面，請改用桌面的 <code>二刀流開發助手控制台.command</code>，或在這個專案資料夾裡雙擊 <code>更新並開啟控制台.command</code>。</div></div>`}
+function renderOnlineBanner(){const el=document.getElementById("onlineBanner");if(!el)return;const isOnline=/\.github\.io$/i.test(location.hostname);if(!isOnline){el.innerHTML="";return}el.innerHTML=`<div class="online-banner"><div class="grow"><b>這是線上試用版（demo）</b><div class="summary">頁面內顯示的開發進度、AGENTS、PRD 是這套控制台自己的範例；要查自己專案請按「開發進度」→ 選資料夾。日常提示詞 / Skills / 提示詞庫可以直接用。</div><div class="summary" style="margin-top:6px">想在自己電腦用，請按右邊「下載安裝」看一行指令；或到 <a href="https://github.com/kagenhsu/codex-claude-skills-backup" target="_blank" rel="noopener">GitHub repo</a> 看原始碼。</div></div><button type="button" data-tab-jump="backup">下載安裝</button></div>`;el.querySelector("[data-tab-jump]")?.addEventListener("click",()=>setTab("backup"))}
 function renderIntro(){const info=PAGE_INTROS[tab];document.getElementById("pageIntro").innerHTML=`<h2>${esc(info.title)}</h2><div class="lead">${esc(info.lead)}</div><div class="intro-grid"><div class="intro-item"><div class="intro-label">用途</div><div class="intro-text">${esc(info.purpose)}</div></div><div class="intro-item"><div class="intro-label">先做</div><div class="intro-text">${esc(info.first)}</div></div><div class="intro-item"><div class="intro-label">適合情境</div><div class="intro-text">${esc(info.when)}</div></div></div>`}
-function homeHtml(){return`<div class="wide-sop"><div class="home-hero"><h2>這是一套讓 Codex 和 Claude Code 分工合作的開發輔助系統</h2><p>簡單說：Codex 負責規劃、實作、修正；Claude Code（VS Code）負責審查與複審。你不用記全部流程，只要知道現在是新專案、接續專案，還是要找提示詞即可。</p><div class="home-actions"><button class="copy-btn" type="button" data-home-tab="progress">我正在接續專案</button><button class="copy-btn" type="button" data-home-tab="prompts">我要複製提示詞</button><button class="copy-btn" type="button" data-home-tab="skills">我要找 Skill</button></div><div class="home-kpis"><div class="home-kpi"><b>先看哪裡</b><div class="summary">有現成專案就先開「開發進度」，沒有就先看下面 3 步。</div></div><div class="home-kpi"><b>核心分工</b><div class="summary">Codex 做事，Claude Code 抓問題，你做最後決定。</div></div><div class="home-kpi"><b>新手原則</b><div class="summary">先照流程走，不用一開始就理解全部頁籤。</div></div></div></div><div class="home-steps"><div class="home-step"><span class="num">1</span><h3>先確認你是哪一種情況</h3><div class="summary">新專案：先去提示詞庫找 AGENTS / PRD。舊專案：先去開發進度選資料夾。只想找工具：直接去 Skills。</div></div><div class="home-step"><span class="num">2</span><h3>照二刀流分工做</h3><div class="summary">Codex 先規劃與實作，Claude Code 再審查。不要兩邊同時亂改，這樣最穩。</div></div><div class="home-step"><span class="num">3</span><h3>每一棒都留交接檔</h3><div class="summary">這套系統主要靠 <code>DUAL-AI-STATE.md</code>、<code>NEXT-AI-TASK.md</code>、<code>AGENTS.md</code>、<code>PRD.md</code> 接續，不要只靠聊天記憶。</div></div></div><div class="home-split"><div class="home-panel"><h3>二刀流最簡單分工</h3><div class="role-grid"><div class="role-card"><h4>Codex</h4><div class="summary">主力工程師。適合規劃、拆任務、分段實作、跑測試、修正問題。</div></div><div class="role-card"><h4>Claude Code（VS Code）</h4><div class="summary">審查員。適合看 diff、抓風險、提 P0/P1/P2、做複審。</div></div><div class="role-card"><h4>你</h4><div class="summary">最後決策者。看結論、決定要不要繼續、要不要 commit / push。</div></div><div class="role-card"><h4>單一 AI 也能用</h4><div class="summary">如果手邊只有一個 AI，就改走提示詞庫裡的「單一 AI 使用」流程。</div></div></div></div><div class="home-panel"><h3>最常用的三個入口</h3><div class="mini-list"><div class="mini-item"><b>開發進度</b><div class="summary">接續現有專案時用。選資料夾後看目前階段、下一步、缺哪些檔案。</div></div><div class="mini-item"><b>提示詞庫</b><div class="summary">不知道怎麼開工時用。裡面有新專案啟動、審查、交接、收尾提示詞。</div></div><div class="mini-item"><b>二刀流中控</b><div class="summary">已經知道自己在第幾階段時用。直接跳到對應提示詞。</div></div></div></div></div><div class="home-panel" style="margin-top:14px"><h3>二刀流完整流程</h3><div class="summary">第 1 階段 Codex 規劃 → 第 2 階段 Codex 實作 → 第 3 階段 Claude Code 審查 → 第 4 階段 Codex 修正 → 第 5 階段 Claude Code 複審 → Codex 存檔收尾。</div><div class="summary" style="margin-top:8px">如果你已經知道自己在哪一階段，直接去「二刀流中控」會比讀長篇說明更快。</div></div></div>`}
+function homeHtml(){return`<div class="wide-sop"><div class="home-hero"><h2>這是一套讓 Codex 和 Claude Code 分工合作的開發輔助系統</h2><p>簡單說：Codex 負責規劃、實作、修正；Claude Code（VS Code）負責審查與複審。你不用記全部流程，只要知道現在是新專案、接續專案，還是要找提示詞即可。</p><div class="home-actions"><button class="copy-btn" type="button" data-home-tab="daily">我要日常提示詞</button><button class="copy-btn" type="button" data-home-tab="progress">我正在接續專案</button><button class="copy-btn" type="button" data-home-tab="prompts">我要複製提示詞</button><button class="copy-btn" type="button" data-home-tab="skills">我要找 Skill</button></div><div class="home-kpis"><div class="home-kpi"><b>先看哪裡</b><div class="summary">有現成專案就先開「開發進度」，只是日常交辦就開「日常提示詞」。</div></div><div class="home-kpi"><b>核心分工</b><div class="summary">Codex 做事，Claude Code 抓問題，你做最後決定。</div></div><div class="home-kpi"><b>新手原則</b><div class="summary">先照流程走，不用一開始就理解全部頁籤。</div></div></div></div><div class="home-steps"><div class="home-step"><span class="num">1</span><h3>先確認你是哪一種情況</h3><div class="summary">日常交辦：先去日常提示詞。新專案：先去提示詞庫找 AGENTS / PRD。舊專案：先去開發進度選資料夾。只想找工具：直接去 Skills。</div></div><div class="home-step"><span class="num">2</span><h3>照二刀流分工做</h3><div class="summary">Codex 先規劃與實作，Claude Code 再審查。不要兩邊同時亂改，這樣最穩。</div></div><div class="home-step"><span class="num">3</span><h3>每一棒都留交接檔</h3><div class="summary">這套系統主要靠 <code>DUAL-AI-STATE.md</code>、<code>NEXT-AI-TASK.md</code>、<code>AGENTS.md</code>、<code>PRD.md</code> 接續，不要只靠聊天記憶。</div></div></div><div class="home-split"><div class="home-panel"><h3>二刀流最簡單分工</h3><div class="role-grid"><div class="role-card"><h4>Codex</h4><div class="summary">主力工程師。適合規劃、拆任務、分段實作、跑測試、修正問題。</div></div><div class="role-card"><h4>Claude Code（VS Code）</h4><div class="summary">審查員。適合看 diff、抓風險、提 P0/P1/P2、做複審。</div></div><div class="role-card"><h4>你</h4><div class="summary">最後決策者。看結論、決定要不要繼續、要不要 commit / push。</div></div><div class="role-card"><h4>單一 AI 也能用</h4><div class="summary">如果手邊只有一個 AI，就改走提示詞庫裡的「單一 AI 使用」流程。</div></div></div></div><div class="home-panel"><h3>最常用的三個入口</h3><div class="mini-list"><div class="mini-item"><b>日常提示詞</b><div class="summary">不知道怎麼開口時用。開發、查資料、整理文字、整理電腦檔案都有新手版提示詞。</div></div><div class="mini-item"><b>開發進度</b><div class="summary">接續現有專案時用。選資料夾後看目前階段、下一步、缺哪些檔案。</div></div><div class="mini-item"><b>提示詞庫</b><div class="summary">不知道怎麼開工時用。裡面有新專案啟動、審查、交接、收尾提示詞。</div></div><div class="mini-item"><b>二刀流中控</b><div class="summary">已經知道自己在第幾階段時用。直接跳到對應提示詞。</div></div></div></div></div><div class="home-panel" style="margin-top:14px"><h3>二刀流完整流程</h3><div class="summary">第 1 階段 Codex 規劃 → 第 2 階段 Codex 實作 → 第 3 階段 Claude Code 審查 → 第 4 階段 Codex 修正 → 第 5 階段 Claude Code 複審 → Codex 存檔收尾。</div><div class="summary" style="margin-top:8px">如果你已經知道自己在哪一階段，直接去「二刀流中控」會比讀長篇說明更快。</div></div></div>`}
 function bindHome(){document.querySelectorAll("[data-home-tab]").forEach(btn=>btn.onclick=()=>setTab(btn.dataset.homeTab))}
+function dailyPromptCard(card){return`<div class="daily-card"><h4>${esc(card.title)}</h4><div class="usage">${esc(card.when)}</div><pre class="prompt-body">${esc(card.prompt)}</pre><button class="copy-btn" data-copy="${encodeURIComponent(card.prompt)}">複製這段提示詞</button></div>`}
+function dailyHtml(){return`<div class="wide-sop"><div class="daily-hero"><h2>日常工作不知道怎麼問，就先從這裡複製</h2><p>這頁是新手版提示詞，不用先懂二刀流或專案文件。你只要選「現在想做什麼」，複製卡片給 Codex 或 Claude Code，就能開始請 AI 幫忙。</p><div class="daily-principles"><div class="daily-principle"><b>先講目的</b><div class="summary">告訴 AI 你想完成什麼，不只是丟一堆資料。</div></div><div class="daily-principle"><b>先看再做</b><div class="summary">要求 AI 先分析、先規劃，確認後再修改。</div></div><div class="daily-principle"><b>重要檔案先保護</b><div class="summary">涉及電腦檔案時，先備份、先列計畫，不直接動檔。</div></div></div></div>${DAILY_PROMPT_SECTIONS.map(section=>`<section class="daily-section"><div class="daily-section-head"><div><h3>${esc(section.title)}</h3><div class="summary">${esc(section.hint)}</div></div>${section.safety?`<div class="daily-safety">${esc(section.safety)}</div>`:""}</div><div class="daily-grid">${section.cards.map(dailyPromptCard).join("")}</div></section>`).join("")}</div>`}
 function skillCard(s){const triggers=(s.triggers||[]).map(t=>`<div class="trigger"><code>${esc(t)}</code><button class="copy-btn" data-copy="${encodeURIComponent(t)}">複製</button></div>`).join("");return`<div class="card"><h3>${esc(s.name)} <span class="badge ${riskCls[s.risk]||"low"}">${esc(s.risk)}風險</span> <span class="cat-tag">${esc(s.category)}</span></h3><div class="summary">${esc(s.summary)}</div>${s.notes?`<div class="notes">${esc(s.notes)}</div>`:""}${triggers}</div>`}
 function stageLabel(p){if(!p.flow||!p.stage)return"通用";const meta=STAGE_META[p.flow]?.[p.stage];return meta?meta[0]:p.stage}
 function promptKey(p){return `${p.flow||"common"}::${p.stage||""}::${p.title}`}
@@ -422,7 +593,7 @@ function promptForm(d,cats,category,otherStyle){return`<div class="form-grid"><d
 function skillForm(d){return`<div class="form-grid"><div class="field full"><label>Skill 網址或資料夾路徑</label><input id="skillSource" data-capture-input class="${d.source?"":"needs-input"}" value="${esc(d.source)}" placeholder="貼上 GitHub URL 或本機資料夾路徑"><div class="help">這裡就是下方提示詞會讀取的 Skill 來源；貼上後會自動帶入安檢＋安裝提示詞。</div></div></div>`}
 function updateCaptureOutputs(){const data=captureData();const yaml=captureMode==="skill"?skillYaml(data):promptYaml(data);const codex=codexCapturePrompt(data);const disabled=false;const yamlPre=document.getElementById("captureYaml"),codexPre=document.getElementById("captureCodex"),link=document.getElementById("captureLink"),skillSource=document.getElementById("skillSource");if(yamlPre)yamlPre.textContent=yaml;if(codexPre)codexPre.textContent=codex;if(link)link.outerHTML=captureLinkHtml(data,disabled);if(skillSource)skillSource.classList.toggle("needs-input",captureMode==="skill"&&!data.source);const buttons=document.querySelectorAll(".card .copy-btn");if(buttons.length>1){buttons[buttons.length-2].dataset.copy=encodeURIComponent(codex);buttons[buttons.length-1].dataset.copy=encodeURIComponent(yaml)}}
 function bindCapture(){document.querySelectorAll("[data-capture-mode]").forEach(btn=>btn.onclick=()=>{captureMode=btn.dataset.captureMode;render()});document.querySelectorAll("[data-capture-input]").forEach(el=>el.oninput=el.onchange=()=>{const data=captureData();writeDraft(data);if(["promptCategory"].includes(el.id))render();else updateCaptureOutputs()})}
-function render(){const chips=document.getElementById("chips"),content=document.getElementById("content"),countLine=document.getElementById("countLine");renderLaunchTip();renderIntro();chips.innerHTML=cats().map(c=>`<button class="chip ${c===cat?"active":""}" data-cat="${esc(c)}">${esc(c)}</button>`).join("");chips.querySelectorAll(".chip").forEach(ch=>ch.onclick=()=>{cat=ch.dataset.cat;if(tab==="prompts"&&cat!=="全部")flowMode="common";render()});if(tab==="backup"){countLine.textContent="";content.innerHTML=backupHtml();return}if(tab==="guide"){countLine.textContent="";content.innerHTML=homeHtml();bindHome();return}if(tab==="progress"){countLine.textContent="";content.innerHTML=progressHtml();bindProgress();return}if(tab==="capture"){countLine.textContent="";content.innerHTML=captureHtml();bindCapture();return}if(tab==="control"){countLine.textContent="";content.innerHTML=controlHtml();bindControl();bindStateBoard();return}if(tab==="skills"){const items=DATA.skills.filter(s=>(cat==="全部"||s.category===cat)&&match(s,["name","summary","category","triggers","notes"]));countLine.textContent=`共 ${items.length} 個 skill`;content.innerHTML=items.length?`<div class="grid">${items.map(skillCard).join("")}</div>`:`<div class="empty">找不到符合條件的 skill。</div>`;return}if(tab==="prompts"){const count=DATA.prompts.filter(p=>(p.flow||"common")===flowMode&&(cat==="全部"||p.category===cat)&&match(p,["title","usage","category","prompt","flow","stage"])).length;countLine.textContent=`目前顯示 ${count} 則提示詞，總共 ${DATA.prompts.length} 則`;content.innerHTML=renderPromptFlow();content.querySelectorAll(".flow-btn").forEach(btn=>btn.onclick=()=>{flowMode=btn.dataset.flow;cat="全部";render()})}}
+function render(){const chips=document.getElementById("chips"),content=document.getElementById("content"),countLine=document.getElementById("countLine");renderOnlineBanner();renderLaunchTip();renderIntro();chips.innerHTML=cats().map(c=>`<button class="chip ${c===cat?"active":""}" data-cat="${esc(c)}">${esc(c)}</button>`).join("");chips.querySelectorAll(".chip").forEach(ch=>ch.onclick=()=>{cat=ch.dataset.cat;if(tab==="prompts"&&cat!=="全部")flowMode="common";render()});if(tab==="backup"){countLine.textContent="";content.innerHTML=backupHtml();return}if(tab==="guide"){countLine.textContent="";content.innerHTML=homeHtml();bindHome();return}if(tab==="daily"){countLine.textContent="";content.innerHTML=dailyHtml();return}if(tab==="progress"){countLine.textContent="";content.innerHTML=progressHtml();bindProgress();return}if(tab==="capture"){countLine.textContent="";content.innerHTML=captureHtml();bindCapture();return}if(tab==="control"){countLine.textContent="";content.innerHTML=controlHtml();bindControl();bindStateBoard();return}if(tab==="skills"){const items=DATA.skills.filter(s=>(cat==="全部"||s.category===cat)&&match(s,["name","summary","category","triggers","notes"]));countLine.textContent=`共 ${items.length} 個 skill`;content.innerHTML=items.length?`<div class="grid">${items.map(skillCard).join("")}</div>`:`<div class="empty">找不到符合條件的 skill。</div>`;return}if(tab==="prompts"){const count=DATA.prompts.filter(p=>(p.flow||"common")===flowMode&&(cat==="全部"||p.category===cat)&&match(p,["title","usage","category","prompt","flow","stage"])).length;countLine.textContent=`目前顯示 ${count} 則提示詞，總共 ${DATA.prompts.length} 則`;content.innerHTML=renderPromptFlow();content.querySelectorAll(".flow-btn").forEach(btn=>btn.onclick=()=>{flowMode=btn.dataset.flow;cat="全部";render()})}}
 function setTab(next){document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));document.querySelector(`[data-tab="${next}"]`)?.classList.add("active");tab=next;cat="全部";render()}
 document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>setTab(t.dataset.tab));document.getElementById("searchBox").addEventListener("input",e=>{q=e.target.value.trim();render()});render();
 </script>

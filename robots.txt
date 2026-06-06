@@ -1,0 +1,7 @@
+# 二刀流開發助手控制台 — 線上 demo
+# 這個 demo 內嵌了本機開發狀態檔（DUAL-AI-STATE.md、NEXT-AI-TASK.md 等），
+# 不希望被搜尋引擎當作技術文章收錄。
+# Repo 原始碼仍可在 GitHub 上自由查看。
+
+User-agent: *
+Disallow: /
