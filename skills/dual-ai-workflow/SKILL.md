@@ -51,13 +51,31 @@ description: Two-tool AI engineering loop. Codex is the lead engineer for planni
 
 每完成一個可驗證的小項目，就應該先做一次穩定點，而不是累積到大版本才存檔。
 
+### Claude Code 審查閘門
+
+凡是重大更動、README 大段改寫、功能新增、UI 調整、安裝腳本修改、release、commit、push、PR 或任何會寫入遠端 GitHub 的動作，Codex 必須先停下來，不得直接存檔或上傳。
+
+Codex 必須先輸出「給 Claude Code（VS Code）的完整複核提示詞」，內容至少包含：
+
+- 本輪目標與使用者要求
+- 已修改或預計修改的檔案
+- 主要 diff 摘要
+- 已執行或應執行的驗證
+- 需要 Claude Code 特別檢查的風險
+- 回報格式要求：P0 / P1 / P2，以及是否允許 commit / push
+
+等使用者貼回 Claude Code 的 P0 / P1 / P2 複核結果後，Codex 才能繼續修正、commit、push 或 release。
+
+只有在使用者明確說出「不用複核，直接上傳」、「跳過 Claude Code 審查」或同等意思時，Codex 才能跳過此閘門；否則預設一律需要 Claude Code 複核。
+
 小項目完成時必須：
 
 1. 執行對應的 build / test / lint 或本專案指定驗證。
 2. 檢查 `git status --short`，確認只包含本輪相關檔案。
-3. 若驗證通過，建立本地 commit，commit message 使用繁體中文並說清楚本輪做了什麼。
-4. commit 後主動回報 commit hash、驗證結果、目前 git status。
-5. 詢問使用者是否 push；若使用者已明確授權本階段可上傳，才可執行 `git push`。
+3. 若屬於審查閘門範圍，先輸出 Claude Code 複核提示詞，等待使用者貼回複核結果。
+4. 若驗證與必要複核通過，建立本地 commit，commit message 使用繁體中文並說清楚本輪做了什麼。
+5. commit 後主動回報 commit hash、驗證結果、目前 git status。
+6. 詢問使用者是否 push；若使用者已明確授權本階段可上傳，才可執行 `git push`。
 
 原則：
 
