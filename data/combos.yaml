@@ -8,9 +8,9 @@
       custom_intro: 第二步，把需求整理成可開發、可驗收的 PRD。
     - prompt_title: 首次上傳 GitHub：繁體中文專案敘述
       custom_intro: 第三步，整理繁體中文 repo 說明、版本摘要與 push 前檢查。
-- title: 三方審查修正包
+- title: 二刀流審查修正包
   usage: Codex 做完實作後，交給 Claude Code 審查，再回到 Codex 修正與收尾。
-  category: 三方 AI 協作
+  category: 二刀流協作
   steps:
     - prompt_title: ③ 第三階段：Claude Code（VS Code）審查
       custom_intro: 先把 Codex 的實作交給 Claude Code 做 P0/P1/P2 審查。
@@ -20,7 +20,7 @@
       custom_intro: 複審通過後，請 Codex 做最後驗證、狀態檔與本地 commit。
 - title: 跨地點接續包
   usage: 公司、家裡、Mac mini、Windows 電腦之間接續同一個專案。
-  category: 三方 AI 協作
+  category: 二刀流協作
   steps:
     - prompt_title: 跨地點 / 跨系統接續
       custom_intro: 下班、換電腦或不同系統接手前，先完成安全存檔與交接。

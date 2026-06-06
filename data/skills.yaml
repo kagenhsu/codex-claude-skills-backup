@@ -269,7 +269,7 @@
   summary: 幫你從開放 skill 生態系搜尋並安裝新 skill（npx skills 指令）
   triggers:
   - 用 find-skills 找找有沒有適合【需求】的 skill
-  notes: 安裝任何新 skill 前，記得先用本控制台「安檢 SOP」檢查
+  notes: 安裝任何新 skill 前，記得先用本控制台安檢流程檢查
 - name: write-a-skill
   category: Skill 管理
   risk: 低
@@ -285,10 +285,8 @@
 - name: dual-ai-workflow
   category: 規劃與協作
   risk: 低
-  summary: 自製 skill：三方 AI 工作流（Codex＝主力工程師，負責規劃、分段實作、測試與修正；Claude Code（VS Code）＝審查員，負責架構審查、風險檢查與複審；Claude Desktop＝顧問／文字助理，使用提示詞版不安裝第三方
-    skills），並用 DUAL-AI-STATE.md 記錄進度
+  summary: 自製 skill：二刀流工作流（Codex＝主力工程師，負責規劃、分段實作、測試與修正；Claude Code（VS Code）＝審查員，負責架構審查、風險檢查與複審），並用 DUAL-AI-STATE.md 記錄進度
   triggers:
-  - 使用 dual-ai-workflow 開始三方 AI 工作流（舊稱雙AI），任務是：【任務描述】
-  - 使用 dual-ai-workflow 開始三方 AI 工作流，任務是：【任務描述】
+  - 使用 dual-ai-workflow 開始二刀流工作流，任務是：【任務描述】
   - 這是另一個 AI 的輸出，依 dual-ai-workflow 接續下一階段
-  notes: 本專案自製；Codex 與 Claude Code 需同步到 ~/.codex/skills、~/.claude/skills 或各環境實際 skill 路徑；Claude Desktop 不安裝第三方 skills，請用提示詞庫手動套用
+  notes: 本專案自製；Codex 與 Claude Code 需同步到 ~/.codex/skills、~/.claude/skills 或各環境實際 skill 路徑

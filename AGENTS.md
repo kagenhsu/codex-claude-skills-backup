@@ -33,8 +33,8 @@ codex-claude-skills-backup/
 ├── docs/
 │   ├── skill-console-plan.md  # 規劃文件
 │   ├── ai-role-guide.md       # AI 角色導覽
-│   └── dual-ai-workflow.md    # 三方 AI 工作流說明
+│   └── dual-ai-workflow.md    # 二刀流工作流說明
 ├── skills/
-│   └── dual-ai-workflow/      # 自製三方 AI 工作流 skill
+│   └── dual-ai-workflow/      # 自製二刀流工作流 skill
 ├── codex-skills-backup.tar.gz # 原有 skills 備份（不可刪）
 └── restore-skills.sh          # 原有還原腳本（不可刪）

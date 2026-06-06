@@ -1,27 +1,56 @@
 # DUAL-AI-STATE
 
-任務名稱：v1.9 — 二刀流開發助手控制台命名統一
+任務名稱：v1.9.1 — 首頁 / 開發進度 / 二刀流入口收斂
 
-目前階段：✅ v1.9 命名統一完成並 push origin/main
+目前階段：✅ v1.9.1 功能複核通過，等待使用者決定是否 commit / push
 
 已完成事項：
+- Claude Code（VS Code）已完成 v1.9.1「首頁／開發進度／二刀流入口收斂」功能複核：P0=0、P1=0；6 項使用者重點全數通過，新增 P2-V19G-1～4 排入下一版網頁修正。
+- Codex 已將原本「AI 角色導覽」改為真正的「首頁 / 快速開始」入口，整合系統說明、三步上手、角色分工、常用入口與完整二刀流流程摘要。
+- Codex 已移除獨立「二刀流工作流」頁籤，避免與首頁重複；二刀流流程摘要已回收至首頁，`二刀流中控` 保留作為操作入口。
+- Codex 已修正開發進度的誤導：切到其他專案時，不再顯示本控制台自己的 v1.0～v1.9 版本地圖，改為直接說明這頁只會讀該專案的四個 `.md` 檔。
+- Codex 已補強選資料夾流程：先試 `showDirectoryPicker()`，不支援再 fallback 到 `webkitdirectory`；若失敗或沒讀到檔案，畫面會顯示原因。
+- Codex 已補上 file:// 啟動提示：若使用書籤或直接雙擊 `index.html`，頁面會清楚說明這種方式不會先更新控制台。
+- Codex 已處理瀏覽器 comment：移除 header 中獨立安檢頁籤與對應 `sop` render 分支；安檢功能保留在「收錄新內容」的 Skill 安檢＋安裝提示詞內。
+- Codex 已處理瀏覽器 comment：清除網頁內嵌文件與版本地圖中的舊安檢頁面名稱殘留；頁面不再提供獨立安檢頁。
+- Codex 已處理瀏覽器 comment：Skill 安檢＋安裝提示詞中的 `Skill 來源` 改為明確標示「已由上方 Skill 網址欄自動帶入」，空白時顯示「上方 Skill 網址欄尚未填寫」，避免使用者以為下方還要再貼一次網址。
+- Codex 已處理瀏覽器 comment：Skill 收錄流程的狀態膠囊改為指向上方輸入欄，空白時顯示「請先填上方 Skill 網址欄」，並用淡藍框高亮 `Skill 網址或資料夾路徑` 欄位；填入來源後改顯示已連到上方 Skill 網址。
+- Codex 已處理瀏覽器 comment：簡化「收錄新內容」的 Skill 收錄表單，現在只需貼 Skill 網址或資料夾路徑；下方會自動產生「先用安檢流程檢查，安全後才安裝到 Codex / Claude Code，並收錄進控制台」的交辦提示詞。
+- Codex 已完成 v1.9 修正包：P1-1 修正 `scripts/normalize_role_docs.py`，讓 `SKILL` 模板補回 `dual-ai-workflow` 的英文 description，並讓 normalize 保留現有 `SKILL.md` 內容只補齊 description。
+- Codex 已完成 v1.9 修正包：P1-2 同步 `scripts/normalize_role_docs.py` 的 `WORKFLOW_DOC` 五階段流程與「交棒節奏」section，執行 normalize 後 `docs/dual-ai-workflow.md` 仍保留工作完成後再交棒的節奏。
+- Codex 已完成 v1.9 修正包：P2-1 刪除 `data/skills.yaml` 內 `dual-ai-workflow.triggers` 的重複項，保留入口與接續兩行。
+- Codex 已完成 v1.9 修正包驗證：`python3 scripts/normalize_role_docs.py`、`python3 scripts/build.py`、Python compile、inline JS `node --check` 均通過；build 輸出仍為 45 skills / 40 prompts / 3 combos。
+- Codex 已更新 `codex-skills-backup.tar.gz` 並同步本機 Codex / Claude 安裝版；repo、備份包、Codex 安裝版、Claude 安裝版四份 `SKILL.md` MD5 皆為 `aea53b610a6f38d83819a05efe73335d`。
+- Codex 已確認 `index.html` 不含已移除的第三角色英文名稱；舊二字詞只剩整合串接提示詞中的合理用語。
+- Codex 已處理瀏覽器 comment：收錄新內容頁的「提示詞收錄表單」與下方資訊卡之間新增「填上方表單 → 下方自動產生」連結帶，並在下方兩張輸出卡補上「由上方表單即時產生」說明；狀態會提示還缺哪些必要欄位。
+- Codex 已依使用者偏好調整交棒節奏：每個 AI 先完成自己這一棒，再於回報最後輸出給下一棒的提示詞；已同步更新 `skills/dual-ai-workflow/SKILL.md`、`data/prompts.yaml`、`docs/dual-ai-workflow.md` 與 `scripts/normalize_role_docs.py`。
+- Codex 已執行 `scripts/update_backup_skill.py` 更新 `codex-skills-backup.tar.gz`，並同步新版 `SKILL.md` 到本機 Codex / Claude 安裝版；repo、Codex 安裝版、Claude 安裝版 MD5 皆為 `aea53b610a6f38d83819a05efe73335d`。
+- Codex 已依使用者要求「跟好兄弟說一下」，更新 `NEXT-AI-TASK.md`，將下一棒明確指定為 Claude Code（VS Code），請他接手時先複核本輪二刀流／第三角色移除 diff。
+- v1.9 內容統一已將控制台頁籤、提示詞分類、角色導覽、工作流說明、Skill 目錄說明與維護文件改為「二刀流」命名。
+- v1.9 內容統一已移除控制台內容中的第三角色描述，頁面目前只保留 Codex 與 Claude Code（VS Code）兩個角色。
+- v1.9 內容統一已移除二刀流中控的額外第三角色摘要入口，避免使用者誤以為仍是三角色流程。
+- v1.9 內容統一已執行 `python3 scripts/build.py`，重建 `index.html`，輸出仍為 45 skills / 40 prompts / 3 combos。
+- v1.9 內容統一已執行 `node --check /tmp/codex-console-inline.js`，inline JS 語法檢查通過。
+- v1.9 收尾已清除 `data/prompts.yaml:264`「單一 AI 也能用控制台」prompt body 的舊產品名稱，改為「二刀流開發助手控制台」。
+- v1.9 收尾已執行 `python3 scripts/build.py`，重建 `index.html`，輸出仍為 45 skills / 40 prompts / 3 combos。
+- v1.9 收尾已抽出 `index.html` inline script 並執行 `node --check /tmp/codex-console-inline.js`，語法檢查通過。
 - v1.9 已完成 Claude Code（VS Code）複審：P0=0、P1=0，P2=2 + 4 項 v1.8 遺留 backlog，均排入後續優化，不阻擋 push。
 - v1.9 已於 2026-06-06 11:50 CST push `origin/main`，遠端已同步至 commit `535021c`。
 - v1.9 已依使用者決定，將專案／網頁主標統一為「二刀流開發助手控制台」，副標為「Codex × Claude Code 開發系統」。
 - v1.9 已更新 `scripts/build.py` 的瀏覽器 title、頁首 h1、副標與換電腦／同步頁捷徑文案。
 - v1.9 已更新 `AGENTS.md`、`PRD.md`、`README.md`、`docs/skill-console-plan.md`、`install.sh`、`install.ps1`、`更新並開啟控制台.command` 的顯示名稱。
 - v1.9 已在開發進度「專案版本地圖」補上 v1.9「二刀流命名」階段，讓目前版本可被藍框標出。
-- v1.8 MVP B 已依使用者要求完成多頁排版收斂：AI 角色導覽、三方 AI 工作流、開發進度、收錄新內容、安檢 SOP、換電腦／同步等內容卡片寬度已調整為與上方搜尋／導覽區一致。
+- v1.8 MVP B 已依使用者要求完成多頁排版收斂：AI 角色導覽、二刀流工作流、開發進度、收錄新內容、舊安檢頁、換電腦／同步等內容卡片寬度已調整為與上方搜尋／導覽區一致。
 - v1.8 MVP B Browser comment 已處理：換電腦／同步頁改用 `wide-sop` 版面 class，搬家工具說明與同步指令卡片寬度與上方搜尋／導覽區一致。
-- v1.8 MVP B Browser comment 已處理：安檢 SOP 頁改用 `wide-sop` 版面 class，安檢說明與提示詞卡片寬度與上方搜尋／導覽區一致。
+- v1.8 MVP B Browser comment 已處理：舊安檢頁改用 `wide-sop` 版面 class，安檢說明與提示詞卡片寬度與上方搜尋／導覽區一致。
 - v1.8 MVP B Browser comment 已處理：收錄新內容頁改用 `wide-sop` 版面 class，提示詞／Skill 表單卡片寬度與上方搜尋／導覽區一致。
-- v1.8 MVP B Browser comment 已處理：三方 AI 工作流改用獨立 `wide-sop` 版面 class，內容卡片明確撐滿主欄寬度，避免仍受一般 SOP 寬度限制。
-- v1.8 MVP B Browser comment 已處理：AI 角色導覽與三方 AI 工作流內容區改用滿寬顯示，資訊卡寬度與上方搜尋／導覽區一致。
+- v1.8 MVP B Browser comment 已處理：二刀流工作流改用獨立 `wide-sop` 版面 class，內容卡片明確撐滿主欄寬度，避免仍受一般 SOP 寬度限制。
+- v1.8 MVP B Browser comment 已處理：AI 角色導覽與二刀流工作流內容區改用滿寬顯示，資訊卡寬度與上方搜尋／導覽區一致。
 - v1.8 MVP B Browser comment 已處理：開發進度新增「必備檔案檢查」，會判斷所選專案資料夾是否缺 DUAL-AI-STATE.md、NEXT-AI-TASK.md、AGENTS.md、PRD.md；缺檔時提供可複製給 AI 的補檔提示詞。
 - v1.8 MVP B Browser comment 已處理：開發進度內容區新增 `progress-sop` 版面 class，讓資料夾選擇卡與下方資料卡寬度撐滿主欄，和上方搜尋／導覽區一致。
 - v1.8 MVP B Browser comment 已處理：開發進度「目前狀態」摘要移除「下一棒 AI」卡片；交棒資訊仍保留在 NEXT-AI-TASK.md 原檔，不放在主摘要。
 - v1.8 MVP B Browser comment 已處理：開發進度上方動作改為「選擇專案資料夾」，使用者主動選取資料夾後，狀態、專案敘述、開發階段與 AGENTS / PRD 卡會改讀該資料夾內的 DUAL-AI-STATE.md、NEXT-AI-TASK.md、AGENTS.md、PRD.md。
-- v1.8 MVP B Browser comment 已處理：開發進度「目前狀態」摘要移除「最後更新時間」卡片，改為只顯示目前階段、上一步、下一步與未解決問題；三方中控 `stateSummaryHtml()` 保持不動。
+- v1.8 MVP B Browser comment 已處理：開發進度「目前狀態」摘要移除「最後更新時間」卡片，改為只顯示目前階段、上一步、下一步與未解決問題；二刀流中控 `stateSummaryHtml()` 保持不動。
 - v1.8 MVP B Browser comment 已處理：開發進度「目前狀態」的地圖改為專案版本地圖，顯示 v1.0～v1.8 各版本標題與簡述，並以藍框標出目前 v1.8。
 - v1.8 MVP B Browser comment 已處理：開發進度「目前狀態」移除完整 DUAL-AI-STATE.md / NEXT-AI-TASK.md 檔案卡，保留階段地圖與摘要，避免頁面過長干擾新手。
 - v1.8 MVP B Browser comment 已處理：開發進度「目前狀態」新增開發階段地圖，顯示第 1～5 階段標題與簡述，並以藍框標出目前階段。
@@ -34,7 +63,7 @@
 - v1.8 MVP B 已新增「開發進度」tab，預設 `let tab = "guide"` 未改。
 - v1.8 MVP B 已新增 `progressHtml()`，沿用既有 `parseWorkflowState()` 與 `stateSummaryHtml()`，並從 `NEXT_HTML.raw` 解析「下一棒 AI」。
 - v1.8 MVP B 已重建 `index.html`，`python3 scripts/build.py` 輸出仍為 45 skills / 40 prompts / 3 combos。
-- v1.8 MVP B 已驗證開發進度 tab 顯示目前階段、下一棒 AI、backlog、最後更新時間，且三方中控 textarea fallback 仍存在。
+- v1.8 MVP B 已驗證開發進度 tab 顯示目前階段、下一棒 AI、backlog、最後更新時間，且二刀流中控 textarea fallback 仍存在。
 - v1.8 MVP B 已建立本地 commit，尚未 push `origin/main`。
 - v1.8 B1 已清理 `docs/v1-2-backlog.md` P2 #5，補上 ✅ 並標記為 v1.1 已修、backlog 誤留。
 - v1.8 B1 已校正 `NEXT-AI-TASK.md`：將 `data/prompts.yaml` schema 限制歸到 v1.8 啟動注意事項，不再混在 v1.7 收尾驗證段。
@@ -47,7 +76,7 @@
 - v1.7 收尾已更新 `CHANGELOG.md`，記錄 backlog 標記補齊與 README quarantine 提醒。
 - v1.8 規劃文件已新增 `docs/v1-8-plan.md`，只做規劃，不提前實作功能程式碼。
 - v1.7 已接續開發，目標是清除 v1.2 backlog 剩餘兩項 P2。
-- v1.7 已將三方中控按鈕改為優先定位到實際提示詞卡，若找不到才退回階段 section。
+- v1.7 已將二刀流中控按鈕改為優先定位到實際提示詞卡，若找不到才退回階段 section。
 - v1.7 已將 `sectionAfter` 改為使用固定欄位白名單 `STATE_SECTION_PATTERN`。
 - v1.7 已新增 macOS 中文入口 `更新並開啟控制台.command`，讓使用者不用記 `python3 scripts/build.py`。
 - v1.7 已更新 `docs/v1-2-backlog.md`，將 P2 #1 與 P2 #4 標記為已修。
@@ -64,7 +93,7 @@
 - v1.6 第 4 階段搜尋驗證完成：`index.html` 內可搜尋到 `NEXT-AI-TASK`。
 - v1.6 已新增專案根目錄 `NEXT-AI-TASK.md`，作為固定半自動 AI 交棒檔。
 - v1.6 已在 `skills/dual-ai-workflow/SKILL.md` 新增「主動交棒規則」，要求階段完成後主動輸出交接提示詞，並在存在 `NEXT-AI-TASK.md` 時同步更新。
-- v1.6 已在 `data/prompts.yaml` 新增提示詞卡「讀取 NEXT-AI-TASK.md 並接續」，分類為三方 AI 協作，`flow: dualai`、`stage: handoff`。
+- v1.6 已在 `data/prompts.yaml` 新增提示詞卡「讀取 NEXT-AI-TASK.md 並接續」，分類為二刀流協作，`flow: dualai`、`stage: handoff`。
 - v1.6 未修改 `scripts/build.py`；原因是既有 `handoff` stage metadata 已可顯示 handoff 提示詞卡。
 - v1.6 已使用 Codex 內建 Python runtime 執行 `scripts/build.py`，重建結果為 45 skills / 40 prompts / 3 combos。
 - v1.6 已更新 `NEXT-AI-TASK.md`，下一棒指定為 Claude Code（VS Code）審查。
@@ -76,14 +105,14 @@
 - 已處理 P2-3：`.gitignore` 補上 `.DS_Store`、`skills/*`、`!skills/dual-ai-workflow/`。
 - 已處理 P2-4：`PRD.md` 的 44 個 skill 改為 45 個（含 1 個自製 dual-ai-workflow）。
 - 已處理 P2-5：`AGENTS.md` 專案檔案結構補上 `index.html`、安裝腳本、角色文件、自製 skill 與維護腳本。
-- 已處理 P2-6：`data/skills.yaml` 與 `data/prompts.yaml` 改為三方 AI 命名，並重建 `index.html`。
+- 已處理 P2-6：`data/skills.yaml` 與 `data/prompts.yaml` 改為二刀流 命名，並重建 `index.html`。
 - 已處理 P2-7：`install.sh` 與 `install.ps1` 加入暫存目錄提示；安裝器基於安全考量不自動刪除暫存資料夾。
 - 已處理 P2-8：`README.md` 兩段一行安裝下方補上安全安裝提醒。
 - 已處理 P2-9：`index.html` 搜尋 placeholder 補上「角色、分工、導覽」關鍵字。
 - 已執行 `python3 scripts/build.py`，重建結果為 45 skills / 33 prompts；本機沒有未帶版本號的 Python 指令可用。
 - 已用 macOS `open` 打開本機 `index.html`；生成檔確認 active tab 為 `guide`，第一眼不再落到 backup。
 - 搜尋驗證：`角色` 命中 AI 角色導覽內容；`翻譯` 命中 skills 卡片（如 `baoyu-translate`）；`審查` 命中提示詞卡片（如「③ 第三階段：Claude Code（VS Code）審查」）。
-- 已依使用者要求逐檔 stage 並建立本地 git commit，commit message 為「修正預設頁籤與三方 AI 命名一致性，統一 SKILL.md 行尾」；未 push 到 origin/main。
+- 已依使用者要求逐檔 stage 並建立本地 git commit，commit message 為「修正預設頁籤與二刀流 命名一致性，統一 SKILL.md 行尾」；未 push 到 origin/main。
 - 第 5 階段 Claude Code（VS Code）複審通過，無 P0/P1/P2 殘留，commit d07d61c 為最終存檔。
 - 四份 `SKILL.md` MD5 實測一致：
   - 專案版 `skills/dual-ai-workflow/SKILL.md`：`eeee0b5f5b64758e6bd69fc48c714e03`
@@ -92,9 +121,9 @@
   - Claude 安裝版 `~/.claude/skills/dual-ai-workflow/SKILL.md`：`eeee0b5f5b64758e6bd69fc48c714e03`
 - v1.1 已新增快速看板與常用組合包，commit `2422245` 為目前 v1.1 實作版本。
 - 第 3 階段 Claude Code（VS Code）審查結果：P0=0、P1=1、P2=3；本輪進入第 4 階段逐條修正。
-- P1 已成立並修正：三方中控 7 顆按鈕不再把 stage 標題塞進搜尋框，改為切到提示詞庫的三方 AI 協作模式、清空搜尋並嘗試捲到對應 stage section。
+- P1 已成立並修正：二刀流中控 7 顆按鈕不再把 stage 標題塞進搜尋框，改為切到提示詞庫的二刀流協作模式、清空搜尋並嘗試捲到對應 stage section。
 - P2-2 已成立並修正：`跨地點 / 跨系統接續` 提示詞在 macOS 與 Windows 指令前補上同步全部 skills 請改用 `restore-skills.sh` / `install.ps1` 的提醒。
-- P2-3 已成立並修正：搜尋 placeholder 的「三 AI」改為「三方 AI」。
+- P2-3 已成立並修正：搜尋 placeholder 的「二刀流」改為「二刀流」。
 - P2-4 已成立並修正：全專案舊 build 指令文字統一為 `python3 scripts/build.py`，並重建 `index.html`。
 - v1.1 第 5 階段 Claude Code（VS Code）複審通過，無 P0/P1 殘留；6 項 P2 排入 v1.2 backlog。Commit 2422245 為 v1.1 最終存檔。
 - v1 收尾修正（commit f0fb601）第 5 階段 Claude Code（VS Code）複審通過，無 P0/P1/P2 殘留。
@@ -111,13 +140,20 @@
 - v1.5 Claude Code（VS Code）P1 修正後複審通過，無 P0/P1，允許 commit。
 
 下一步：
-- 使用者決定下一個任務（MVP A、v1.9 收尾 prompt 命名統一、或 v1.8 backlog 清理）。
-- 後續若繼續清理，可把本輪 P2 與 v1.8 遺留 backlog 一併處理。
+- Claude Code（VS Code）複核首頁、開發進度、選資料夾、file:// 啟動提示與頁籤收斂是否正常可用。
+- 若複核通過，再由使用者決定是否保存本輪修改，或繼續做下一個任務。
+- 若複核發現問題，Codex 再接手逐條修正。
 
 未解決問題：
-- v1.9 後續優化：
-  - P2-V19-1：`data/prompts.yaml:264`「單一 AI 也能用控制台」prompt body 仍寫「Skill 助手控制台」，建議下一輪統一改為「二刀流開發助手控制台」。
-  - P2-V19-2：`install.ps1` shortcut Description 使用 ASCII `x`，屬可接受折衷，可不改。
+- v1.9.1 無 P0/P1 阻擋項；目前等待使用者決定是否分組 commit / push。
+- 下一版網頁修正優先項：
+  - P2-V19G-1：`guide` 的 PAGE_INTRO 與首頁 hero 訊息重複；下一版可擇一精簡。
+  - P2-V19G-2：內部 tab id `guide` 與 UI 標籤「首頁 / 快速開始」、`homeHtml` / `bindHome` 命名落差；下一版可整理為 `home`。
+  - P2-V19G-3：首頁 3 個 CTA 沿用 `.copy-btn` class，語意略偏；下一版可改為 `.home-cta`。
+  - P2-V19G-4：`launchTip` 提到的桌面捷徑名稱需與 `install.sh` / `install.ps1` 保持同步。
+  - P2-V19F-1：File System Access API / progress picker 增強屬真實 UX 改善，但與移除獨立安檢頁不同 scope；未來 commit 時應拆獨立 commit。另 `pickProjectFolder` 在 `showDirectoryPicker` 非 `AbortError` 例外時，原錯誤訊息會被 `picker.click()` fallback 分支覆蓋，後續可修成保留更精準錯誤提示。
+  - P2-V19F-2：`data/prompts.yaml` 仍保留「Skill 安裝前資安檢查」prompt，但新 Skill 收錄流程改用 `skillCapturePrompt` 自訂字串；下一版可決定保留、整併，或讓 `skillCapturePrompt` 反向引用同一張提示詞，避免兩套安檢文案漂移。
+- v1.9 後續優化：無阻擋項；`install.ps1` shortcut Description 使用 ASCII `x`，屬可接受折衷，可不改。
 - v1.8 後續優化：
   - P2-1：`progressHtml()` 未解決問題警示對「全部 ✅」backlog 仍會觸發；建議後續加入「全部 ✅ 視為無」判斷。
   - P2-2：`summary.replace(/<\/div>$/, ...)` 隱性依賴 `stateSummaryHtml()` 結尾；建議後續改為將 `nextCard` 作為參數或在 `progressHtml()` 直接拼裝。
@@ -130,7 +166,7 @@
   - ✅ P2 #2 state board textarea 拆 oninput 路徑（v1.2 commit 90c6d5b 已修）
   - ✅ P2 #3 目前階段正則加入中文數字（v1.2 commit 90c6d5b 已修）
   - ✅ P2 #4 v1 沿用未修：control 按鈕 search query 對不到 prompts（v1.7 已修）
-  - ✅ P2 #5 placeholder「三 AI」改「三方 AI」（v1.1 已修，backlog 條目為誤留）
+  - ✅ P2 #5 placeholder「二刀流」改「二刀流」（v1.1 已修，backlog 條目為誤留）
   - ✅ P2 #6 build.py 加 combos 引用 build-time 檢查（v1.2 commit 90c6d5b 已修）
 
-最後更新時間：2026-06-06 11:50 CST Codex v1.9 命名統一完成並 push origin/main
+最後更新時間：2026-06-06 14:57 CST Codex 已將本輪標記為 v1.9.1 並收錄複核 P2

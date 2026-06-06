@@ -62,7 +62,7 @@
   flow: common
   stage: ''
 - title: "上下文壓縮接續摘要"
-  category: 三方 AI 協作
+  category: 二刀流協作
   usage: 上下文壓縮後，固定用這個格式交接，讓下一輪能接續
   flow: dualai
   stage: context-compact
@@ -141,22 +141,21 @@
     如果適合用 Docker，請一步一步教我怎麼操作。
   flow: common
   stage: ''
-- title: 啟動三方 AI 工作流（skill 版，一句話）
-  category: 三方 AI 協作
+- title: 啟動二刀流工作流（skill 版，一句話）
+  category: 二刀流協作
   usage: 入口·已安裝 dual-ai-workflow skill 後，開新任務只要貼這句
   prompt: |
-    使用 dual-ai-workflow 開始三方 AI 工作流，任務是：【任務描述】
+    使用 dual-ai-workflow 開始二刀流工作流，任務是：【任務描述】
   flow: dualai
   stage: entry
-- title: 啟動三方 AI 五階段工作流（手動版，一次貼上）
-  category: 三方 AI 協作
+- title: 啟動二刀流五階段工作流（手動版，一次貼上）
+  category: 二刀流協作
   usage: 入口·沒安裝 skill 時，開任務前貼給主力 AI
   prompt: |
-    我們採用三方 AI 五階段工作流：
+    我們採用二刀流五階段工作流：
     - Codex：主力工程師，負責規劃、分段實作、跑指令、測試、修正、產出交接摘要
     - Claude Code（VS Code）：審查員，負責架構審查、程式碼審查、風險檢查、P0/P1/P2 分級與複審
-    - Claude Desktop：顧問／文字助理，負責需求澄清、文件整理、提示詞優化與主管版說明；不安裝第三方 skills
-    - 我：三方之間轉貼，做最終決定
+    - 我：兩邊之間轉貼，做最終決定
 
     第一階段：Codex 先讀專案結構與文件，不要修改，提出方案（目標／改哪些檔案／影響／風險／驗證方式），等我確認
     第二階段：Codex 依確認後的方案分段實作、跑 build.py、回報實際結果
@@ -168,7 +167,7 @@
   flow: dualai
   stage: entry
 - title: ① 第一階段：Codex 規劃
-  category: 三方 AI 協作
+  category: 二刀流協作
   usage: 在 Codex 開新任務，先出方案不動手
   prompt: |
     請先讀取專案結構與相關文件，不要直接修改。
@@ -181,7 +180,7 @@
   flow: dualai
   stage: '1'
 - title: ② 第二階段：Codex 分段實作
-  category: 三方 AI 協作
+  category: 二刀流協作
   usage: 方案確認後，讓 Codex 分段修改、build、驗證
   prompt: |
     現在由 Codex 負責分段實作，其他 AI 暫停動作。
@@ -191,10 +190,11 @@
     2. 每個檔案改了什麼
     3. 是否成功執行 build.py
     4. 真實檔案狀態與未確認事項
+    5. 最後再輸出給 Claude Code（VS Code）的完整審查提示詞；不要在工作尚未完成前提前交棒。
   flow: dualai
   stage: '2'
 - title: ③ 第三階段：Claude Code（VS Code）審查
-  category: 三方 AI 協作
+  category: 二刀流協作
   usage: 把 Codex 的交接摘要、diff 與驗證結果貼給 Claude Code 審查
   prompt: |
     現在由 Claude Code（VS Code）負責審查，其他 AI 暫停動作。
@@ -204,11 +204,11 @@
     3. 是否影響原有功能
     4. 是否漏掉測試
     5. 是否有不必要的重構
-    請用 P0/P1/P2 分級，並輸出給 Codex 的完整修正轉交提示詞。
+    請用 P0/P1/P2 分級。審查完成後，最後再輸出給 Codex 的完整修正轉交提示詞。
   flow: dualai
   stage: '3'
 - title: ④ 第四階段：Codex 修正
-  category: 三方 AI 協作
+  category: 二刀流協作
   usage: 把 Claude Code 的審查意見貼回給 Codex 逐條處理
   prompt: |
     現在由 Codex 負責修正，其他 AI 暫停動作。
@@ -218,19 +218,20 @@
     3. 如果不成立，請說明理由
     4. 請只修必要檔案並重新驗證
     5. 請列出修完後要跑的驗證
+    修正完成後，最後再輸出給 Claude Code（VS Code）的完整複審提示詞；不要在修正尚未完成前提前交棒。
   flow: dualai
   stage: '4'
 - title: ⑤ 第五階段：Claude Code（VS Code）複審
-  category: 三方 AI 協作
+  category: 二刀流協作
   usage: 把修正後結果交給 Claude Code 複審，通過後交回 Codex 存檔
   prompt: |
     現在由 Claude Code（VS Code）負責複審，其他 AI 暫停動作。
     請再次檢查修正後的結果，確認前一輪問題是否已處理，並檢查是否引入新問題。
-    如果通過，請輸出給 Codex 的存檔轉交提示詞，要求 Codex 做最終驗證與 git commit。
+    如果通過，請先回報複審結果；最後再輸出給 Codex 的存檔轉交提示詞，要求 Codex 做最終驗證與 git commit。
   flow: dualai
   stage: '5'
-- title: 接續三方 AI 工作流（貼另一個 AI 的輸出）
-  category: 三方 AI 協作
+- title: 接續二刀流工作流（貼另一個 AI 的輸出）
+  category: 二刀流協作
   usage: 把一邊 AI 的產出搬到另一邊時，加這句開頭
   prompt: |
     這是另一個 AI 的輸出，請依 dual-ai-workflow 接續下一階段：
@@ -238,7 +239,7 @@
   flow: dualai
   stage: handoff
 - title: "讀取 NEXT-AI-TASK.md 並接續"
-  category: 三方 AI 協作
+  category: 二刀流協作
   usage: 讓下一棒 AI 讀取固定交棒檔並接續任務
   flow: dualai
   stage: handoff
@@ -258,10 +259,10 @@
     如果你是 Codex，請依 NEXT-AI-TASK.md 做修正、驗證或存檔。
     未經使用者明確要求，不要 push。
 - title: 單一 AI 也能用控制台
-  category: 三方 AI 協作
-  usage: 同事只用 Codex、Claude Code 或 Claude Desktop 時，讓它照控制台模板工作
+  category: 二刀流協作
+  usage: 同事只用 Codex 或 Claude Code 時，讓它照控制台模板工作
   prompt: |
-    我現在只使用一個 AI，但想用這套 Skill 助手控制台輔助工作。
+    我現在只使用一個 AI，但想用這套二刀流開發助手控制台輔助工作。
     請你先扮演主力助理，依照以下流程處理：
     1. 先幫我釐清任務目標
     2. 先提出方案，不要立刻修改
@@ -272,7 +273,7 @@
   flow: solo
   stage: entry
 - title: 請 Claude Code（VS Code）審查（含系統背景模板）
-  category: 三方 AI 協作
+  category: 二刀流協作
   usage: 進階·需要附完整系統背景做嚴謹審查時
   prompt: |
     現在由 Claude Code（VS Code）負責審查，其他 AI 暫停動作。
@@ -327,7 +328,7 @@
   flow: common
   stage: ''
 - title: 查目前進度（讀 DUAL-AI-STATE.md）
-  category: 三方 AI 工作流
+  category: 二刀流工作流
   usage: 不知道現在做到哪一步時使用；AI 會讀取進度檔，不靠聊天記憶。
   flow: dualai
   stage: status
@@ -340,7 +341,7 @@
 
     不要依賴對話記憶；如果 DUAL-AI-STATE.md 內容不足或疑似亂碼，請明確說明「進度檔無法可靠判讀」，並列出你需要我補充的最少資訊。
 - title: 額度快滿自動存檔＋換手
-  category: 三方 AI 工作流
+  category: 二刀流工作流
   usage: 看到 session limit、90% used、token 快滿或快不能回覆時，先保進度再換 AI。
   flow: dualai
   stage: status
@@ -357,8 +358,8 @@
 
     請不要依賴聊天記憶；以 DUAL-AI-STATE.md 和目前工作目錄的實際檔案為準。
     如果額度已不足以 build 或 commit，請明確說「先保進度，尚未完成 build / commit」，不要硬做高風險操作。
-- title: 單AI精簡 1 規劃
-  category: 單AI精簡
+- title: 單一 AI 精簡 1 規劃
+  category: 單一 AI 精簡
   usage: 只用一個 AI 做小系統或小功能時，先請它列出最小可行做法。
   flow: solo
   stage: '1'
@@ -375,8 +376,8 @@
     5. 修改後如何驗證
 
     請用小白能看懂的方式說明，不要一次做太大範圍。
-- title: 單AI精簡 2 實作
-  category: 單AI精簡
+- title: 單一 AI 精簡 2 實作
+  category: 單一 AI 精簡
   usage: 規劃確認後，請同一個 AI 直接做最小範圍修改。
   flow: solo
   stage: '2'
@@ -391,8 +392,8 @@
     5. 若是網頁 UI，請確認畫面真的能看、按鈕真的能用
 
     完成後請回報：改了哪些內容、如何檢查、是否還有未完成風險。
-- title: 單AI精簡 3 自我檢查
-  category: 單AI精簡
+- title: 單一 AI 精簡 3 自我檢查
+  category: 單一 AI 精簡
   usage: 實作後請 AI 自己用審查角度檢查一次。
   flow: solo
   stage: '3'
@@ -407,8 +408,8 @@
     5. 是否有不必要的大改或風險操作
 
     請用 P0／P1／P2 標示問題嚴重度；如果沒有問題，請明確說「未發現阻擋問題」，並列出仍建議人工確認的地方。
-- title: 單AI精簡 4 存檔
-  category: 單AI精簡
+- title: 單一 AI 精簡 4 存檔
+  category: 單一 AI 精簡
   usage: 確認功能 OK 後，整理變更摘要，方便存檔或提交版本。
   flow: solo
   stage: '4'
@@ -436,7 +437,7 @@
     - 專案簡介（一兩句話）：【】
     - 目標使用者：【】
     - 技術棧（若已決定）：【】
-    - 是否採用三方 AI 工作流（Codex / Claude Code（VS Code）/ Claude Desktop）：【是 / 否】
+    - 是否採用二刀流工作流（Codex / Claude Code（VS Code））：【是 / 否】
 
     【AGENTS.md 必含段落】
     1. 第一行：「# AGENTS.md — 專案頂層規則文件」
@@ -450,7 +451,7 @@
        - 修改完成後總結：改了什麼、如何檢查、下一步建議
        - 用小白能聽懂的話解釋，遇到技術名詞順手用一句話解釋
     4. 專案檔案結構（先用樹狀圖列出目前已知的檔案；缺的之後補）
-    5. 若採用三方 AI 工作流：補一段「AI 角色分工」表格（Codex 主力、Claude Code（VS Code）審查、Claude Desktop 顧問／文字助理），並指向 docs/dual-ai-workflow.md 與 docs/ai-role-guide.md
+    5. 若採用二刀流工作流：補一段「AI 角色分工」表格（Codex 主力、Claude Code（VS Code）審查），並指向 docs/dual-ai-workflow.md 與 docs/ai-role-guide.md
     6. 技術棧與環境需求（若已決定）
 
     【寫作要求】
@@ -459,7 +460,7 @@
     - AGENTS.md 是給人讀的規範文件，不要塞程式碼
     - 完成後請告訴我建議的下一步（例如：建立 PRD.md、初始化 git、設定 .gitignore、跑 scripts/build.py）
 - title: 給 Codex 的逐條修正轉交提示詞（模板）
-  category: 三方 AI 協作
+  category: 二刀流協作
   usage: 第 3 階段審查完成後，固定把意見搬給 Codex 進入第 4 階段時用這張
   flow: dualai
   stage: '3'
@@ -496,9 +497,9 @@
     1. 逐條 P0/P1/P2 處理結果（成立／不成立＋原因）。
     2. 重新驗證結果（含關鍵 hash 或數據實測值）。
     3. 新 diff（精簡列出檔案與重點變更）。
-    4. 給 Claude Code（VS Code）的完整轉交提示詞，進入第 5 階段複審。
+    4. 最後一段才放「給 Claude Code（VS Code）的完整轉交提示詞」，進入第 5 階段複審。
 - title: 給 Codex 的存檔收尾提示詞（模板）
-  category: 三方 AI 協作
+  category: 二刀流協作
   usage: 第 5 階段複審通過後，把閉環收尾交回 Codex 時用這張
   flow: dualai
   stage: '5'
@@ -568,7 +569,7 @@
     4. push 前敏感資料檢查結果
     5. 若安全，最後只提供 `git push origin main` 指令；不要替我自動 push。
 - title: 跨地點 / 跨系統接續
-  category: 三方 AI 協作
+  category: 二刀流協作
   usage: 公司、家裡、Mac mini、Windows 電腦之間接續同一個專案時，用來安全存檔、pull、同步 skills 與交接狀態。
   flow: dualai
   stage: handoff
