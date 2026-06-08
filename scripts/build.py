@@ -342,7 +342,7 @@ const AGENTS_HTML = __AGENTS_HTML__;
 const PRD_HTML = __PRD_HTML__;
 const PROJECT_PATH = __PROJECT_PATH__;
 const PROJECT_URL = __PROJECT_URL__;
-let tab = "guide", cat = "全部", q = "", flowMode = "dualai", captureMode = "prompt", progressMode = "status", selectedProject = null, progressPickerMessage = "";
+let tab = "guide", cat = "全部", q = "", flowMode = "dualai", dailyMode = "全部", captureMode = "prompt", progressMode = "status", selectedProject = null, progressPickerMessage = "";
 const FLOW_META = {
   dualai:{label:"二刀流協作",title:"二刀流工作流提示詞",lead:"適合重要系統修改：Codex 是主力工程師，負責規劃、分段實作、測試與修正；Claude Code（VS Code）是審查員，負責架構審查、風險檢查與複審。"},
   solo:{label:"單一 AI 使用",title:"單一 AI 使用提示詞",lead:"同事只有單一 AI 時，也能用這些提示詞讓 AI 先釐清、再分段執行、最後提醒是否需要審查。"},
@@ -525,6 +525,99 @@ const DAILY_PROMPT_SECTIONS = [
 - 不要刪除、不要搬移、不要改名。
 - 請先列出整理計畫與受影響檔案，等我確認後再產生下一步指令。
 - 如果你需要執行任何指令，必須先問我。`}
+  ]},
+  {title:"生成圖片提示詞",hint:"要用 Codex / 圖像 skill 產生圖片前，先把主題、風格、比例與限制講清楚。",cards:[
+    {title:"幫我把想法整理成圖片提示詞",when:"你只有模糊想法，想先變成可拿去生圖的 prompt。",prompt:`請幫我把下面的想法整理成高品質圖片生成提示詞。
+
+圖片想法：
+【貼上你想生成的圖片內容，例如文章封面、產品圖、插畫、社群圖卡】
+
+請先不要直接生成圖片，先幫我整理：
+1. 圖片用途：例如文章封面、簡報圖、社群貼文、產品示意圖。
+2. 主體：畫面中最重要的人、物、場景或概念。
+3. 風格：寫實、插畫、電影感、資訊圖、極簡、科技感等。
+4. 構圖：主體位置、背景、視角、光線、是否需要留白。
+5. 比例：16:9、1:1、9:16、4:3 或其他。
+6. 需要避免的內容：不要出現錯字、不要塞太多文字、不要像廉價素材圖。
+
+最後請輸出 3 個版本：
+- 版本 A：穩健清楚版
+- 版本 B：更有設計感版
+- 版本 C：更大膽創意版
+
+每個版本都請附：
+1. 中文提示詞
+2. 英文提示詞
+3. 建議比例
+4. 適合用在哪裡`},
+    {title:"生成文章封面圖提示詞",when:"寫文章、報告、企劃或簡報，需要一張封面圖時。",prompt:`請幫我產生一組可直接用於 AI 圖像生成的文章封面提示詞。
+
+文章或主題：
+【貼上文章標題、摘要或核心觀點】
+
+目標讀者：
+【例如主管、一般大眾、工程師、客戶、學生】
+
+我希望的氣氛：
+【例如專業、溫暖、科技感、冷靜、震撼、可愛、未來感】
+
+請輸出：
+1. 封面視覺概念：用 3-5 句話說明畫面長什麼樣。
+2. 圖片生成提示詞：繁體中文一版、英文一版。
+3. 構圖要求：主體、背景、留白、光線、視角。
+4. 文字處理：如果需要標題，請建議後製加字；不要要求 AI 在圖中直接產生大量文字。
+5. 比例建議：16:9、1:1、9:16 各適合什麼情境。
+6. 負面提示詞：列出不要出現的元素，例如低解析、過度複雜、錯字、扭曲手指、廉價素材感。`}
+  ]},
+  {title:"生成影片提示詞",hint:"要做短影音、展示影片或腳本分鏡時，先把鏡頭、節奏、旁白與畫面限制講清楚。",cards:[
+    {title:"幫我把想法整理成影片生成提示詞",when:"想用 AI 生成影片，但還不知道怎麼描述鏡頭與畫面。",prompt:`請幫我把下面的想法整理成高品質影片生成提示詞。
+
+影片想法：
+【貼上你想做的影片內容，例如產品展示、短影音、品牌形象、教學片段】
+
+請先不要直接生成影片，先幫我整理：
+1. 影片用途：社群短影音、產品展示、活動開場、教學、簡報背景。
+2. 影片長度：建議 5 秒、10 秒、15 秒或 30 秒。
+3. 畫面主體：人物、產品、場景或抽象概念。
+4. 鏡頭運動：推進、拉遠、環繞、平移、手持感、定鏡。
+5. 節奏與情緒：冷靜、快速、震撼、溫暖、專業、科技感。
+6. 畫面比例：16:9、9:16、1:1。
+7. 不要出現的問題：字幕亂碼、人物變形、品牌文字錯誤、鏡頭太晃、過度特效。
+
+最後請輸出 3 個版本：
+- 版本 A：穩健清楚版
+- 版本 B：更有電影感版
+- 版本 C：適合社群短影音版
+
+每個版本都請附：
+1. 中文影片提示詞
+2. 英文影片提示詞
+3. 分鏡或鏡頭描述
+4. 建議比例與秒數
+5. 負面提示詞`},
+    {title:"生成短影音分鏡提示詞",when:"要把一個主題做成 15-30 秒短片或廣告腳本時。",prompt:`請幫我把下面主題整理成 AI 影片生成用的短影音分鏡提示詞。
+
+主題：
+【貼上產品、服務、文章主題或活動內容】
+
+目標觀眾：
+【例如主管、一般消費者、社群粉絲、客戶、學生】
+
+影片目的：
+【例如吸引注意、介紹功能、展示成果、說服購買、教學】
+
+請輸出：
+1. 一句影片核心概念。
+2. 15 秒版本分鏡：3-5 個鏡頭，每個鏡頭包含畫面、鏡頭運動、情緒、秒數。
+3. 30 秒版本分鏡：5-8 個鏡頭，每個鏡頭包含畫面、鏡頭運動、情緒、秒數。
+4. 可直接貼給影片生成模型的中文 prompt。
+5. 可直接貼給影片生成模型的英文 prompt。
+6. 旁白草稿：如果不適合旁白，也請說明原因。
+7. 負面提示詞：避免錯字、怪異人物、過度轉場、畫面不連續、品牌標誌錯誤。
+
+限制：
+- 不要把畫面塞滿文字。
+- 如果需要精準文字或 Logo，請建議後製加入，不要要求 AI 直接生成精準中文字。`}
   ]}
 ];
 const PROJECT_STAGES = [
@@ -548,7 +641,7 @@ const PAGE_INTROS = {
   capture:{title:"收錄新內容",lead:"看到好用提示詞或 skill 時，先填表產生交辦提示詞與 YAML 片段，再交給 Codex 寫入、重建、驗證與 commit。",purpose:"安全收錄新內容，不需要你手寫 YAML。",first:"先選提示詞或 Skill；新手請複製「給 Codex 的完整交辦提示詞」。",when:"看到新 skill、實用提示詞，或想把工作流模板收入控制台時。"},
   control:{title:"二刀流中控",lead:"v1 是靜態教學頁，不讀取 DUAL-AI-STATE.md；按鈕只會跳到提示詞庫並複製對應提示詞。",purpose:"讓每個階段知道要找誰、做什麼、複製哪張提示詞。",first:"先看目前要進哪一階段，再按卡片按鈕複製對應提示詞。",when:"要從規劃、實作、審查、修正、複審到存檔收尾一路接續時。"},
   progress:{title:"開發進度",lead:"這頁把目前專案做到哪裡、下一步要做什麼一次整理出來。",purpose:"不用翻文件也能快速知道現在進度、是否有卡點，以及下一步該做什麼。",first:"先看目前階段與下一步；如果有未解決問題，先處理警示區。",when:"接續開發、換 AI 接手、或想確認這個專案現在是不是可以往下一步走時。"},
-  daily:{title:"日常提示詞",lead:"不知道怎麼開口時，先從這裡複製。這頁把開發、查資料、整理資料與整理電腦檔案整理成新手可直接使用的提示詞。",purpose:"把日常最常用的 AI 交辦方式整理成安全、直接可複製的新手版。",first:"先選你現在想做什麼，再複製對應卡片。整理電腦檔案時，只先規劃，不直接動檔。",when:"開發系統、找資料比對、整理文字資料、或想分類電腦檔案但怕弄壞時。"},
+  daily:{title:"日常提示詞",lead:"不知道怎麼開口時，先從這裡複製。這頁把開發、查資料、整理資料、整理電腦檔案、生成圖片與生成影片整理成新手可直接使用的提示詞。",purpose:"把日常最常用的 AI 交辦方式整理成安全、直接可複製的新手版。",first:"先選你現在想做什麼，再複製對應卡片。整理電腦檔案時，只先規劃，不直接動檔。",when:"開發系統、找資料比對、整理文字資料、分類電腦檔案、產生圖片 prompt 或產生影片 prompt 時。"},
   guide:{title:"首頁 / 快速開始",lead:"這裡先用最簡單的方式說明這套輔助系統在做什麼、怎麼分工、第一步該按哪裡。",purpose:"讓新手一進來就知道 Codex 做什麼、Claude Code 做什麼，以及怎麼開始。",first:"先看下方 3 步驟；如果你正在接續專案，直接去「開發進度」。",when:"第一次打開控制台，或想快速教同事這套系統怎麼用時。"}
 };
 const riskCls = {"低":"low","中":"mid","高":"high"};
@@ -564,7 +657,9 @@ function homePrompt(title,fallback){return DATA.prompts.find(p=>p.title===title)
 function homeHtml(){const rolePrompt=homePrompt("二刀流分工細節說明","請用小白能懂的方式，說明 Codex 和 Claude Code（VS Code）的分工細節。");const codexPrompt=homePrompt("① 第一階段：Codex 規劃","請先讀取專案結構與相關文件，不要直接修改。先提出方案，再等我確認。");const reviewPrompt=homePrompt("③ 第三階段：Claude Code（VS Code）審查","請審查這次改動、diff 與驗證結果，列出 P0/P1/P2 風險。");const soloPrompt=homePrompt("單一 AI 也能用控制台","我現在只使用一個 AI，但想用這套二刀流開發助手控制台輔助工作。請先幫我釐清任務目標，提出方案，再分段執行。");return`<div class="wide-sop"><div class="home-hero"><h2>這是一套讓 Codex 和 Claude Code 分工合作的開發輔助系統</h2><p>簡單說：Codex 負責規劃、實作、修正；Claude Code（VS Code）負責審查與複審。你不用記全部流程，只要知道現在是新專案、接續專案，還是要找提示詞即可。</p><div class="home-actions"><button class="copy-btn" type="button" data-home-tab="daily">我要日常提示詞</button><button class="copy-btn" type="button" data-home-tab="progress">我正在接續專案</button><button class="copy-btn" type="button" data-home-tab="prompts">我要複製提示詞</button><button class="copy-btn" type="button" data-home-tab="skills">我要找 Skill</button></div><div class="home-kpis"><div class="home-kpi"><b>先看哪裡</b><div class="summary">有現成專案就先開「開發進度」，只是日常交辦就開「日常提示詞」。</div></div><div class="home-kpi"><b>核心分工</b><div class="summary">Codex 做事，Claude Code 抓問題，你做最後決定。</div></div><div class="home-kpi"><b>新手原則</b><div class="summary">先照流程走，不用一開始就理解全部頁籤。</div></div></div></div><div class="home-steps"><div class="home-step"><span class="num">1</span><h3>先確認你是哪一種情況</h3><div class="summary">日常交辦：先去日常提示詞。新專案：先去提示詞庫找 AGENTS / PRD。舊專案：先去開發進度選資料夾。只想找工具：直接去 Skills。</div></div><div class="home-step"><span class="num">2</span><h3>照二刀流分工做</h3><div class="summary">Codex 先規劃與實作，Claude Code 再審查。不要兩邊同時亂改，這樣最穩。</div></div><div class="home-step"><span class="num">3</span><h3>每一棒都留交接檔</h3><div class="summary">這套系統主要靠 <code>DUAL-AI-STATE.md</code>、<code>NEXT-AI-TASK.md</code>、<code>AGENTS.md</code>、<code>PRD.md</code> 接續，不要只靠聊天記憶。</div></div></div><div class="home-split"><div class="home-panel"><h3>二刀流最簡單分工</h3><div class="role-grid"><div class="role-card"><h4>Codex</h4><div class="summary">主力工程師。適合規劃、拆任務、分段實作、跑測試、修正問題。</div></div><div class="role-card"><h4>Claude Code（VS Code）</h4><div class="summary">審查員。適合看 diff、抓風險、提 P0/P1/P2、做複審。</div></div><div class="role-card"><h4>你</h4><div class="summary">最後決策者。看結論、決定要不要繼續、要不要 commit / push。</div></div><div class="role-card"><h4>單一 AI 也能用</h4><div class="summary">如果手邊只有一個 AI，就改走提示詞庫裡的「單一 AI 使用」流程。</div></div></div><div class="home-copy-hint">第一次使用請先按「新手先按：複製分工細節說明」，貼給 AI 了解兩邊怎麼配合。</div><div class="home-panel-actions"><button class="copy-btn primary-copy" data-copy="${encodeURIComponent(rolePrompt)}">新手先按：複製分工細節說明</button><button class="copy-btn" data-copy="${encodeURIComponent(codexPrompt)}">複製 Codex 開工提示詞</button><button class="copy-btn" data-copy="${encodeURIComponent(reviewPrompt)}">複製 Claude 審查提示詞</button><button class="copy-btn" data-copy="${encodeURIComponent(soloPrompt)}">複製單一 AI 提示詞</button></div></div><div class="home-panel"><h3>最常用的三個入口</h3><div class="mini-list"><div class="mini-item"><b>日常提示詞</b><div class="summary">不知道怎麼開口時用。開發、查資料、整理文字、整理電腦檔案都有新手版提示詞。</div></div><div class="mini-item"><b>開發進度</b><div class="summary">接續現有專案時用。選資料夾後看目前階段、下一步、缺哪些檔案。</div></div><div class="mini-item"><b>提示詞庫</b><div class="summary">不知道怎麼開工時用。裡面有新專案啟動、審查、交接、收尾提示詞。</div></div><div class="mini-item"><b>二刀流中控</b><div class="summary">已經知道自己在第幾階段時用。直接跳到對應提示詞。</div></div></div></div></div><div class="home-panel" style="margin-top:14px"><h3>二刀流完整流程</h3><div class="summary">第 1 階段 Codex 規劃 → 第 2 階段 Codex 實作 → 第 3 階段 Claude Code 審查 → 第 4 階段 Codex 修正 → 第 5 階段 Claude Code 複審 → Codex 存檔收尾。</div><div class="summary" style="margin-top:8px">如果你已經知道自己在哪一階段，直接去「二刀流中控」會比讀長篇說明更快。</div></div></div>`}
 function bindHome(){document.querySelectorAll("[data-home-tab]").forEach(btn=>btn.onclick=()=>setTab(btn.dataset.homeTab))}
 function dailyPromptCard(card){return`<div class="daily-card"><h4>${esc(card.title)}</h4><div class="usage">${esc(card.when)}</div><pre class="prompt-body">${esc(card.prompt)}</pre><button class="copy-btn" data-copy="${encodeURIComponent(card.prompt)}">複製這段提示詞</button></div>`}
-function dailyHtml(){return`<div class="wide-sop"><div class="daily-hero"><h2>日常工作不知道怎麼問，就先從這裡複製</h2><p>這頁是新手版提示詞，不用先懂二刀流或專案文件。你只要選「現在想做什麼」，複製卡片給 Codex 或 Claude Code，就能開始請 AI 幫忙。</p><div class="daily-principles"><div class="daily-principle"><b>先講目的</b><div class="summary">告訴 AI 你想完成什麼，不只是丟一堆資料。</div></div><div class="daily-principle"><b>先看再做</b><div class="summary">要求 AI 先分析、先規劃，確認後再修改。</div></div><div class="daily-principle"><b>重要檔案先保護</b><div class="summary">涉及電腦檔案時，先備份、先列計畫，不直接動檔。</div></div></div></div>${DAILY_PROMPT_SECTIONS.map(section=>`<section class="daily-section"><div class="daily-section-head"><div><h3>${esc(section.title)}</h3><div class="summary">${esc(section.hint)}</div></div>${section.safety?`<div class="daily-safety">${esc(section.safety)}</div>`:""}</div><div class="daily-grid">${section.cards.map(dailyPromptCard).join("")}</div></section>`).join("")}</div>`}
+function dailyModeButtons(){const modes=["全部",...DAILY_PROMPT_SECTIONS.map(section=>section.title)];return`<div class="flow-switch">${modes.map(mode=>`<button class="flow-btn ${dailyMode===mode?"active":""}" onclick="dailyMode='${esc(mode)}';render()">${esc(mode)}</button>`).join("")}</div>`}
+function dailyHtml(){const sections=DAILY_PROMPT_SECTIONS.filter(section=>dailyMode==="全部"||section.title===dailyMode);return`<div class="wide-sop"><div class="daily-hero"><h2>日常工作不知道怎麼問，就先從這裡複製</h2><p>這頁是新手版提示詞，不用先懂二刀流或專案文件。你只要選「現在想做什麼」，複製卡片給 Codex 或 Claude Code，就能開始請 AI 幫忙。</p><div class="daily-principles"><div class="daily-principle"><b>先講目的</b><div class="summary">告訴 AI 你想完成什麼，不只是丟一堆資料。</div></div><div class="daily-principle"><b>先看再做</b><div class="summary">要求 AI 先分析、先規劃，確認後再修改。</div></div><div class="daily-principle"><b>重要檔案先保護</b><div class="summary">涉及電腦檔案時，先備份、先列計畫，不直接動檔。</div></div></div></div>${dailyModeButtons()}${sections.map(section=>`<section class="daily-section"><div class="daily-section-head"><div><h3>${esc(section.title)}</h3><div class="summary">${esc(section.hint)}</div></div>${section.safety?`<div class="daily-safety">${esc(section.safety)}</div>`:""}</div><div class="daily-grid">${section.cards.map(dailyPromptCard).join("")}</div></section>`).join("")}</div>`}
+function bindDaily(){document.querySelectorAll("[data-daily-mode]").forEach(btn=>btn.onclick=()=>{dailyMode=btn.dataset.dailyMode;render()})}
 function skillCard(s){const triggers=(s.triggers||[]).map(t=>`<div class="trigger"><code>${esc(t)}</code><button class="copy-btn" data-copy="${encodeURIComponent(t)}">複製</button></div>`).join("");return`<div class="card"><h3>${esc(s.name)} <span class="badge ${riskCls[s.risk]||"low"}">${esc(s.risk)}風險</span> <span class="cat-tag">${esc(s.category)}</span></h3><div class="summary">${esc(s.summary)}</div>${s.notes?`<div class="notes">${esc(s.notes)}</div>`:""}${triggers}</div>`}
 function stageLabel(p){if(!p.flow||!p.stage)return"通用";const meta=STAGE_META[p.flow]?.[p.stage];return meta?meta[0]:p.stage}
 function promptKey(p){return `${p.flow||"common"}::${p.stage||""}::${p.title}`}
