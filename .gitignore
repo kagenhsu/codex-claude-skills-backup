@@ -2,5 +2,7 @@ __pycache__/
 *.pyc
 .DS_Store
 server-*.log
+private/
+index.private.html
 skills/*
 !skills/dual-ai-workflow/
