@@ -15,9 +15,25 @@
 
 - 第 1 階段：Codex 讀專案結構與文件，不修改，提出方案。
 - 第 2 階段：Codex 依確認後的方案分段實作、跑 build、驗證；工作完成後，最後再產出給 Claude Code（VS Code）的交接摘要與 diff。
-- 第 3 階段：Claude Code（VS Code）審查 Codex 的交接摘要、diff 與驗證結果，列出 P0/P1/P2 問題；審查完成後，最後再輸出給 Codex 的修正提示詞。
+- 第 3 階段：Claude Code（VS Code）審查 Codex 的交接摘要、diff 與驗證結果；預設使用「5 子代理深度同行評審」，依專案類型分別檢查安全性、程式品質、bug、效能與架構，列出 P0/P1/P2 問題；審查完成後，最後再輸出給 Codex 的修正提示詞。
 - 第 4 階段：Codex 逐條判斷審查意見是否成立，只修必要檔案並重新驗證；修正完成後，最後再輸出給 Claude Code（VS Code）的複審提示詞。
 - 第 5 階段：Claude Code（VS Code）複審；通過後，最後再交回 Codex 做 git 存檔。
+
+## 深度同行評審觸發規則
+
+當第 2 階段完成，或任何功能新增、UI 調整、安裝腳本修改、release、commit、push、PR 觸發審查閘門時，Codex 給 Claude Code（VS Code）的交接提示詞應自動帶入「5 子代理深度同行評審」要求。
+
+5 個子代理依專案類型調整檢查重點：
+
+| 子代理 | 核心檢查 |
+|---|---|
+| Security Agent | 權限、機密資料、輸入驗證、注入攻擊、上傳、部署與依賴風險 |
+| Quality Agent | 可讀性、命名、重複邏輯、錯誤處理、測試缺口、既有風格一致性 |
+| Bug Hunter Agent | 明顯 bug、邊界情況、空值、日期/時區、資料狀態與回歸風險 |
+| Concurrency & Perf Agent | 效能瓶頸、併發衝突、重複查詢、I/O、快取、資源釋放 |
+| Architecture Agent | 模組邊界、資料流、責任切分、技術選型、擴充性與 PRD 對齊 |
+
+如果某個維度沒有問題，Claude Code（VS Code）只需回覆「該維度未發現明顯異常」。如果有問題，必須給出具體修改建議或可套用的程式片段，並標註 P0/P1/P2。
 
 ## 交棒節奏
 

@@ -12,8 +12,10 @@
   usage: Codex 做完實作後，交給 Claude Code 審查，再回到 Codex 修正與收尾。
   category: 二刀流協作
   steps:
+    - prompt_title: 深度同行評審：5 子代理 Code Review
+      custom_intro: 【進階】需填入完整專案背景時使用，適合 release 或複雜改動前的深度審查。
     - prompt_title: ③ 第三階段：Claude Code（VS Code）審查
-      custom_intro: 先把 Codex 的實作交給 Claude Code 做 P0/P1/P2 審查。
+      custom_intro: 【標準】直接貼入 Codex 交接摘要使用，已內建 5 子代理，適合日常審查。
     - prompt_title: 給 Codex 的逐條修正轉交提示詞（模板）
       custom_intro: 審查完後，把問題逐條搬回 Codex 修正。
     - prompt_title: 給 Codex 的存檔收尾提示詞（模板）
