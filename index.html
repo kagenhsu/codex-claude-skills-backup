@@ -169,7 +169,7 @@
 </style>
 </head>
 <body>
-<header><div class="head-inner"><h1>二刀流開發助手控制台 <span class="sub">Codex × Claude Code 開發系統</span></h1><div class="tabs"><button class="tab active" data-tab="guide">首頁 / 快速開始</button><button class="tab" data-tab="daily">日常提示詞</button><button class="tab" data-tab="customSkill">自製 Skill</button><button class="tab" data-tab="progress">開發進度</button><button class="tab" data-tab="control">二刀流中控</button><button class="tab" data-tab="prompts">提示詞庫</button><button class="tab" data-tab="skills">Skills</button><button class="tab" data-tab="capture">收錄新內容</button><button class="tab" data-tab="backup">換電腦／同步</button></div></div></header>
+<header><div class="head-inner"><h1>二刀流開發助手控制台 <span class="sub">Codex × Claude Code 開發系統</span></h1><div class="tabs"><button class="tab active" data-tab="guide">首頁 / 快速開始</button><button class="tab" data-tab="daily">日常提示詞</button><button class="tab" data-tab="customSkill">自製 Skill</button><button class="tab" data-tab="progress">開發進度</button><button class="tab" data-tab="control">二刀流中控</button><button class="tab" data-tab="prompts">提示詞庫</button><button class="tab" data-tab="skills">Skill庫</button><button class="tab" data-tab="capture">收錄新內容</button><button class="tab" data-tab="backup">換電腦／同步</button></div></div></header>
 <main><div id="onlineBanner"></div><div id="launchTip"></div><div class="search"><span class="icon">搜</span><input id="searchBox" type="text" placeholder="搜尋 skill、提示詞、觸發句、角色、分工、導覽，例如：git、翻譯、審查、二刀流"></div><div id="pageIntro" class="page-intro"></div><div id="chips" class="chips"></div><div id="countLine" class="count"></div><div id="content"></div></main>
 <footer>資料來源：data/skills.yaml + data/prompts.yaml + data/combos.yaml；修改後執行 python3 scripts/build.py 重建</footer>
 <script>
@@ -614,7 +614,7 @@ const PROJECT_STAGES = [
 ];
 const PAGE_INTROS = {
   backup:{title:"換電腦／同步",lead:"這頁是新手安裝、下載備份包、換電腦同步與建立自己版本的入口。線上 demo 不能直接操作你的電腦；請依你的系統複製指令後，到 PowerShell 或 Terminal 執行。",purpose:"把二刀流控制台與整理好的 skills 安裝到 Codex / Claude Code 可讀的位置，或下載備份包留存。",first:"先選 Windows 或 macOS 安裝指令；按下複製後，照卡片上的 3 個小步驟貼到終端機執行。",when:"第一次安裝、換電腦、重裝工具、下載備份包，或想把自己客製化版本同步到其他機器時。"},
-  skills:{title:"Skills",lead:"查看每個 skill 的用途、風險與觸發句，直接複製給 AI 使用。",purpose:"快速判斷要叫哪個 AI skill。",first:"搜尋關鍵字，再複製觸發句。",when:"不確定某個任務該用哪個 skill 時。"},
+  skills:{title:"Skill庫",lead:"查看每個 skill 的用途、風險與觸發句，直接複製給 AI 使用。",purpose:"快速判斷要叫哪個 AI skill。",first:"搜尋關鍵字，再複製觸發句。",when:"不確定某個任務該用哪個 skill 時。"},
   prompts:{title:"提示詞庫",lead:"常用提示詞集中管理，適合你直接複製給 Codex 或 Claude Code（VS Code）。",purpose:"快速啟動工作流程。",first:"先選二刀流、單一 AI 或通用分類，再複製。",when:"要交辦任務、請 AI 審查、整理交接或產出文件時。"},
   capture:{title:"收錄新內容",lead:"看到好用提示詞或 skill 時，先填表產生交辦提示詞與 YAML 片段，再交給 Codex 寫入、重建、驗證與 commit。",purpose:"安全收錄新內容，不需要你手寫 YAML。",first:"先選提示詞或 Skill；新手請複製「給 Codex 的完整交辦提示詞」。",when:"看到新 skill、實用提示詞，或想把工作流模板收入控制台時。"},
   control:{title:"二刀流中控",lead:"v1 是靜態教學頁，不讀取 DUAL-AI-STATE.md；按鈕只會跳到提示詞庫並複製對應提示詞。",purpose:"讓每個階段知道要找誰、做什麼、複製哪張提示詞。",first:"先看目前要進哪一階段，再按卡片按鈕複製對應提示詞。",when:"要從規劃、實作、審查、修正、複審到存檔收尾一路接續時。"},
@@ -634,7 +634,47 @@ function renderOnlineBanner(){const el=document.getElementById("onlineBanner");i
 function renderIntro(){const info=PAGE_INTROS[tab];document.getElementById("pageIntro").innerHTML=`<h2>${esc(info.title)}</h2><div class="lead">${esc(info.lead)}</div><div class="intro-grid"><div class="intro-item"><div class="intro-label">用途</div><div class="intro-text">${esc(info.purpose)}</div></div><div class="intro-item"><div class="intro-label">先做</div><div class="intro-text">${esc(info.first)}</div></div><div class="intro-item"><div class="intro-label">適合情境</div><div class="intro-text">${esc(info.when)}</div></div></div>`}
 function homePrompt(title,fallback){return DATA.prompts.find(p=>p.title===title)?.prompt||fallback}
 function homeHtml(){const rolePrompt=homePrompt("二刀流分工細節說明","請用小白能懂的方式，說明 Codex 和 Claude Code（VS Code）的分工細節。");const codexPrompt=homePrompt("① 第一階段：Codex 規劃","請先讀取專案結構與相關文件，不要直接修改。先提出方案，再等我確認。");const reviewPrompt=homePrompt("③ 第三階段：Claude Code（VS Code）審查","請審查這次改動、diff 與驗證結果，列出 P0/P1/P2 風險。");const soloPrompt=homePrompt("單一 AI 也能用控制台","我現在只使用一個 AI，但想用這套二刀流開發助手控制台輔助工作。請先幫我釐清任務目標，提出方案，再分段執行。");return`<div class="wide-sop"><div class="home-hero"><h2>這是一套讓 Codex 和 Claude Code 分工合作的開發輔助系統</h2><p>簡單說：Codex 負責規劃、實作、修正；Claude Code（VS Code）負責審查與複審。你不用記全部流程，只要知道現在是新專案、接續專案，還是要找提示詞即可。</p><div class="home-actions"><button class="copy-btn" type="button" data-home-tab="daily">我要日常提示詞</button><button class="copy-btn" type="button" data-home-tab="progress">我正在接續專案</button><button class="copy-btn" type="button" data-home-tab="prompts">我要複製提示詞</button><button class="copy-btn" type="button" data-home-tab="skills">我要找 Skill</button></div><div class="home-kpis"><div class="home-kpi"><b>先看哪裡</b><div class="summary">有現成專案就先開「開發進度」，只是日常交辦就開「日常提示詞」。</div></div><div class="home-kpi"><b>核心分工</b><div class="summary">Codex 做事，Claude Code 抓問題，你做最後決定。</div></div><div class="home-kpi"><b>新手原則</b><div class="summary">先照流程走，不用一開始就理解全部頁籤。</div></div></div></div><div class="home-steps"><div class="home-step"><span class="num">1</span><h3>先確認你是哪一種情況</h3><div class="summary">日常交辦：先去日常提示詞。新專案：先去提示詞庫找 AGENTS / PRD。舊專案：先去開發進度選資料夾。只想找工具：直接去 Skills。</div></div><div class="home-step"><span class="num">2</span><h3>照二刀流分工做</h3><div class="summary">Codex 先規劃與實作，Claude Code 再審查。不要兩邊同時亂改，這樣最穩。</div></div><div class="home-step"><span class="num">3</span><h3>每一棒都留交接檔</h3><div class="summary">這套系統主要靠 <code>DUAL-AI-STATE.md</code>、<code>NEXT-AI-TASK.md</code>、<code>AGENTS.md</code>、<code>PRD.md</code> 接續，不要只靠聊天記憶。</div></div></div><div class="home-split"><div class="home-panel"><h3>二刀流最簡單分工</h3><div class="role-grid"><div class="role-card"><h4>Codex</h4><div class="summary">主力工程師。適合規劃、拆任務、分段實作、跑測試、修正問題。</div></div><div class="role-card"><h4>Claude Code（VS Code）</h4><div class="summary">審查員。適合看 diff、抓風險、提 P0/P1/P2、做複審。</div></div><div class="role-card"><h4>你</h4><div class="summary">最後決策者。看結論、決定要不要繼續、要不要 commit / push。</div></div><div class="role-card"><h4>單一 AI 也能用</h4><div class="summary">如果手邊只有一個 AI，就改走提示詞庫裡的「單一 AI 使用」流程。</div></div></div><div class="home-copy-hint">第一次使用請先按「新手先按：複製分工細節說明」，貼給 AI 了解兩邊怎麼配合。</div><div class="home-panel-actions"><button class="copy-btn primary-copy" data-copy="${encodeURIComponent(rolePrompt)}">新手先按：複製分工細節說明</button><button class="copy-btn" data-copy="${encodeURIComponent(codexPrompt)}">複製 Codex 開工提示詞</button><button class="copy-btn" data-copy="${encodeURIComponent(reviewPrompt)}">複製 Claude 審查提示詞</button><button class="copy-btn" data-copy="${encodeURIComponent(soloPrompt)}">複製單一 AI 提示詞</button></div></div><div class="home-panel"><h3>最常用的三個入口</h3><div class="mini-list"><div class="mini-item"><b>日常提示詞</b><div class="summary">不知道怎麼開口時用。開發、查資料、整理文字、整理電腦檔案都有新手版提示詞。</div></div><div class="mini-item"><b>開發進度</b><div class="summary">接續現有專案時用。選資料夾後看目前階段、下一步、缺哪些檔案。</div></div><div class="mini-item"><b>提示詞庫</b><div class="summary">不知道怎麼開工時用。裡面有新專案啟動、審查、交接、收尾提示詞。</div></div><div class="mini-item"><b>二刀流中控</b><div class="summary">已經知道自己在第幾階段時用。直接跳到對應提示詞。</div></div></div></div></div><div class="home-panel" style="margin-top:14px"><h3>二刀流完整流程</h3><div class="summary">第 1 階段 Codex 規劃 → 第 2 階段 Codex 實作 → 第 3 階段 Claude Code 審查 → 第 4 階段 Codex 修正 → 第 5 階段 Claude Code 複審 → Codex 存檔收尾。</div><div class="summary" style="margin-top:8px">如果你已經知道自己在哪一階段，直接去「二刀流中控」會比讀長篇說明更快。</div></div></div>`}
-function bindHome(){const actions=document.querySelector(".home-actions");if(actions&&!actions.querySelector('[data-home-tab="customSkill"]'))actions.querySelector('[data-home-tab="daily"]')?.insertAdjacentHTML("afterend",'<button class="copy-btn" type="button" data-home-tab="customSkill">我要自製 Skill</button>');const steps=document.querySelector(".home-steps");if(steps&&!document.querySelector(".skill-explain-panel"))steps.insertAdjacentHTML("afterend",`<div class="home-panel skill-explain-panel" style="margin-bottom:16px"><h3>新手先懂：Skill 是什麼？</h3><div class="workflow-guide"><div class="guide-item"><div class="guide-label">一句話</div><div class="guide-text">Skill 就像寫給 AI 的「專用工作說明書」。遇到特定任務時，AI 會照這份說明書做事。</div></div><div class="guide-item"><div class="guide-label">它解決什麼</div><div class="guide-text">不用每次重新交代規則。例如翻譯、查錯、審查、整理文件，都可以先做成固定流程。</div></div><div class="guide-item"><div class="guide-label">自製 Skill</div><div class="guide-text">就是把你的職務、痛點、語氣、禁忌和工作流程，封裝成你的個人 AI 工作模式。</div></div></div><div class="summary" style="margin-top:10px">簡單比喻：普通提示詞是「這次請你怎麼做」；Skill 是「以後遇到這類事情，都照這套方法做」。</div></div>`);document.querySelectorAll("[data-home-tab]").forEach(btn=>btn.onclick=()=>setTab(btn.dataset.homeTab))}
+function bindHome(){
+  const heroTitle=document.querySelector(".home-hero h2");
+  const heroLead=document.querySelector(".home-hero p");
+  if(heroTitle)heroTitle.textContent="開始使用 AI 前，先做一次個人化設定";
+  if(heroLead)heroLead.textContent="建議新手先用「自製 Skill」讓 Codex 和 Claude Code 了解你的職務、痛點、語氣與工作流程。兩套 AI 先有你的個人化設定，後面使用提示詞、Skill庫或二刀流開發時，才會越用越接近你的需求。";
+  const actions=document.querySelector(".home-actions");
+  if(actions){
+    actions.innerHTML=`<button class="copy-btn" type="button" data-home-tab="customSkill">先做自製 Skill</button><button class="copy-btn" type="button" data-home-tab="daily">再找日常提示詞</button><button class="copy-btn" type="button" data-home-tab="prompts">找提示詞庫</button><button class="copy-btn" type="button" data-home-tab="skills">找 Skill庫</button><button class="copy-btn" type="button" data-home-tab="progress">接續專案</button>`;
+  }
+  const hero=document.querySelector(".home-hero");
+  if(hero&&!document.querySelector(".skill-start-panel")){
+    hero.insertAdjacentHTML("afterend",`<div class="home-split skill-start-panel" style="margin-bottom:16px">
+      <div class="home-panel">
+        <h3>第一步：先做自製 Skill</h3>
+        <div class="workflow-guide">
+          <div class="guide-item"><div class="guide-label">為什麼先做</div><div class="guide-text">先讓 AI 理解你的職務、業務、痛點、語氣與禁忌，後面回答才會更貼近你。</div></div>
+          <div class="guide-item"><div class="guide-label">Skill 是什麼</div><div class="guide-text">Skill 就像寫給 AI 的「專用工作說明書」。遇到特定任務時，AI 會照這份說明書做事。</div></div>
+          <div class="guide-item"><div class="guide-label">差別</div><div class="guide-text">普通提示詞是「這次請你怎麼做」；自製 Skill 是「以後遇到這類事情，都用我的工作方式做」。</div></div>
+        </div>
+      </div>
+      <div class="home-panel">
+        <h3>開始使用 AI 的建議順序</h3>
+        <div class="mini-list">
+          <div class="mini-item"><b>1. 自製 Skill</b><div class="summary">先建立你的個人化 AI 工作模式。</div></div>
+          <div class="mini-item"><b>2. 找提示詞或 Skill庫</b><div class="summary">再依任務去找日常提示詞、提示詞庫或 Skill庫。</div></div>
+          <div class="mini-item"><b>3. 接續專案</b><div class="summary">有實際專案時，再進「開發進度」或「二刀流中控」。</div></div>
+        </div>
+        <div class="builder-actions"><button class="copy-btn" type="button" data-home-tab="customSkill">開始自製 Skill</button></div>
+      </div>
+    </div>`);
+  }
+  const kpis=document.querySelectorAll(".home-kpi .summary");
+  if(kpis[0])kpis[0].textContent="第一次用 AI，先做自製 Skill；已有專案才直接看開發進度。";
+  if(kpis[1])kpis[1].textContent="Codex 做規劃與實作，Claude Code 抓問題；自製 Skill 讓兩邊先理解你的偏好。";
+  if(kpis[2])kpis[2].textContent="先個人化，再找工具，最後執行任務。";
+  const steps=document.querySelector(".home-steps");
+  if(steps){
+    steps.innerHTML=`<div class="home-step"><span class="num">1</span><h3>先做自製 Skill</h3><div class="summary">讓 AI 先理解你的職務、痛點、回答偏好與工作流程。這是個人化設定，不是直接安裝危險工具。</div></div><div class="home-step"><span class="num">2</span><h3>再找相關資訊</h3><div class="summary">依任務去「日常提示詞」、「提示詞庫」或「Skill庫」找可用內容，複製後交給 AI。</div></div><div class="home-step"><span class="num">3</span><h3>最後接續專案</h3><div class="summary">進入實際開發時，再看「開發進度」與「二刀流中控」，讓 Codex 和 Claude Code 分工完成。</div></div>`;
+  }
+  document.querySelectorAll("[data-home-tab]").forEach(btn=>btn.onclick=()=>setTab(btn.dataset.homeTab));
+}
 function dailyPromptCard(card){return`<div class="daily-card"><h4>${esc(card.title)}</h4><div class="usage">${esc(card.when)}</div><pre class="prompt-body">${esc(card.prompt)}</pre><button class="copy-btn" data-copy="${encodeURIComponent(card.prompt)}">複製這段提示詞</button></div>`}
 function dailyModeButtons(){const modes=["全部",...DAILY_PROMPT_SECTIONS.map(section=>section.title)];return`<div class="flow-switch">${modes.map(mode=>`<button class="flow-btn ${dailyMode===mode?"active":""}" onclick="dailyMode='${esc(mode)}';render()">${esc(mode)}</button>`).join("")}</div>`}
 function dailyHtml(){const sections=DAILY_PROMPT_SECTIONS.filter(section=>dailyMode==="全部"||section.title===dailyMode);return`<div class="wide-sop"><div class="daily-hero"><h2>日常工作不知道怎麼問，就先從這裡複製</h2><p>這頁是新手版提示詞，不用先懂二刀流或專案文件。你只要選「現在想做什麼」，複製卡片給 Codex 或 Claude Code，就能開始請 AI 幫忙。</p><div class="daily-principles"><div class="daily-principle"><b>先講目的</b><div class="summary">告訴 AI 你想完成什麼，不只是丟一堆資料。</div></div><div class="daily-principle"><b>先看再做</b><div class="summary">要求 AI 先分析、先規劃，確認後再修改。</div></div><div class="daily-principle"><b>重要檔案先保護</b><div class="summary">涉及電腦檔案時，先備份、先列計畫，不直接動檔。</div></div></div></div>${dailyModeButtons()}${sections.map(section=>`<section class="daily-section"><div class="daily-section-head"><div><h3>${esc(section.title)}</h3><div class="summary">${esc(section.hint)}</div></div>${section.safety?`<div class="daily-safety">${esc(section.safety)}</div>`:""}</div><div class="daily-grid">${section.cards.map(dailyPromptCard).join("")}</div></section>`).join("")}</div>`}
