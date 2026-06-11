@@ -299,3 +299,14 @@
   - 我想學 X 底層怎麼運作，有沒有從零實作的教學？
   - 有沒有適合初學者的程式實作練習？
   notes: 推薦 Python／JavaScript 教學給初學者；來源 github.com/codecrafters-io/build-your-own-x（514k stars，MIT）
+- name: codegraph
+  category: 程式碼智能
+  risk: 低
+  summary: 本地 SQLite 程式碼知識圖譜 MCP 伺服器，預先索引所有符號、呼叫邊與檔案，提供比 grep/read 省 58% token 的程式碼查詢；支援符號搜尋、呼叫鏈追蹤、影響範圍分析，100% 本地執行不需 API key
+  triggers:
+  - X 是在哪裡定義的？
+  - 哪些地方呼叫了 Y？
+  - 從 A 到 B 的呼叫路徑是什麼？
+  - 改這個函式會影響哪些地方？
+  - 用 codegraph 幫我理解這個功能的架構
+  notes: 需先安裝二進位（v0.9.8 已裝，最新 v0.9.9）；索引比寫檔落後約 1 秒；來源 github.com/colbymchenry/codegraph（46k+ stars，MIT）；已作為 MCP 伺服器整合到 Claude Code
