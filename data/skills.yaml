@@ -265,11 +265,13 @@
   - caveman mode
 - name: find-skills
   category: Skill 管理
-  risk: 低
-  summary: 幫你從開放 skill 生態系搜尋並安裝新 skill（npx skills 指令）
+  risk: 中
+  summary: 用自然語言描述需求，跨 skills.sh、clawhub.ai、GitHub 搜尋可安裝的 agent skill，並對候選結果做初步風險掃描
   triggers:
-  - 用 find-skills 找找有沒有適合【需求】的 skill
-  notes: 安裝任何新 skill 前，記得先用本控制台安檢流程檢查
+  - 用 find-skills 幫我找一個可以【需求】的 skill
+  - find a skill for 【需求】
+  - 什麼 skill 適合用來做【任務】
+  notes: 來源 agentspace-so/skills@find-skills；安裝指令 npx.cmd skills add agentspace-so/skills --skill find-skills -g -y。會連線查公開 registry，且附帶 bash 腳本與暫存清理流程；安裝後仍需人工閱讀候選 skill 的 SKILL.md，不要直接信任搜尋結果
 - name: write-a-skill
   category: Skill 管理
   risk: 低
