@@ -290,3 +290,12 @@
   - 使用 dual-ai-workflow 開始二刀流工作流，任務是：【任務描述】
   - 這是另一個 AI 的輸出，依 dual-ai-workflow 接續下一階段
   notes: 本專案自製；Codex 與 Claude Code 需同步到 ~/.codex/skills、~/.claude/skills 或各環境實際 skill 路徑
+- name: build-your-own-x
+  category: 學習與成長
+  risk: 低
+  summary: 從 514k stars 的精選教學庫找「從零實作 X」教程，涵蓋 31 個技術類別（Database、Docker、Git、Shell、AI、Neural Network 等），依程度與語言推薦最佳學習路線
+  triggers:
+  - 用 build-your-own-x 幫我找從零實作【技術名稱】的教學
+  - 我想學 X 底層怎麼運作，有沒有從零實作的教學？
+  - 有沒有適合初學者的程式實作練習？
+  notes: 推薦 Python／JavaScript 教學給初學者；來源 github.com/codecrafters-io/build-your-own-x（514k stars，MIT）

@@ -735,3 +735,14 @@
     - 第一階段最小可行埋點清單
 
     請用小白能懂的方式解釋，不要只列技術名詞。
+- title: 找「從零實作」技術教學（build-your-own-x）
+  category: 學習與成長
+  usage: 想學某個技術的底層原理，或找有質感的實作練習時
+  prompt: |
+    使用 build-your-own-x 幫我找適合的從零實作教學。
+    我想學：【技術名稱，例如：Docker / Git / Web Server / Neural Network】
+    我的程度：【新手 / 有一點基礎 / 有經驗】
+    我習慣的語言：【Python / JavaScript / Go / 不限】
+    請推薦 2–3 個最適合的教學，附上難度、語言、連結與「學完能做什麼」。
+  flow: common
+  stage: ''
