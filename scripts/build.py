@@ -5,6 +5,7 @@
 import html as html_mod
 import json
 import re
+from base64 import b64encode
 from pathlib import Path
 
 import yaml
@@ -44,6 +45,40 @@ def validate_combos() -> None:
 validate_combos()
 
 data_json = json.dumps({"skills": skills, "prompts": prompts, "combos": combos}, ensure_ascii=False).replace("</", "<\\/")
+
+
+def asset_data_url(*parts: str) -> str:
+    path = ROOT.joinpath(*parts)
+    suffix = path.suffix.lower()
+    mime = {
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".webp": "image/webp",
+        ".svg": "image/svg+xml",
+        ".gif": "image/gif",
+    }.get(suffix, "application/octet-stream")
+    encoded = b64encode(path.read_bytes()).decode("ascii")
+    return f"data:{mime};base64,{encoded}"
+
+
+install_guide_assets_json = json.dumps(
+    {
+        "codexPluginsOverview": asset_data_url("assets", "install-guide", "codex-plugins-overview.png"),
+        "codexPluginsExtra": asset_data_url("assets", "install-guide", "codex-plugins-extra.png"),
+        "vscodeInstalled1": asset_data_url("assets", "install-guide", "vscode-installed-1.png"),
+        "vscodeInstalled2": asset_data_url("assets", "install-guide", "vscode-installed-2.png"),
+        "iconDocuments": asset_data_url("assets", "install-guide", "icon-documents.png"),
+        "iconSpreadsheets": asset_data_url("assets", "install-guide", "icon-spreadsheets.png"),
+        "iconPresentations": asset_data_url("assets", "install-guide", "icon-presentations.png"),
+        "iconBrowser": asset_data_url("assets", "install-guide", "icon-browser.png"),
+        "iconGithub": asset_data_url("assets", "install-guide", "icon-github.png"),
+        "iconFigma": asset_data_url("assets", "install-guide", "icon-figma.png"),
+        "iconSupabase": asset_data_url("assets", "install-guide", "icon-supabase.png"),
+        "iconCanva": asset_data_url("assets", "install-guide", "icon-canva.png"),
+    },
+    ensure_ascii=False,
+).replace("</", "<\\/")
 
 
 def markdown_to_cards(path: Path, fallback_title: str, fallback_text: str) -> str:
@@ -165,7 +200,7 @@ TEMPLATE = r'''<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>二刀流開發助手控制台｜Codex × Claude Code 開發系統</title>
+<title>新手 AI 外掛控制台｜Codex Pro × Claude Code 入門系統</title>
 <style>
   :root{--bg:#f4f6fb; --panel:#eef1f8; --card:#ffffff; --border:#d9e0ef; --text:#1f2937; --muted:#657085; --accent:#3b6fe0; --accent-soft:#e8eefc; --green:#168a55; --amber:#a66a00; --red:#c23b3b; --shadow:0 1px 3px rgba(30,40,80,.07);}
   *{box-sizing:border-box; margin:0; padding:0;}
@@ -198,6 +233,7 @@ TEMPLATE = r'''<!DOCTYPE html>
   .home-step .num{display:inline-flex; width:28px; height:28px; align-items:center; justify-content:center; border-radius:999px; background:var(--accent); color:#fff; font-weight:700; margin-bottom:8px;}
   .home-step h3{font-size:1rem; margin-bottom:6px;}
   .home-split{display:grid; grid-template-columns:1.15fr .85fr; gap:14px;}
+  .home-stack{display:flex; flex-direction:column; gap:14px;}
   .home-panel{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px; box-shadow:var(--shadow);}
   .home-panel h3{font-size:1rem; margin-bottom:8px;}
   .home-panel-actions{display:grid; grid-template-columns:repeat(auto-fit,minmax(142px,1fr)); gap:8px; margin-top:12px;}
@@ -321,6 +357,51 @@ TEMPLATE = r'''<!DOCTYPE html>
   .install-result-grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px;}
   .install-result{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:12px;}
   .install-result b{display:block; margin-bottom:4px;}
+  .tutorial-btn{background:#edf2ff; color:#244fae; border:1px solid #c8d7fb;}
+  .tutorial-btn:hover,.tutorial-btn.active{background:var(--accent); color:#fff; border-color:var(--accent);}
+  .install-tutorial-card{background:linear-gradient(180deg,#ffffff,#f8fbff); border:1px solid #bfd0f2;}
+  .install-tutorial-head{display:flex; justify-content:space-between; align-items:flex-start; gap:14px; flex-wrap:wrap;}
+  .install-tutorial-badge{display:inline-flex; align-items:center; gap:6px; padding:5px 10px; border-radius:999px; background:#edf2ff; color:#244fae; font-size:.78rem; font-weight:700;}
+  .install-tutorial-grid{display:grid; grid-template-columns:1.15fr .85fr; gap:12px;}
+  .install-tutorial-grid.full{grid-template-columns:1fr;}
+  .install-tutorial-steps{display:flex; flex-direction:column; gap:10px;}
+  .install-tutorial-step{display:flex; gap:10px; padding:10px 12px; background:var(--panel); border:1px solid var(--border); border-radius:10px;}
+  .install-tutorial-step span{display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:999px; background:var(--accent); color:#fff; font-size:.78rem; font-weight:700; flex-shrink:0;}
+  .install-article{margin-top:12px; display:flex; flex-direction:column; gap:14px;}
+  .install-article-section{background:linear-gradient(180deg,#ffffff,#f7faff); border:1px solid #cbd9f5; border-radius:14px; padding:14px;}
+  .install-article-section h3{font-size:1rem; margin-bottom:8px;}
+  .install-article-section ol{padding-left:1.2em; display:flex; flex-direction:column; gap:8px; color:var(--text);}
+  .install-article-section li{line-height:1.7;}
+  .install-article-section p{font-size:.86rem; color:var(--text); line-height:1.7;}
+  .install-article-note{margin-top:10px; padding:10px 12px; border-radius:10px; background:#edf4ff; border:1px solid #cddcf9; color:#24406d; font-size:.82rem; line-height:1.6;}
+  .plugin-mini-section{margin-top:12px; padding:12px; background:linear-gradient(180deg,#f8fbff,#eef4ff); border:1px solid #cbd9f5; border-radius:12px;}
+  .plugin-mini-section h3{font-size:.95rem; margin-bottom:4px;}
+  .plugin-mini-grid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:10px;}
+  .plugin-mini-card{display:flex; gap:10px; align-items:flex-start; padding:10px; background:rgba(255,255,255,.92); border:1px solid #d8e2f6; border-radius:12px; box-shadow:0 6px 18px rgba(54,88,160,.06);}
+  .plugin-mini-icon{display:inline-flex; align-items:center; justify-content:center; width:42px; height:42px; border-radius:12px; font-size:1.2rem; font-weight:700; color:#173b86; background:linear-gradient(180deg,#ffffff,#e7efff); border:1px solid #c7d5f3; flex-shrink:0;}
+  .plugin-mini-icon img{width:100%; height:100%; object-fit:contain; border-radius:12px; display:block;}
+  .plugin-mini-copy{display:flex; flex-direction:column; gap:3px; min-width:0;}
+  .plugin-mini-title{font-size:.86rem; font-weight:700; color:var(--text);}
+  .plugin-mini-desc{font-size:.77rem; color:var(--muted); line-height:1.5;}
+  .install-manual{margin-top:12px; display:flex; flex-direction:column; gap:12px;}
+  .manual-figure{background:linear-gradient(180deg,#ffffff,#f7faff); border:1px solid #cbd9f5; border-radius:14px; padding:12px; box-shadow:0 8px 22px rgba(54,88,160,.06);}
+  .manual-figure img{display:block; width:100%; height:auto; border-radius:12px; border:1px solid #dbe3f2; background:#fff;}
+  .manual-figure b{display:block; margin-bottom:8px; font-size:.92rem;}
+  .manual-caption{margin-top:8px; font-size:.79rem; color:var(--muted); line-height:1.6;}
+  .manual-merged{display:flex; flex-direction:column; gap:10px; border-radius:12px; overflow:hidden; background:#fff;}
+  .manual-merged img{display:block; width:100%; height:auto; border:1px solid #dbe3f2; border-radius:12px; background:#fff;}
+  .install-tutorial-shot{display:flex; flex-direction:column; gap:10px;}
+  .shot-frame{background:linear-gradient(160deg,#eff4ff,#ffffff 70%); border:1px solid #cbd9f5; border-radius:14px; padding:14px; min-height:150px; box-shadow:inset 0 1px 0 rgba(255,255,255,.7);}
+  .shot-window{border:1px solid #c9d5ee; border-radius:12px; overflow:hidden; background:#fff;}
+  .shot-toolbar{display:flex; align-items:center; gap:6px; padding:8px 10px; background:#f2f5fb; border-bottom:1px solid #dbe3f2;}
+  .shot-dot{width:8px; height:8px; border-radius:999px; background:#98abcf;}
+  .shot-body{padding:12px; display:flex; flex-direction:column; gap:8px;}
+  .shot-line{height:10px; border-radius:999px; background:linear-gradient(90deg,#dbe6fb,#eef3ff);}
+  .shot-line.short{width:56%;}
+  .shot-line.mid{width:74%;}
+  .shot-pill-row{display:flex; gap:8px; flex-wrap:wrap;}
+  .shot-pill{padding:5px 8px; border-radius:999px; background:#edf2ff; color:#244fae; font-size:.74rem; font-weight:700;}
+  .shot-caption{font-size:.79rem; color:var(--muted);}
   .advanced-section{margin-top:4px; border-top:1px dashed var(--border); padding-top:14px;}
   .advanced-grid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px;}
   .builder-actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;}
@@ -347,11 +428,12 @@ TEMPLATE = r'''<!DOCTYPE html>
 </style>
 </head>
 <body>
-<header><div class="head-inner"><h1>二刀流開發助手控制台 <span class="sub">Codex × Claude Code 開發系統</span></h1><div class="tabs"><button class="tab active" data-tab="guide">首頁 / 快速開始</button><button class="tab" data-tab="installGuide">安裝教學</button><button class="tab" data-tab="customSkill">自製 Skill</button><button class="tab" data-tab="daily">日常提示詞</button><button class="tab" data-tab="progress">開發進度</button><button class="tab" data-tab="prompts">提示詞庫</button><button class="tab" data-tab="skills">Skill庫</button><button class="tab" data-tab="backup">換電腦／同步</button></div></div></header>
+<header><div class="head-inner"><h1>新手 AI 外掛控制台 <span class="sub">Codex Pro × Claude Code 入門系統</span></h1><div class="tabs"><button class="tab active" data-tab="guide">新手快速開始</button><button class="tab" data-tab="installGuide">安裝與外掛</button><button class="tab" data-tab="customSkill">個人化設定</button><button class="tab" data-tab="daily">日常提示詞</button><button class="tab" data-tab="progress">專案接續</button><button class="tab" data-tab="prompts">提示詞庫</button><button class="tab" data-tab="skills">外掛 / Skill庫</button><button class="tab" data-tab="backup">換機 / 同步</button></div></div></header>
 <main><div id="onlineBanner"></div><div id="launchTip"></div><div id="pageIntro" class="page-intro"></div><div id="searchSlot"></div><div class="search"><span class="icon">搜</span><input id="searchBox" type="text" placeholder="搜尋 skill、提示詞、觸發句、角色、分工、導覽，例如：git、翻譯、審查、二刀流"></div><div id="chips" class="chips"></div><div id="countLine" class="count"></div><div id="content"></div></main>
 <footer>資料來源：data/skills.yaml + data/prompts.yaml + data/combos.yaml；修改後執行 python3 scripts/build.py 重建</footer>
 <script>
 const DATA = __DATA_JSON__;
+const INSTALL_GUIDE_ASSETS = __INSTALL_GUIDE_ASSETS__;
 const WORKFLOW_HTML = __WORKFLOW_HTML__;
 const GUIDE_HTML = __GUIDE_HTML__;
 // STATE_HTML / NEXT_HTML 為 {raw, html}：raw 餵 parseWorkflowState，html 顯示完整檔案視圖。命名沿用使用者指定。
@@ -361,7 +443,7 @@ const AGENTS_HTML = __AGENTS_HTML__;
 const PRD_HTML = __PRD_HTML__;
 const PROJECT_PATH = __PROJECT_PATH__;
 const PROJECT_URL = __PROJECT_URL__;
-let tab = "guide", cat = "全部", q = "", flowMode = "dualai", dailyMode = "全部", captureMode = "prompt", progressMode = "status", selectedProject = null, progressPickerMessage = "", progressNextPromptOpen = false;
+let tab = "guide", cat = "全部", q = "", flowMode = "dualai", dailyMode = "全部", captureMode = "prompt", progressMode = "status", selectedProject = null, progressPickerMessage = "", progressNextPromptOpen = false, installGuideTopic = "codex";
 const FLOW_META = {
   dualai:{label:"二刀流協作",title:"二刀流工作流提示詞",lead:"適合重要系統修改：Codex 是主力工程師，負責規劃、分段實作、測試與修正；Claude Code（VS Code）負責審查、修改建議與複審。"},
   solo:{label:"單一 AI 使用",title:"單一 AI 使用提示詞",lead:"同事只有單一 AI 時，也能用這些提示詞讓 AI 先釐清、再分段執行、最後提醒是否需要審查。"},
@@ -922,16 +1004,16 @@ const PROJECT_STAGES = [
   ["v2.1","分工提示與專案討論","新增新手分工說明入口與雙 AI 新專案討論提示詞。"]
 ];
 const PAGE_INTROS = {
-  installGuide:{title:"安裝教學",lead:"這頁專門介紹怎麼安裝 Codex、Claude Code、常用外掛 / skills，最後再教你怎麼和這個控制台網站一起使用。",purpose:"把工具安裝、登入、加插件、接上控制台的流程一次講清楚。",first:"先決定你要用桌面版、IDE extension 還是 CLI；建議新手先裝 Codex app，再裝 Claude Code。",when:"第一次使用這套控制台，或要教同事、家人、團隊成員從零安裝時。"},
-  backup:{title:"換電腦／同步",lead:"這頁是新手安裝、下載備份包、換電腦同步與建立自己版本的入口。線上 demo 不能直接操作你的電腦；請依你的系統複製指令後，到 PowerShell 或 Terminal 執行。",purpose:"把二刀流控制台與整理好的 skills 安裝到 Codex / Claude Code 可讀的位置，或下載備份包留存。",first:"先選 Windows 或 macOS 安裝指令；按下複製後，照卡片上的 3 個小步驟貼到終端機執行。",when:"第一次安裝、換電腦、重裝工具、下載備份包，或想把自己客製化版本同步到其他機器時。"},
-  skills:{title:"Skill庫",lead:"查看每個 skill 的用途、風險與觸發句，直接複製給 AI 使用。",purpose:"快速判斷要叫哪個 AI skill。",first:"搜尋關鍵字，再複製觸發句。",when:"不確定某個任務該用哪個 skill 時。"},
+  installGuide:{title:"安裝與外掛",lead:"這頁專門介紹怎麼安裝 Codex、Claude Code、常用外掛 / skills，最後再教你怎麼和這個控制台網站一起使用。",purpose:"把工具安裝、登入、加插件、接上控制台的流程一次講清楚。",first:"先決定你要用桌面版、IDE extension 還是 CLI；建議新手先裝 Codex app，再裝 Claude Code。",when:"第一次使用這套控制台，或要教同事、家人、團隊成員從零安裝時。"},
+  backup:{title:"換機 / 同步",lead:"這頁是新手安裝、下載備份包、換電腦同步與建立自己版本的入口。線上 demo 不能直接操作你的電腦；請依你的系統複製指令後，到 PowerShell 或 Terminal 執行。",purpose:"把這套控制台與整理好的 skills 安裝到 Codex / Claude Code 可讀的位置，或下載備份包留存。",first:"先選 Windows 或 macOS 安裝指令；按下複製後，照卡片上的 3 個小步驟貼到終端機執行。",when:"第一次安裝、換電腦、重裝工具、下載備份包，或想把自己客製化版本同步到其他機器時。"},
+  skills:{title:"外掛 / Skill庫",lead:"查看每個外掛、skill 的用途、風險與觸發句，直接複製給 AI 使用。",purpose:"快速判斷現在要叫哪個外掛或 AI skill。",first:"搜尋關鍵字，再複製觸發句。",when:"不確定某個任務該用哪個外掛或 skill 時。"},
   prompts:{title:"提示詞庫",lead:"常用提示詞集中管理，適合你直接複製給 Codex 或 Claude Code（VS Code）。",purpose:"快速啟動工作流程。",first:"先選二刀流、單一 AI 或通用分類，再複製。",when:"要交辦任務、請 AI 審查、整理交接或產出文件時。"},
   capture:{title:"收錄新內容",lead:"看到好用提示詞或 skill 時，先填表產生交辦提示詞與 YAML 片段，再交給 Codex 寫入、重建、驗證與 commit。",purpose:"安全收錄新內容，不需要你手寫 YAML。",first:"先選提示詞或 Skill；新手請複製「給 Codex 的完整交辦提示詞」。",when:"看到新 skill、實用提示詞，或想把工作流模板收入控制台時。"},
   control:{title:"二刀流中控",lead:"v1 是靜態教學頁，不讀取 DUAL-AI-STATE.md；按鈕只會跳到提示詞庫並複製對應提示詞。",purpose:"讓每個階段知道要找誰、做什麼、複製哪張提示詞。",first:"先看目前要進哪一階段，再按卡片按鈕複製對應提示詞。",when:"要從規劃、實作、審查、修正、複審到存檔收尾一路接續時。"},
-  progress:{title:"開發進度",lead:"這頁把目前專案做到哪裡、下一步要做什麼一次整理出來。",purpose:"不用翻文件也能快速知道現在進度、是否有卡點，以及下一步該做什麼。",first:"先看目前階段與下一步；如果有未解決問題，先處理警示區。",when:"接續開發、換 AI 接手、或想確認這個專案現在是不是可以往下一步走時。"},
+  progress:{title:"專案接續",lead:"這頁把目前專案做到哪裡、下一步要做什麼一次整理出來。",purpose:"不用翻文件也能快速知道現在進度、是否有卡點，以及下一步該做什麼。",first:"先看目前階段與下一步；如果有未解決問題，先處理警示區。",when:"接續開發、換 AI 接手、或想確認這個專案現在是不是可以往下一步走時。"},
   daily:{title:"日常提示詞",lead:"不知道怎麼開口時，先從這裡複製。這頁把開發、查資料、整理資料、整理電腦檔案、生成圖片、生成影片、生成簡報與生成網站整理成新手可直接使用的提示詞。",purpose:"把日常最常用的 AI 交辦方式整理成安全、直接可複製的新手版。",first:"先選你現在想做什麼，再複製對應卡片。整理電腦檔案時，只先規劃，不直接動檔。",when:"開發系統、找資料比對、整理文字資料、分類電腦檔案、產生圖片 prompt、產生影片 prompt、整理簡報需求或規劃網站需求時。"},
-  customSkill:{title:"自製 Skill",lead:"用選單自動組出「個人化專屬 skill」提示詞。使用者先選職業、用途、AI 風格、安裝目標，再複製整段給 Codex。",purpose:"把你的工作痛點、陪練方式與封裝安裝流程，變成可重複使用的專屬 AI 工作 skill。",first:"進頁面後會跳出選單；先選好欄位，再按「更新提示詞」或直接複製。",when:"想讓 AI 先理解你的職務與業務，再替你做挑刺陪練，最後封裝成可安裝 skill 時。"},
-  guide:{title:"首頁 / 快速開始",lead:"這裡先用最簡單的方式說明這套輔助系統在做什麼、怎麼分工、第一步該按哪裡。",purpose:"讓新手一進來就知道 Codex 做什麼、Claude Code 做什麼，以及怎麼開始。",first:"先看下方 3 步驟；如果你正在接續專案，直接去「開發進度」。",when:"第一次打開控制台，或想快速教同事這套系統怎麼用時。"}
+  customSkill:{title:"個人化設定",lead:"用選單自動組出「個人化專屬 skill」提示詞。使用者先選職業、用途、AI 風格、安裝目標，再複製整段給 Codex。",purpose:"把你的工作痛點、陪練方式與封裝安裝流程，變成可重複使用的專屬 AI 工作 skill。",first:"進頁面後會跳出選單；先選好欄位，再按「更新提示詞」或直接複製。",when:"想讓 AI 先理解你的職務與業務，再替你做挑刺陪練，最後封裝成可安裝 skill 時。"},
+  guide:{title:"新手快速開始",lead:"這一頁改成新手版入口，專門幫你用最簡單的方式認識這套外掛系統，知道先裝什麼、先開什麼、接著怎麼用。",purpose:"讓第一次接觸的人不用先懂很多指令，也能照著控制台把工具、外掛與提示詞順順接起來。",first:"先看下方的新手 3 步驟，再按你現在需要的入口進去。",when:"第一次使用這套控制台、要教新手上手，或想快速整理自己目前該從哪裡開始時。"}
 };
 const riskCls = {"低":"low","中":"mid","高":"high"};
 const esc = s => (s ?? "").toString().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
@@ -944,48 +1026,8 @@ function renderOnlineBanner(){const el=document.getElementById("onlineBanner");i
 function renderIntro(){const promptExtra=tab==="prompts"?promptLibraryCaptureBlock():"";const skillExtra=tab==="skills"?skillLibraryCaptureBlock():"";const info=PAGE_INTROS[tab];const extra=skillExtra||promptExtra;document.getElementById("pageIntro").innerHTML=`<h2>${esc(info.title)}</h2><div class="lead">${esc(info.lead)}</div><div class="intro-grid"><div class="intro-item"><div class="intro-label">用途</div><div class="intro-text">${esc(info.purpose)}</div></div><div class="intro-item"><div class="intro-label">先做</div><div class="intro-text">${esc(info.first)}</div></div><div class="intro-item"><div class="intro-label">適合情境</div><div class="intro-text">${esc(info.when)}</div></div></div>${extra}`;if(tab==="skills"||tab==="prompts")bindCapture()}
 function homePrompt(title,fallback){return DATA.prompts.find(p=>p.title===title)?.prompt||fallback}
 function promptInfoByTitle(title,fallback=""){const found=DATA.prompts.find(p=>p.title===title);return{prompt:found?found.prompt:fallback,targetPrompt:found?promptKey(found):"",found:!!found}}
-function homeHtml(){const rolePrompt=homePrompt("二刀流分工細節說明","請用小白能懂的方式，說明 Codex 和 Claude Code（VS Code）的分工細節。");const codexPrompt=homePrompt("① 第一階段：Codex 規劃","請先讀取專案結構與相關文件，不要直接修改。先提出方案，再等我確認。");const reviewPrompt=homePrompt("③ 第三階段：Claude Code（VS Code）審查＋修改","請審查這次改動、diff 與驗證結果，列出 P0/P1/P2 風險。");const soloPrompt=homePrompt("單一 AI 也能用控制台","我現在只使用一個 AI，但想用這套二刀流開發助手控制台輔助工作。請先幫我釐清任務目標，提出方案，再分段執行。");return`<div class="wide-sop"><div class="home-hero"><h2>這是一套讓 Codex 和 Claude Code 分工合作的開發輔助系統</h2><p>簡單說：Codex 負責規劃、實作、修正；Claude Code（VS Code）負責審查、修改建議與複審。你不用記全部流程，只要知道現在是新專案、接續專案，還是要找提示詞即可。</p><div class="home-actions" style="margin-top:14px"><button class="copy-btn" type="button" data-home-tab="daily">我要日常提示詞</button><button class="copy-btn" type="button" data-home-tab="progress">我正在接續專案</button><button class="copy-btn" type="button" data-home-tab="prompts">我要複製提示詞</button><button class="copy-btn" type="button" data-home-tab="skills">我要找 Skill</button></div><div class="home-kpis"><div class="home-kpi"><b>先看哪裡</b><div class="summary">有現成專案就先開「開發進度」，只是日常交辦就開「日常提示詞」。</div></div><div class="home-kpi"><b>核心分工</b><div class="summary">Codex 做事，Claude Code 抓問題與提修改建議，你做最後決定。</div></div><div class="home-kpi"><b>新手原則</b><div class="summary">先照流程走，不用一開始就理解全部頁籤。</div></div></div></div><div class="home-panel" style="margin:16px 0"><h3>二刀流完整流程</h3><div class="summary">第 1 階段 Codex 規劃 → 第 2 階段 Codex 實作 → 第 3 階段 Claude Code 審查＋修改 → 第 4 階段 Codex 修正＋開發 → 第 5 階段 Claude Code 複審＋修改 → Codex 存檔收尾。</div><div class="summary" style="margin-top:8px">如果你正在接續既有專案，直接去「開發進度」會比讀長篇說明更快。</div></div><div class="home-steps"><div class="home-step"><span class="num">1</span><h3>先確認你是哪一種情況</h3><div class="summary">日常交辦：先去日常提示詞。新專案：先去提示詞庫找 AGENTS / PRD。舊專案：先去開發進度選資料夾。只想找工具：直接去 Skills。</div></div><div class="home-step"><span class="num">2</span><h3>照二刀流分工做</h3><div class="summary">Codex 先規劃與實作，Claude Code 再審查與補修改建議。不要兩邊同時亂改，這樣最穩。</div></div><div class="home-step"><span class="num">3</span><h3>每一棒都留交接檔</h3><div class="summary">這套系統主要靠 <code>DUAL-AI-STATE.md</code>、<code>NEXT-AI-TASK.md</code>、<code>AGENTS.md</code>、<code>PRD.md</code> 接續，不要只靠聊天記憶。</div></div></div><div class="home-split"><div class="home-panel"><h3>二刀流最簡單分工</h3><div class="role-grid"><div class="role-card"><h4>Codex</h4><div class="summary">主力工程師。適合規劃、拆任務、分段實作、跑測試、修正問題。</div></div><div class="role-card"><h4>Claude Code（VS Code）</h4><div class="summary">審查員。適合看 diff、抓風險、提 P0/P1/P2、給修改建議與做複審。</div></div><div class="role-card"><h4>你</h4><div class="summary">最後決策者。看結論、決定要不要繼續、要不要 commit / push。</div></div><div class="role-card"><h4>單一 AI 也能用</h4><div class="summary">如果手邊只有一個 AI，就改走提示詞庫裡的「單一 AI 使用」流程。</div></div></div><div class="home-copy-hint">第一次使用請先按「新手先按：複製分工細節說明」，貼給 AI 了解兩邊怎麼配合。</div><div class="home-panel-actions"><button class="copy-btn primary-copy" data-copy="${encodeURIComponent(rolePrompt)}">新手先按：複製分工細節說明</button><button class="copy-btn" data-copy="${encodeURIComponent(codexPrompt)}">複製 Codex 開工提示詞</button><button class="copy-btn" data-copy="${encodeURIComponent(reviewPrompt)}">複製 Claude 審查提示詞</button><button class="copy-btn" data-copy="${encodeURIComponent(soloPrompt)}">複製單一 AI 提示詞</button></div></div><div class="home-panel"><h3>最常用的三個入口</h3><div class="mini-list"><div class="mini-item"><b>日常提示詞</b><div class="summary">不知道怎麼開口時用。開發、查資料、整理文字、整理電腦檔案都有新手版提示詞。</div></div><div class="mini-item"><b>開發進度</b><div class="summary">接續現有專案時用。選資料夾後看目前階段、下一步、缺哪些檔案。</div></div><div class="mini-item"><b>提示詞庫</b><div class="summary">不知道怎麼開工時用。裡面有新專案啟動、審查、交接、收尾提示詞。</div></div></div></div></div></div>`}
-function bindHome(){
-  const heroTitle=document.querySelector(".home-hero h2");
-  const heroLead=document.querySelector(".home-hero p");
-  if(heroTitle)heroTitle.textContent="開始使用 AI 前，先做一次個人化設定";
-  if(heroLead)heroLead.textContent="建議新手先用「自製 Skill」讓 Codex 和 Claude Code 了解你的職務、痛點、語氣與工作流程。兩套 AI 先有你的個人化設定，後面使用提示詞、Skill庫或二刀流開發時，才會越用越接近你的需求。";
-  const actions=document.querySelector(".home-actions");
-  if(actions){
-    actions.innerHTML=`<button class="copy-btn" type="button" data-home-tab="customSkill">先做自製 Skill</button><button class="copy-btn" type="button" data-home-tab="daily">再找日常提示詞</button><button class="copy-btn" type="button" data-home-tab="prompts">找提示詞庫</button><button class="copy-btn" type="button" data-home-tab="skills">找 Skill庫</button><button class="copy-btn" type="button" data-home-tab="progress">接續專案</button>`;
-  }
-  const hero=document.querySelector(".home-hero");
-  if(hero&&!document.querySelector(".skill-start-panel")){
-    hero.insertAdjacentHTML("afterend",`<div class="home-split skill-start-panel" style="margin-bottom:16px">
-      <div class="home-panel">
-        <h3>第一步：先做自製 Skill</h3>
-        <div class="workflow-guide">
-          <div class="guide-item"><div class="guide-label">為什麼先做</div><div class="guide-text">先讓 AI 理解你的職務、業務、痛點、語氣與禁忌，後面回答才會更貼近你。</div></div>
-          <div class="guide-item"><div class="guide-label">Skill 是什麼</div><div class="guide-text">Skill 就像寫給 AI 的「專用工作說明書」。遇到特定任務時，AI 會照這份說明書做事。</div></div>
-          <div class="guide-item"><div class="guide-label">差別</div><div class="guide-text">普通提示詞是「這次請你怎麼做」；自製 Skill 是「以後遇到這類事情，都用我的工作方式做」。</div></div>
-        </div>
-      </div>
-      <div class="home-panel">
-        <h3>開始使用 AI 的建議順序</h3>
-        <div class="mini-list">
-          <div class="mini-item"><b>1. 自製 Skill</b><div class="summary">先建立你的個人化 AI 工作模式。</div></div>
-          <div class="mini-item"><b>2. 找提示詞或 Skill庫</b><div class="summary">再依任務去找日常提示詞、提示詞庫或 Skill庫。</div></div>
-          <div class="mini-item"><b>3. 接續專案</b><div class="summary">有實際專案時，再進「開發進度」查看目前做到哪裡。</div></div>
-        </div>
-        <div class="builder-actions"><button class="copy-btn" type="button" data-home-tab="customSkill">開始自製 Skill</button></div>
-      </div>
-    </div>`);
-  }
-  const kpis=document.querySelectorAll(".home-kpi .summary");
-  if(kpis[0])kpis[0].textContent="第一次用 AI，先做自製 Skill；已有專案才直接看開發進度。";
-  if(kpis[1])kpis[1].textContent="Codex 做規劃與實作，Claude Code 抓問題；自製 Skill 讓兩邊先理解你的偏好。";
-  if(kpis[2])kpis[2].textContent="先個人化，再找工具，最後執行任務。";
-  const steps=document.querySelector(".home-steps");
-  if(steps){
-    steps.innerHTML=`<div class="home-step"><span class="num">1</span><h3>先做自製 Skill</h3><div class="summary">讓 AI 先理解你的職務、痛點、回答偏好與工作流程。這是個人化設定，不是直接安裝危險工具。</div></div><div class="home-step"><span class="num">2</span><h3>再找相關資訊</h3><div class="summary">依任務去「日常提示詞」、「提示詞庫」或「Skill庫」找可用內容，複製後交給 AI。</div></div><div class="home-step"><span class="num">3</span><h3>最後接續專案</h3><div class="summary">進入實際開發時，再看「開發進度」，讓整個專案從規劃、開發、驗收到收尾一路接續。</div></div>`;
-  }
-  document.querySelectorAll("[data-home-tab]").forEach(btn=>btn.onclick=()=>setTab(btn.dataset.homeTab));
-}
+function homeHtml(){return`<div class="wide-sop"><div class="home-hero"><h2>把 AI 外掛系統整理成新手也能直接上手的控制台</h2><p>這一頁不講太多技術名詞，先幫你把工具安裝、外掛開啟、提示詞使用和接續專案的入口整理好。你只要照順序點進去，就能比較安心地開始使用。</p><div class="summary" style="margin-top:10px">如果你是第一次接觸 AI 開發，我會比較推薦先從 <b>Codex Pro</b> 版本開始慢慢摸熟。先習慣怎麼和 AI 對話、怎麼下任務、怎麼看它回覆的規劃與修改建議，之後你才會越來越懂 AI agent 到底可以幫你做到哪裡。</div><div class="summary" style="margin-top:10px">這套控制台也是我累積大約五年的 AI 使用經驗，一邊實作、一邊整理，慢慢寫出來的外掛系統。目的不是讓你一次學會全部，而是讓新手也能先用起來，再慢慢理解每個工具在幫什麼。</div><div class="home-actions" style="margin-top:14px"><button class="copy-btn" type="button" data-home-tab="installGuide">先看安裝教學</button><button class="copy-btn" type="button" data-home-tab="skills">我想找外掛 / Skill</button><button class="copy-btn" type="button" data-home-tab="prompts">我要複製提示詞</button><button class="copy-btn" type="button" data-home-tab="progress">我正在接續專案</button></div><div class="home-kpis"><div class="home-kpi"><b>新手先做什麼</b><div class="summary">先把 Codex 或 Claude Code 裝好，再把常用外掛打開。</div></div><div class="home-kpi"><b>這套系統在幫什麼</b><div class="summary">幫你把安裝、外掛、提示詞與工作流程整理成看得懂的步驟。</div></div><div class="home-kpi"><b>使用原則</b><div class="summary">先用會用到的，不用第一天就把全部功能研究完。</div></div></div></div><div class="home-panel" style="margin:16px 0"><h3>新手最簡單的使用順序</h3><div class="summary">第 1 步先看「安裝教學」把桌面版與常用外掛準備好 → 第 2 步到「提示詞庫」或「Skill庫」找現在要用的內容 → 第 3 步真的進入工作時，再用「開發進度」接續專案。</div><div class="summary" style="margin-top:8px">如果你現在只是想先試試看怎麼和 AI 開口，可以先跳到「日常提示詞」。</div></div><div class="home-steps"><div class="home-step"><span class="num">1</span><h3>先把工具和外掛準備好</h3><div class="summary">到安裝教學看你要用 Codex 還是 Claude Code，照著步驟下載、登入，然後把需要的官方外掛或 VS Code 模組開起來。</div></div><div class="home-step"><span class="num">2</span><h3>再找現在要用的內容</h3><div class="summary">想直接交辦事情，就去提示詞庫；想找可搭配的功能，就去 Skill 庫。你不用全部看完，只找目前會用到的就好。</div></div><div class="home-step"><span class="num">3</span><h3>最後再接實際工作</h3><div class="summary">當你要真的接續專案、查目前做到哪裡、交給下一個 AI 或自己繼續做時，再進開發進度頁就可以。</div></div></div><div class="home-stack"><div class="home-panel"><h3>這套系統幫你精簡了什麼</h3><div class="mini-list"><div class="mini-item"><b>安裝更簡單</b><div class="summary">把下載入口、登入順序、外掛開啟方式集中在同一頁，不用自己東找西找。</div></div><div class="mini-item"><b>外掛更好懂</b><div class="summary">先從最常用、名字最好懂的外掛開始，不再一開始就塞滿一大堆工具。</div></div><div class="mini-item"><b>提示詞可直接複製</b><div class="summary">不知道怎麼下指令時，直接複製控制台裡整理好的提示詞交給 AI。</div></div><div class="mini-item"><b>專案可接續</b><div class="summary">真的進入工作後，再用開發進度看現在做到哪裡，減少中途斷線。</div></div></div></div><div class="home-panel"><h3>每一頁在做什麼</h3><div class="mini-list"><div class="mini-item"><b>安裝教學</b><div class="summary">教你怎麼下載、登入、開外掛，適合第一次接觸的人。</div></div><div class="mini-item"><b>日常提示詞</b><div class="summary">整理最常用的 AI 問法，讓你不知道怎麼開口時可以直接複製。</div></div><div class="mini-item"><b>提示詞庫</b><div class="summary">把比較完整的工作提示詞整理在一起，適合拿來正式交辦任務。</div></div><div class="mini-item"><b>Skill 庫</b><div class="summary">看有哪些外掛、技能或工作模組可以搭配使用，知道它們各自幫什麼。</div></div><div class="mini-item"><b>開發進度</b><div class="summary">你已經有正在做的專案時，用來接手、交接與確認目前做到哪裡。</div></div><div class="mini-item"><b>換電腦 / 同步</b><div class="summary">整理換機、備份與同步安裝的做法，方便把自己的環境帶走。</div></div></div></div></div></div>`}
+function bindHome(){document.querySelectorAll("[data-home-tab]").forEach(btn=>btn.onclick=()=>setTab(btn.dataset.homeTab))}
 function dailyPromptCard(card){return`<div class="daily-card"><h4>${esc(card.title)}</h4><div class="usage">${esc(card.when)}</div><pre class="prompt-body">${esc(card.prompt)}</pre><button class="copy-btn" data-copy="${encodeURIComponent(card.prompt)}">複製這段提示詞</button></div>`}
 function dailyModeButtons(){const modes=["全部",...DAILY_PROMPT_SECTIONS.map(section=>section.title)];return`<div class="flow-switch">${modes.map(mode=>`<button class="flow-btn ${dailyMode===mode?"active":""}" onclick="dailyMode='${esc(mode)}';render()">${esc(mode)}</button>`).join("")}</div>`}
 function dailyHtml(){const sections=DAILY_PROMPT_SECTIONS.filter(section=>dailyMode==="全部"||section.title===dailyMode);return`<div class="wide-sop"><div class="daily-hero"><h2>日常工作不知道怎麼問，就先從這裡複製</h2><p>這頁是新手版提示詞，不用先懂二刀流或專案文件。你只要選「現在想做什麼」，複製卡片給 Codex 或 Claude Code，就能開始請 AI 幫忙。</p><div class="daily-principles"><div class="daily-principle"><b>先講目的</b><div class="summary">告訴 AI 你想完成什麼，不只是丟一堆資料。</div></div><div class="daily-principle"><b>先看再做</b><div class="summary">要求 AI 先分析、先規劃，確認後再修改。</div></div><div class="daily-principle"><b>重要檔案先保護</b><div class="summary">涉及電腦檔案時，先備份、先列計畫，不直接動檔。</div></div></div></div>${dailyModeButtons()}${sections.map(section=>`<section class="daily-section"><div class="daily-section-head"><div><h3>${esc(section.title)}</h3><div class="summary">${esc(section.hint)}</div></div>${section.safety?`<div class="daily-safety">${esc(section.safety)}</div>`:""}</div><div class="daily-grid">${section.cards.map(dailyPromptCard).join("")}</div></section>`).join("")}</div>`}
@@ -1005,7 +1047,95 @@ function skillLibraryCaptureBlock(){return`<details class="doc-fold skill-captur
 function renderSkillLibrary(){const items=DATA.skills.filter(s=>(cat==="全部"||s.category===cat)&&match(s,["name","summary","category","triggers","notes"]));return items.length?`<div class="grid">${items.map(skillCard).join("")}</div>`:`<div class="empty">找不到符合條件的 skill。</div>`}
 function cmdRow(label,cmd){return`<div class="trigger"><div style="flex:1"><div class="usage">${esc(label)}</div><code>${esc(cmd)}</code></div><button class="copy-btn" data-copy="${encodeURIComponent(cmd)}">複製指令</button></div>`}
 function installSteps(system){return`<div class="install-steps"><div class="install-step"><span>1</span><div>打開 ${esc(system)}</div></div><div class="install-step"><span>2</span><div>貼上剛剛複製的指令</div></div><div class="install-step"><span>3</span><div>按 Enter，等待安裝完成</div></div></div>`}
-function installGuideHtml(){return`<div class="sop wide-sop"><div class="card install-hero"><h2>Codex / Claude Code 安裝與設定完整教學</h2><div class="summary">這頁專門給第一次接觸的人看。先把工具裝好、登入好、常用外掛 / skills 放好，再回到控制台照流程使用，會比直接亂裝穩很多。</div><div class="privacy-note">這一頁是教學頁，不會直接替你安裝任何東西。外部連結會帶你去官方文件；本控制台主要負責整理流程、提示詞與操作順序。</div></div><div class="install-grid"><div class="install-card featured"><h3>1. 安裝 Codex</h3><div class="install-subtitle">建議新手先從桌面版開始，再決定要不要補 IDE extension</div><div class="install-steps"><div class="install-step"><span>1</span><div>到官方頁下載 Codex app，安裝後打開。</div></div><div class="install-step"><span>2</span><div>用 ChatGPT 帳號登入，或依需求改用 OpenAI API key。</div></div><div class="install-step"><span>3</span><div>選一個專案資料夾，確認是本機模式，再開始第一個任務。</div></div></div><div class="summary">如果你主要在 VS Code、Cursor 或 Windsurf 工作，也可以再安裝 Codex extension，讓它直接出現在編輯器側欄。</div><div class="summary" style="margin-top:6px">如果你是 Intel Mac，請改用官方安裝頁選 Intel 版本。</div><div class="home-panel-actions"><a class="copy-btn" href="https://persistent.oaistatic.com/codex-app-prod/Codex.dmg" target="_blank" rel="noreferrer">下載最新 macOS 版</a><a class="copy-btn" href="https://get.microsoft.com/installer/download/9PLM9XGG6VKS?cid=website_cta_psi" target="_blank" rel="noreferrer">下載最新 Windows 版</a></div></div><div class="install-card featured"><h3>2. 安裝 Claude Code</h3><div class="install-subtitle">如果你習慣用 VS Code 審查、補改與複審，這一套很適合當第二支 AI</div>${cmdRow("macOS / Linux CLI 安裝","curl -fsSL https://claude.ai/install.sh | bash")}${cmdRow("Windows PowerShell 安裝","irm https://claude.ai/install.ps1 | iex")}<div class="summary">若你偏好圖形介面，可以直接安裝 Claude Code 的 VS Code extension。官方也建議在 VS Code 內這樣用。</div><div class="home-panel-actions"><a class="copy-btn" href="https://code.claude.com/docs/en/quickstart" target="_blank" rel="noreferrer">Claude Code 快速開始</a><a class="copy-btn" href="https://code.claude.com/docs/en/ide-integrations" target="_blank" rel="noreferrer">Claude Code VS Code 教學</a></div></div><div class="install-card"><h3>3. 安裝外掛 / skills</h3><div class="install-subtitle">工具裝好後，再補你真的會用到的能力，不要一開始全部裝滿</div><div class="summary"><b>Codex：</b>建議從 app 內的 Plugins 頁安裝。常見組合像 GitHub、Browser、Google Drive、Slack、Figma。</div><div class="summary"><b>Claude Code：</b>skills 可以放在 <code>~/.claude/skills/&lt;skill-name&gt;/SKILL.md</code>，只想給某個專案用時，放在專案內 <code>.claude/skills/&lt;skill-name&gt;/SKILL.md</code>。</div><div class="summary">建議先裝最常用的 2 到 4 個，不要一次裝太多，這樣比較容易知道每個工具在做什麼。</div><div class="home-panel-actions"><a class="copy-btn" href="https://developers.openai.com/codex/plugins" target="_blank" rel="noreferrer">Codex Plugins 教學</a><a class="copy-btn" href="https://code.claude.com/docs/en/skills" target="_blank" rel="noreferrer">Claude Skills 教學</a></div></div></div><div class="card"><h2>建議先裝哪些外掛 / skills？</h2><div class="workflow-guide"><div class="guide-item"><div class="guide-label">GitHub</div><div class="guide-text">看 repo、issue、PR、CI 最常用，幾乎所有工程團隊都會需要。</div></div><div class="guide-item"><div class="guide-label">Browser</div><div class="guide-text">本機網站、localhost、管理後台、前端畫面檢查都很方便。</div></div><div class="guide-item"><div class="guide-label">Figma 或 Google Drive</div><div class="guide-text">有設計稿或要處理文件、簡報、表單時再裝，不用一開始全開。</div></div></div></div><div class="card"><h2>最後：怎麼和這個控制台網站一起用？</h2><div class="summary">這個網站不是 AI 本體，也不是安裝器。它比較像你的操作面板，專門整理：</div><ul><li>該先找哪一種提示詞</li><li>開發時 Codex 與 Claude Code 怎麼分工</li><li>常用 skills 和常用交辦模板</li><li>接續專案時該看什麼檔案</li></ul><div class="workflow-guide" style="margin-top:10px"><div class="guide-item"><div class="guide-label">第 1 步</div><div class="guide-text">先在這個網站看你現在是要裝工具、做日常交辦、還是接續專案。</div></div><div class="guide-item"><div class="guide-label">第 2 步</div><div class="guide-text">從控制台複製提示詞或觸發句，貼給 Codex 或 Claude Code 去做。</div></div><div class="guide-item"><div class="guide-label">第 3 步</div><div class="guide-text">如果是正式專案，再回來看「開發進度」、「提示詞庫」和「Skill庫」一路接下去。</div></div></div><div class="home-copy-hint">推薦順序：先裝工具，再學分工，最後每天回這個控制台找提示詞與接續流程。</div></div></div>`}
+function installGuideTopicButton(topic,label){return`<button class="copy-btn tutorial-btn ${installGuideTopic===topic?"active":""}" type="button" data-install-guide-topic="${topic}">${label}</button>`}
+function installGuideShot(title,pills,caption){return`<div class="shot-frame"><div class="shot-window"><div class="shot-toolbar"><span class="shot-dot"></span><span class="shot-dot"></span><span class="shot-dot"></span></div><div class="shot-body"><div class="summary"><b>${esc(title)}</b></div><div class="shot-line"></div><div class="shot-line mid"></div><div class="shot-pill-row">${pills.map(p=>`<span class="shot-pill">${esc(p)}</span>`).join("")}</div><div class="shot-line short"></div></div></div><div class="shot-caption">${esc(caption)}</div></div>`}
+function installPromptCard(label,prompt){return`<button class="copy-btn" type="button" data-copy="${encodeURIComponent(prompt)}">${label}</button>`}
+function installPluginMiniGrid(items,title,summary){return`<div class="plugin-mini-section"><h3>${esc(title)}</h3><div class="summary">${esc(summary)}</div><div class="plugin-mini-grid">${items.map(item=>`<div class="plugin-mini-card"><div class="plugin-mini-icon">${item.iconSrc?`<img src="${esc(item.iconSrc)}" alt="${esc(item.title)}">`:esc(item.icon)}</div><div class="plugin-mini-copy"><div class="plugin-mini-title">${esc(item.title)}</div><div class="plugin-mini-desc">${esc(item.desc)}</div></div></div>`).join("")}</div></div>`}
+function installGuideFigure(src,title,caption){return`<div class="manual-figure"><b>${esc(title)}</b><img src="${esc(src)}" alt="${esc(title)}"><div class="manual-caption">${esc(caption)}</div></div>`}
+function installGuideMergedFigure(src1,src2,_cropTop,title,caption){return`<div class="manual-figure"><b>${esc(title)}</b><div class="manual-merged"><img src="${esc(src1)}" alt="${esc(title)}"><img src="${esc(src2)}" alt="${esc(title)}"></div><div class="manual-caption">${esc(caption)}</div></div>`}
+function installGuideArticle(sections){return`<div class="install-article">${sections.map(section=>`<section class="install-article-section"><h3>${esc(section.title)}</h3>${section.body||""}${section.note?`<div class="install-article-note">${esc(section.note)}</div>`:""}</section>`).join("")}</div>`}
+function installGuideTutorialHtml(){
+  const codexPluginCards = [
+    {icon:"D",iconSrc:INSTALL_GUIDE_ASSETS.iconDocuments,title:"Documents／文件",desc:"建立與編輯文件內容。"},
+    {icon:"S",iconSrc:INSTALL_GUIDE_ASSETS.iconSpreadsheets,title:"Spreadsheets／試算表",desc:"整理資料表、欄位與數字。"},
+    {icon:"P",iconSrc:INSTALL_GUIDE_ASSETS.iconPresentations,title:"Presentations／簡報",desc:"建立與修改投影片。"},
+    {icon:"B",iconSrc:INSTALL_GUIDE_ASSETS.iconBrowser,title:"Browser／瀏覽器",desc:"控制內建瀏覽器檢查網站與畫面。"},
+    {icon:"GH",iconSrc:INSTALL_GUIDE_ASSETS.iconGithub,title:"GitHub／程式碼庫",desc:"查看 repo、issue、PR 與 CI 狀態。"},
+    {icon:"F",iconSrc:INSTALL_GUIDE_ASSETS.iconFigma,title:"Figma／設計稿",desc:"把設計稿和前端實作接起來。"},
+    {icon:"DB",iconSrc:INSTALL_GUIDE_ASSETS.iconSupabase,title:"Supabase／資料庫",desc:"管理資料表、查詢資料與後端設定。"},
+    {icon:"C",iconSrc:INSTALL_GUIDE_ASSETS.iconCanva,title:"Canva／設計工具",desc:"做設計圖、社群圖與視覺素材。"}
+  ];
+  const codexArticle = installGuideArticle([
+    {
+      title:"第一次使用 Codex，要先做這四件事",
+      body:`<p>如果你是第一次使用 Codex，可以先照這個順序做，不用急著研究太多功能。先把 Codex 下載好、登入好，接著到 app 裡把常用的官方內建外掛程式打開，這樣後面使用起來會比較順。</p><ol><li>先下載 Codex app：按上面的 macOS 或 Windows 按鈕，先把最新版裝到電腦裡。</li><li>打開 Codex 並登入：用你的 ChatGPT 帳號登入，先進到 Codex 的主畫面。</li><li>到 app 裡打開官方內建外掛：進入後，到左側選單或設定裡找到 <b>Plugins</b>，這裡就是管理官方內建外掛程式的地方。</li><li>看到想用的外掛後，把右邊的開關打開：開關打開，就表示這個官方內建外掛已經裝好，可以直接使用。</li></ol>${installGuideFigure(INSTALL_GUIDE_ASSETS.codexPluginsOverview,"Codex Plugins 真實介面","這張就是你提供的真實畫面。第一次使用的人只要先找到 Plugins 頁面，再把想用的外掛右邊開關打開就可以了。")}`,
+      note:"你可以把這一段理解成先把工作環境準備好，不是要你一開始就把所有工具都研究完。"
+    },
+    {
+      title:"其他外掛程式什麼時候再開？",
+      body:`<p>當你後面開始做設計、接 GitHub、查資料庫，或要做網站相關工作時，再回來把對應的外掛程式打開就可以了。像 Canva、Figma、GitHub、Hostinger、Supabase 這些，都比較適合等你真的用到時再補。</p>${installGuideFigure(INSTALL_GUIDE_ASSETS.codexPluginsExtra,"更多常見官方外掛","這一張補的是第二批比較常見的官方外掛。你不用第一天全部打開，等真的需要時再回來開就好。")}`,
+      note:"最簡單的原則就是：現在會用到的先開，暫時用不到的先不要動。"
+    },
+    {
+      title:"建議一起裝的必備 skill：LangGPT",
+      body:`<p>如果你後面會自己做 prompt、設計職業型 skill，或想把工作流程整理成可重複使用的 AI 模板，建議把 <b>LangGPT</b> 一起裝起來。它的強項是把需求整理成固定結構，例如 Role、Profile、Goal、Skills、Rules、Workflow，讓 AI 比較容易穩定產出可重用的 skill。</p><p>這顆 skill 很適合搭配你現在這套控制台的「個人化設定」頁面一起使用，尤其是你要根據職業、行業別、痛點去生成 skill 時，效果會更完整。</p>`,
+      note:"LangGPT 已經安裝到 Codex 與 Claude Code，系統裡的「外掛 / Skill庫」也看得到這顆 skill。"
+    }
+  ]);
+  const claudeArticle = installGuideArticle([
+    {
+      title:"第一次使用 Claude Code，可以先照這個順序做",
+      body:`<p>如果你想把 Claude Code 裝進 VS Code 使用，可以先照這個順序準備。先下載 Claude 桌面版，再下載 VS Code，最後到 VS Code 裡安裝 Claude Code extension，這樣之後做審查、補改和複審會比較順。</p><ol><li>先下載 Claude：按上面的 macOS 或 Windows 按鈕，進官方最新版下載入口。</li><li>再下載 VS Code：如果這台電腦還沒有 VS Code，就依系統下載對應版本。</li><li>打開 VS Code 並安裝 Claude Code extension：進到 Extensions，搜尋 <b>Claude Code</b>，安裝後登入，就可以開始使用。</li></ol>`,
+      note:"這一段是桌面下載導向，不是在這裡直接做 CLI 安裝。"
+    },
+    {
+      title:"Claude Code 比較適合什麼情境？",
+      body:`<p>如果你習慣在 VS Code 裡工作，Claude Code 會比較適合拿來做程式審查、看 diff、補修改建議，或在編輯器側邊直接和專案一起使用。它很適合搭配 Codex 分工：Codex 偏向主力開發，Claude Code 偏向審查與複審。</p><p>簡單理解就是：你如果大多時間都待在 VS Code，想要在同一個編輯器裡直接和 AI 一起看程式，這一套會比較順手。</p>`,
+      note:"先把工具裝好、能正常登入使用就可以，不用一開始研究太多進階設定。"
+    },
+    {
+      title:"建議一起安裝的 VS Code 模組",
+      body:`<p>如果你準備把 Claude Code 放進 VS Code 一起使用，建議可以把常見會配合開發流程的模組一起裝好。這樣之後在同一個編輯器裡做開發、審查、除錯、遠端連線和版本管理會比較順。</p><p><b>建議優先安裝：</b>Claude Code for VS Code、Chinese (Traditional) Language Pack for Visual Studio Code、GitHub Pull Requests、PowerShell。</p><p><b>如果你會做 Python 開發：</b>Pylance、Python、Python Debugger、Python Environments。</p><p><b>如果你會用 Docker 或容器：</b>Dev Containers、Container Tools、Docker。</p><p><b>如果你常連遠端主機：</b>Remote Explorer、Remote - SSH、Remote - SSH: Editing Configuration Files。</p><p><b>其他常用補充：</b>vscode-pdf，方便直接在 VS Code 裡看 PDF。</p>${installGuideMergedFigure(INSTALL_GUIDE_ASSETS.vscodeInstalled1,INSTALL_GUIDE_ASSETS.vscodeInstalled2,520,"建議可搭配安裝的 VS Code 模組","這裡把你的模組畫面改成上下接續顯示，方便第一次設定的人直接照著名字去找、去安裝。")}<p>後面實際開發時，Claude Code 也可以依照你當下的需求，提醒你還缺哪些適合的模組；有些情況下，它也可以直接協助你把需要的模組安裝起來。</p>`,
+      note:"最簡單的做法是：先裝 Claude Code、中文語系、GitHub、你會用到的語言工具，再依工作內容補 Docker 或遠端 SSH。"
+    }
+  ]);
+  const topics = {
+    codex: {
+      badge: "Codex 安裝教學",
+      title: "先把 Codex 裝好，再進工作區與 Plugins",
+      lead: "這一段教第一次使用的人怎麼下載 Codex、登入、選專案資料夾，然後到 app 內把官方內建外掛程式打開。",
+      steps: [],
+      extras: codexArticle,
+      shots: []
+    },
+    claude: {
+      badge: "Claude Code 教學",
+      title: "Claude 先下載，再補 VS Code 與 Claude Code extension",
+      lead: "這一段改成桌面下載導向，不再先秀 CLI 指令。適合想在 VS Code 裡做審查、補改與複審的人。",
+      steps: [],
+      extras: claudeArticle,
+      shots: []
+    },
+    system: {
+      badge: "我們系統教學",
+      title: "把我們的控制台與 skills 裝到自己的電腦",
+      lead: "這一段改成提示詞導向。把提示詞複製給 Codex 或 Claude Code（VS Code），請它自動幫你下載、放到正確位置並回報安裝結果。",
+      steps: [
+        ["選系統對應提示詞","macOS 就複製 macOS 安裝提示詞，Windows 就複製 Windows 安裝提示詞。只想先抓備份，也可以複製備份包提示詞。"],
+        ["貼給 Codex 或 Claude Code","把提示詞貼給 Codex，或貼給 VS Code 裡的 Claude Code，讓它接手處理下載、檢查與安裝。"],
+        ["完成後回來控制台接流程","安裝完成後，再回到這套控制台接著找提示詞、看 Skill庫、做開發進度交接。"]
+      ],
+      shots: [
+        installGuideShot("用提示詞自動安裝",["Codex","Claude Code","自動處理"],"不是自己手動點一堆檔案，而是把提示詞交給 AI 幫你安裝。"),
+        installGuideShot("安裝完成後的控制台",["提示詞庫","Skill庫","開發進度"],"完成安裝後，回到這套控制台就能直接接續日常工作流程。")
+      ]
+    }
+  };
+  const current = topics[installGuideTopic] || topics.codex;
+  return `<div class="card install-tutorial-card"><div class="install-tutorial-head"><div><div class="install-tutorial-badge">${esc(current.badge)}</div><h2>${esc(current.title)}</h2><div class="summary">${esc(current.lead)}</div></div></div><div class="install-tutorial-grid ${current.shots.length?"":"full"}"><div>${current.steps.length?`<div class="install-tutorial-steps">${current.steps.map((step,idx)=>`<div class="install-tutorial-step"><span>${idx+1}</span><div><b>${esc(step[0])}</b><div class="summary">${esc(step[1])}</div></div></div>`).join("")}</div>`:""}${current.extras||""}</div>${current.shots.length?`<div class="install-tutorial-shot">${current.shots.join("")}</div>`:""}</div></div>`
+}
+function installGuideHtml(){const macPrompt=`請幫我在這台 macOS 電腦安裝這套控制台系統。\n\n要求：\n1. 下載最新版安裝資源\n2. 優先使用本專案官方 install.sh\n3. 把控制台與 skills 放到正確位置\n4. 回報你下載了哪些檔案、放到哪裡、安裝是否成功\n5. 如果遇到權限或 Gatekeeper 問題，先告訴我再處理\n\n安裝來源：\n- https://raw.githubusercontent.com/kagenhsu/codex-claude-skills-backup/main/install.sh\n- https://github.com/kagenhsu/codex-claude-skills-backup/raw/main/codex-skills-backup.tar.gz`;const winPrompt=`請幫我在這台 Windows 電腦安裝這套控制台系統。\n\n要求：\n1. 下載最新版安裝資源\n2. 優先使用本專案官方 install.ps1\n3. 把控制台與 skills 放到正確位置\n4. 回報你下載了哪些檔案、放到哪裡、安裝是否成功\n5. 如果遇到 PowerShell 執行政策或權限問題，先告訴我再處理\n\n安裝來源：\n- https://raw.githubusercontent.com/kagenhsu/codex-claude-skills-backup/main/install.ps1\n- https://github.com/kagenhsu/codex-claude-skills-backup/raw/main/codex-skills-backup.tar.gz`;const backupPrompt=`請幫我只下載這套控制台的 skills 備份包，不要直接安裝。\n\n要求：\n1. 下載最新版備份包\n2. 告訴我檔案存到哪裡\n3. 列出裡面大概會有什麼內容\n4. 如果適合，再告訴我下一步怎麼交給 Codex 或 Claude Code 幫我安裝\n\n下載來源：\n- https://github.com/kagenhsu/codex-claude-skills-backup/raw/main/codex-skills-backup.tar.gz`;return`<div class="sop wide-sop"><div class="card install-hero"><h2>Codex / Claude Code 安裝與設定完整教學</h2><div class="summary">這頁專門給第一次接觸的人看。先把工具裝好、登入好、常用外掛 / skills 放好，再回到控制台照流程使用，會比直接亂裝穩很多。</div><div class="privacy-note">這一頁是教學頁，不會直接替你安裝任何東西。外部連結會帶你去官方文件；本控制台主要負責整理流程、提示詞與操作順序。</div></div><div class="install-grid"><div class="install-card featured"><h3>1. 安裝 Codex</h3><div class="install-subtitle">建議新手先從桌面版開始，再決定要不要補 IDE extension</div><div class="install-steps"><div class="install-step"><span>1</span><div>到官方頁下載 Codex app，安裝後打開。</div></div><div class="install-step"><span>2</span><div>用 ChatGPT 帳號登入，或依需求改用 OpenAI API key。</div></div><div class="install-step"><span>3</span><div>選一個專案資料夾，確認是本機模式，再開始第一個任務。</div></div></div><div class="summary">如果你主要在 VS Code、Cursor 或 Windsurf 工作，也可以再安裝 Codex extension，讓它直接出現在編輯器側欄。</div><div class="summary" style="margin-top:6px">如果你是 Intel Mac，請改用官方安裝頁選 Intel 版本。</div><div class="home-panel-actions"><a class="copy-btn" href="https://persistent.oaistatic.com/codex-app-prod/Codex.dmg" target="_blank" rel="noreferrer">下載最新 macOS 版</a><a class="copy-btn" href="https://get.microsoft.com/installer/download/9PLM9XGG6VKS?cid=website_cta_psi" target="_blank" rel="noreferrer">下載最新 Windows 版</a><button class="copy-btn tutorial-btn" type="button" data-install-guide-topic="codex">查看教學</button></div></div><div class="install-card featured"><h3>2. 安裝 Claude Code</h3><div class="install-subtitle">如果你習慣用 VS Code 審查、補改與複審，這一套很適合當第二支 AI</div><div class="summary">這裡改成直接走官方最新版下載入口：先裝 Claude，再補 VS Code，就能照這個控制台的分工流程使用。</div><div class="home-panel-actions"><a class="copy-btn" href="https://claude.com/download" target="_blank" rel="noreferrer">下載最新 macOS 版</a><a class="copy-btn" href="https://claude.ai/api/desktop/win32/x64/exe/latest/redirect" target="_blank" rel="noreferrer">下載最新 Windows 版</a></div><div class="home-panel-actions"><a class="copy-btn tutorial-btn" href="https://code.visualstudio.com/sha/download?build=stable&os=darwin-universal" target="_blank" rel="noreferrer">下載 VS Code macOS 版</a><a class="copy-btn tutorial-btn" href="https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user" target="_blank" rel="noreferrer">下載 VS Code Windows 版</a></div><div class="home-panel-actions"><button class="copy-btn tutorial-btn" type="button" data-install-guide-topic="claude">查看教學</button></div><div class="summary">VS Code 裝好後，再照官方教學登入 Claude Code extension 即可。</div></div><div class="install-card"><h3>3. 安裝外掛 / skills</h3><div class="install-subtitle">工具裝好後，再補你真的會用到的能力，不要一開始全部裝滿</div><div class="summary"><b>我們的系統：</b>如果你要把這套控制台、常用 skills 與同步入口裝到自己的電腦，這裡改成直接複製提示詞，交給 Codex 或 Claude Code（VS Code）自動安裝。</div><div class="summary"><b>適合情境：</b>第一次裝這套系統、換電腦重裝，或想先把 skills 備份包下載下來留存。</div><div class="summary">建議先裝最常用的 2 到 4 個，不要一次裝太多，這樣比較容易知道每個工具在做什麼。</div><div class="home-panel-actions">${installPromptCard("複製 macOS 安裝提示詞",macPrompt)}${installPromptCard("複製 Windows 安裝提示詞",winPrompt)}</div><div class="home-panel-actions">${installPromptCard("複製 skills 備份包提示詞",backupPrompt)}</div></div></div>${installGuideTutorialHtml()}</div>`}
+function bindInstallGuide(){document.querySelectorAll("[data-install-guide-topic]").forEach(btn=>btn.onclick=()=>{installGuideTopic=btn.dataset.installGuideTopic||"codex";render();setTimeout(()=>document.querySelector(".install-tutorial-card")?.scrollIntoView({behavior:"smooth",block:"start"}),80)})}
 function backupHtml(){const winCmd=`powershell -ExecutionPolicy Bypass -NoProfile -Command "irm https://raw.githubusercontent.com/kagenhsu/codex-claude-skills-backup/main/install.ps1 | iex"`;const macCmd="curl -fsSL https://raw.githubusercontent.com/kagenhsu/codex-claude-skills-backup/main/install.sh | bash";const restoreCmd="./restore-skills.sh";const backupUrl="https://github.com/kagenhsu/codex-claude-skills-backup/raw/main/codex-skills-backup.tar.gz";return`<div class="sop wide-sop"><div class="card install-hero"><h2>把二刀流控制台裝到自己的電腦</h2><div class="summary">線上 demo 可以先試用提示詞與介面；如果你想在自己的電腦使用 skills、本機控制台和桌面捷徑，請選下面的 Windows 或 macOS 安裝指令。</div><div class="privacy-note">這個網頁不會讀取你的電腦資料，也不會送任何東西到伺服器；所有按鈕都只是把指令複製到剪貼簿，或開啟下載連結。</div></div><div class="install-grid"><div class="install-card featured"><h3>Windows 安裝指令</h3><div class="install-subtitle">複製後貼到 PowerShell 執行</div><button class="copy-btn" data-copy="${encodeURIComponent(winCmd)}">複製指令</button>${installSteps("PowerShell")}<pre class="prompt-body">${esc(winCmd)}</pre></div><div class="install-card featured"><h3>macOS 安裝指令</h3><div class="install-subtitle">複製後貼到 Terminal 執行</div><button class="copy-btn" data-copy="${encodeURIComponent(macCmd)}">複製指令</button>${installSteps("Terminal")}<pre class="prompt-body">${esc(macCmd)}</pre></div><div class="install-card"><h3>下載 skills 備份包</h3><div class="install-subtitle">適用情境：網路慢、想先看備份包內容，或公司網路擋 raw.githubusercontent.com。</div><a class="copy-btn" href="${backupUrl}" target="_blank" rel="noopener">下載備份包</a><div class="summary">下載的是 <code>codex-skills-backup.tar.gz</code>，裡面是整理好的 skills，不會自動安裝。</div></div></div><div class="card"><h2>安裝完成後，你會得到什麼？</h2><div class="install-result-grid"><div class="install-result"><b>skills 放到正確位置</b><div class="summary">安裝腳本會把 skills 放到 Codex / Claude Code 讀得到的位置。</div></div><div class="install-result"><b>桌面控制台入口</b><div class="summary">桌面會出現「二刀流開發助手控制台」捷徑或 <code>.command</code>。</div></div><div class="install-result"><b>本機可用工作台</b><div class="summary">之後可用本機控制台複製提示詞、看 skills、跑二刀流流程。</div></div></div></div><div class="card"><h2>注意事項</h2><ul><li>線上 demo 不能直接替你備份本機檔案，也不能自動讀取你的 skills。</li><li>安裝前想先看完整說明，可以回 GitHub repo 的 README。</li><li>macOS 第一次雙擊桌面 <code>.command</code> 若出現「無法識別開發者」，請在 Finder 對檔案按右鍵選「打開」。</li><li>如果安裝失敗或看不懂錯誤訊息，可以到 GitHub Issues 留言。</li></ul></div><div class="advanced-section"><div class="section-head"><h2>進階區：不是新手第一步該按</h2><span class="hint">已下載整包 repo 或已客製化的人再看</span></div><div class="advanced-grid"><div class="card"><h2>給已下載整個 repo 的人</h2><div class="summary">如果你已經把整個專案下載到電腦，macOS 換機或重裝時可以在專案資料夾執行：</div>${cmdRow("macOS 離線還原 skills",restoreCmd)}</div><div class="card"><h2>已安裝後，想擁有自己的版本？</h2><div class="summary">如果你已經改過 <code>data/prompts.yaml</code>、<code>data/skills.yaml</code>，想跨機器同步或團隊共用，可以把整個資料夾 push 到你自己的 GitHub。</div><ol><li>在 GitHub 開一個空 repo，例如 <code>my-codex-console</code>。</li><li>在這個資料夾跑：</li></ol>${cmdRow("加入自己的遠端，不要覆蓋 origin","git remote add mine <你的 repo 網址>")} ${cmdRow("推到自己的 repo","git push -u mine main")}<ol start="3"><li>之後換機器時：</li></ol>${cmdRow("從自己的 repo 取回","git clone <你的 repo 網址>")} ${cmdRow("重新產生控制台","python3 scripts/build.py")}<div class="warning">重要：請用 <code>git remote add mine</code>，不要用 <code>git remote set-url origin</code>。後者會把作者原 repo 的來源改掉，之後想更新會比較容易迷路。</div></div></div></div></div>`}
 function wideHtml(html){return html.replace('<div class="sop">','<div class="sop wide-sop">')}
 const CONTROL_STAGES=[
@@ -1097,15 +1227,15 @@ function skillForm(d){return`<div class="form-grid"><div class="field full"><lab
 function rerenderCaptureWorkspace(){const root=document.getElementById("captureWorkspace");if(!root){render();return}const showSwitch=root.dataset.showSwitch==="1";const activeId=document.activeElement?.id||"";const start=document.activeElement&&typeof document.activeElement.selectionStart==="number"?document.activeElement.selectionStart:null;const end=document.activeElement&&typeof document.activeElement.selectionEnd==="number"?document.activeElement.selectionEnd:null;root.outerHTML=captureHtml(captureMode,showSwitch);bindCapture();if(activeId){const next=document.getElementById(activeId);if(next){next.focus();try{if(start!==null&&end!==null&&typeof next.setSelectionRange==="function")next.setSelectionRange(start,end)}catch{}}}}
 function updateCaptureOutputs(){const data=captureData();const yaml=captureMode==="skill"?skillYaml(data):promptSummary(data);const codex=codexCapturePrompt(data);const yamlPre=document.getElementById("captureYaml"),codexPre=document.getElementById("captureCodex"),link=document.getElementById("captureLink"),skillSource=document.getElementById("skillSource"),codexBtn=document.getElementById("captureCodexBtn");if(yamlPre)yamlPre.textContent=yaml;if(codexPre)codexPre.textContent=codex;if(link)link.outerHTML=captureLinkHtml(data,captureMode);if(skillSource)skillSource.classList.toggle("needs-input",captureMode==="skill"&&!data.source);if(codexBtn)codexBtn.dataset.copy=encodeURIComponent(codex)}
 function bindCapture(){document.querySelectorAll("[data-capture-mode]").forEach(btn=>btn.onclick=()=>{captureMode=btn.dataset.captureMode;render()});document.querySelectorAll("[data-capture-detail]").forEach(el=>el.ontoggle=()=>setDetailOpen(el.dataset.captureDetail,el.open));document.querySelectorAll("[data-capture-input]").forEach(el=>el.oninput=el.onchange=()=>{const data=captureData();writeDraft(data);if(["promptMethod","promptTarget","promptCategory"].includes(el.id))rerenderCaptureWorkspace();else updateCaptureOutputs()})}
-const CUSTOM_SKILL_DEFAULTS={role:"AI 系統開發與管理者",scenario:"工作決策陪練與挑刺",style:"直接、務實、先挑風險",target:"Codex 專用",skillName:"personal-work-coach",level:"先給結論，再補背景",pain:"我需要一個懂我職務、業務痛點與工作習慣的 AI 陪練，能先追問、再挑刺、最後把流程封裝成可重複使用的 skill。",extra:"請用繁體中文。不要無腦誇。需求不清楚時先問關鍵問題。涉及安裝或改檔時先說風險。"};
-const CUSTOM_SKILL_FIELDS=["customRole","customScenario","customStyle","customTarget","customSkillName","customLevel","customPain","customExtra"];
+const CUSTOM_SKILL_DEFAULTS={role:"AI 系統開發與管理者",industry:"",scenario:"工作決策陪練與挑刺",style:"直接、務實、先挑風險",target:"Codex 專用",skillName:"",level:"先給結論，再補背景",pain:"我需要一個懂我職務、業務痛點與工作習慣的 AI 陪練，能先追問、再挑刺、最後把流程封裝成可重複使用的 skill。",extra:"請用繁體中文。不要無腦誇。需求不清楚時先問關鍵問題。涉及安裝或改檔時先說風險。"};
+const CUSTOM_SKILL_FIELDS=["customRole","customIndustry","customScenario","customStyle","customTarget","customSkillName","customLevel","customPain","customExtra"];
 function customSkillData(){const stored=JSON.parse(localStorage.getItem("custom-skill-builder")||"{}");return{...CUSTOM_SKILL_DEFAULTS,...stored}}
-function customSkillRead(){const data={role:formVal("customRole"),scenario:formVal("customScenario"),style:formVal("customStyle"),target:formVal("customTarget"),skillName:formVal("customSkillName"),level:formVal("customLevel"),pain:formVal("customPain"),extra:formVal("customExtra")};localStorage.setItem("custom-skill-builder",JSON.stringify(data));return data}
-function customSkillPromptText(d){return[`我想建立一個自己的個人化專屬 skill，請用 Codex 專用流程協助我完成。`,"",`我的基本設定：`,`- 我的職業 / 身分：${d.role}`,`- 主要用途：${d.scenario}`,`- 期待 AI 互動風格：${d.style}`,`- 回答深度：${d.level}`,`- Skill 名稱：${d.skillName}`,`- 安裝目標：${d.target}`,`- 目前痛點：${d.pain||"請先追問我，協助我釐清。"}`,`- 其他要求：${d.extra||"請用繁體中文，需求不清楚時先問。"}`,"","第一段：徹底理解我","現在你的首要身份是一個提問者。","請你問我所有你需要的問題，直到你真正理解：","1. 我的職務與日常工作情境","2. 我的業務核心訴求","3. 我的真實痛點","4. 我最常卡住的決策點","5. 我希望 AI 在工作中扮演的角色","","請一次最多問 5 個問題。問題要具體、好回答；必要時提供選項。","不要急著產出 skill。你要先問到能和我一起梳理出清晰路徑。","","第二段：做我的陪練與挑刺者","根據你對我的了解，接下來做我的陪練。","不管我提出什麼想法，不管我拋出什麼計劃，禁止無腦誇。","你的唯一任務是挑刺，請直白指出 3 到 5 個：","1. 我沒想到的風險點","2. 我忽略的關鍵問題","3. 可能導致失敗的假設","4. 需要先驗證的地方","5. 更務實的下一步","","輸出格式請固定為：","結論 / 建議","3 到 5 個風險點","我應該先回答或確認的問題","下一步最小行動","","第三段：封裝成 skill","當你已經懂我的痛點、職務人設與工作方式後，請幫我封裝成一個 skill。","請產出完整 skill 資料夾設計，至少包含：",`1. skill 名稱：${d.skillName}`,"2. SKILL.md 完整內容","3. 觸發規則：什麼情境下 AI 必須使用這個 skill","4. AI 回答規則：語氣、格式、禁止事項、風險提醒方式","5. 範例觸發句：至少 5 句","6. 安裝前風險檢查：是否會讀寫檔案、是否需要網路、是否接觸敏感資料","",`SKILL.md 要適合 ${d.target}，並且用繁體中文說明清楚。`,"","第四段：安裝與驗證","請在封裝完成後，先停止並列出安裝計畫與風險。","如果我確認要安裝，才進行安裝。","","安裝要求：","1. 不要刪除任何既有文件或資料夾。","2. 不要使用批量刪除指令。","3. 安裝前先檢查目標路徑是否存在。",`4. ${d.target==="Codex + Claude Code 都安裝"?"安裝到 Codex 與 Claude Code 兩邊可讀的位置。":`依「${d.target}」處理。`}`,"5. 安裝後驗證該 skill 的 SKILL.md 存在。","6. 回報安裝位置、檔案清單、如何觸發、如何測試。","","請先從第一段開始，不要跳到第三段，也不要直接寫檔。"].join("\n")}
-function customSkillHtml(){const d=customSkillData();return`<div class="sop wide-sop"><div class="card"><h2>自製專屬 Skill 產生器</h2><div class="summary">直接在這裡選欄位，右側會即時產生可複製給 Codex 的完整提示詞。這不是安裝動作，只是先產生交辦內容。</div></div><div class="home-split"><div class="card"><h2>選單設定</h2><div class="form-grid"><div class="field"><label>你的職業 / 身分</label><select id="customRole" data-custom-skill-input>${optionsHtml(["AI 系統開發與管理者","資訊主管 / IT 管理者","行銷企劃 / 品牌經營者","資料整合 / 報表分析人員","創業者 / 老闆","自訂"],d.role)}</select></div><div class="field"><label>主要用途</label><select id="customScenario" data-custom-skill-input>${optionsHtml(["工作決策陪練與挑刺","AI 系統規劃與專案推進","提示詞工程與 SOP 建立","資料查詢、整合與報告產出","跨角色溝通與主管簡報"],d.scenario)}</select></div><div class="field"><label>AI 互動風格</label><select id="customStyle" data-custom-skill-input>${optionsHtml(["直接、務實、先挑風險","新手教學、一步一步帶我做","主管視角、重點摘要與決策建議","顧問式追問、先釐清再行動"],d.style)}</select></div><div class="field"><label>安裝目標</label><select id="customTarget" data-custom-skill-input>${optionsHtml(["Codex 專用","Claude Code 專用","Codex + Claude Code 都安裝","先只產生 SKILL.md，不安裝"],d.target)}</select></div><div class="field"><label>Skill 名稱</label><input id="customSkillName" data-custom-skill-input value="${esc(d.skillName)}" placeholder="personal-work-coach"></div><div class="field"><label>回答深度</label><select id="customLevel" data-custom-skill-input>${optionsHtml(["先給結論，再補背景","完整深入分析","只給最短可執行版本"],d.level)}</select></div><div class="field full"><label>你目前最想解決的痛點</label><textarea id="customPain" data-custom-skill-input>${esc(d.pain)}</textarea></div><div class="field full"><label>其他要求</label><textarea id="customExtra" data-custom-skill-input>${esc(d.extra)}</textarea></div></div><div class="builder-actions"><button class="copy-btn" type="button" id="customSkillReset">清空重選</button></div></div><div class="card"><h2>可複製提示詞</h2><pre class="prompt-body builder-preview" id="customSkillPrompt"></pre><button class="copy-btn" type="button" id="customSkillCopy">複製提示詞</button></div></div></div>`}
+function customSkillRead(){const data={role:formVal("customRole"),industry:formVal("customIndustry"),scenario:formVal("customScenario"),style:formVal("customStyle"),target:formVal("customTarget"),skillName:formVal("customSkillName"),level:formVal("customLevel"),pain:formVal("customPain"),extra:formVal("customExtra")};localStorage.setItem("custom-skill-builder",JSON.stringify(data));return data}
+function customSkillPromptText(d){const skillName=d.skillName?.trim()||"請根據我的角色、用途與痛點自動命名";return[`我想建立一個自己的個人化專屬 skill，請用 Codex 專用流程協助我完成。`,"",`我的基本設定：`,`- 我的職業 / 身分：${d.role}`,`- 我的行業別：${d.industry||"尚未填寫，請先追問我所屬產業或服務類型"}`,`- 主要用途：${d.scenario}`,`- 期待 AI 互動風格：${d.style}`,`- 回答深度：${d.level}`,`- Skill 名稱：${skillName}`,`- 安裝目標：${d.target}`,`- 目前痛點：${d.pain||"請先追問我，協助我釐清。"}`,`- 其他要求：${d.extra||"請用繁體中文，需求不清楚時先問。"}`,"","第一段：徹底理解我","現在你的首要身份是一個提問者。","請你問我所有你需要的問題，直到你真正理解：","1. 我的職務與日常工作情境","2. 我的行業別與所屬產業特性","3. 我的業務核心訴求","4. 我的真實痛點","5. 我最常卡住的決策點","6. 我希望 AI 在工作中扮演的角色","","請一次最多問 5 個問題。問題要具體、好回答；必要時提供選項。","不要急著產出 skill。你要先問到能和我一起梳理出清晰路徑。","","第二段：做我的陪練與挑刺者","根據你對我的了解，接下來做我的陪練。","不管我提出什麼想法，不管我拋出什麼計劃，禁止無腦誇。","你的唯一任務是挑刺，請直白指出 3 到 5 個：","1. 我沒想到的風險點","2. 我忽略的關鍵問題","3. 可能導致失敗的假設","4. 需要先驗證的地方","5. 更務實的下一步","","輸出格式請固定為：","結論 / 建議","3 到 5 個風險點","我應該先回答或確認的問題","下一步最小行動","","第三段：封裝成 skill","當你已經懂我的痛點、職務人設、行業背景與工作方式後，請幫我封裝成一個 skill。","請產出完整 skill 資料夾設計，至少包含：",`1. skill 名稱：${skillName}`,"2. SKILL.md 完整內容","3. 觸發規則：什麼情境下 AI 必須使用這個 skill","4. AI 回答規則：語氣、格式、禁止事項、風險提醒方式","5. 範例觸發句：至少 5 句","6. 安裝前風險檢查：是否會讀寫檔案、是否需要網路、是否接觸敏感資料","",`SKILL.md 要適合 ${d.target}，並且用繁體中文說明清楚。`,"","第四段：安裝與驗證","請在封裝完成後，先停止並列出安裝計畫與風險。","如果我確認要安裝，才進行安裝。","","安裝要求：","1. 不要刪除任何既有文件或資料夾。","2. 不要使用批量刪除指令。","3. 安裝前先檢查目標路徑是否存在。",`4. ${d.target==="Codex + Claude Code 都安裝"?"安裝到 Codex 與 Claude Code 兩邊可讀的位置。":`依「${d.target}」處理。`}`,"5. 安裝後驗證該 skill 的 SKILL.md 存在。","6. 回報安裝位置、檔案清單、如何觸發、如何測試。","","請先從第一段開始，不要跳到第三段，也不要直接寫檔。"].join("\n")}
+function customSkillHtml(){const d=customSkillData();return`<div class="sop wide-sop"><div class="card"><h2>自製專屬 Skill 產生器</h2><div class="summary">直接在這裡選欄位，右側會即時產生可複製給 Codex 的完整提示詞。這不是安裝動作，只是先產生交辦內容。</div><div class="summary" style="margin-top:8px">建議先搭配 <b>LangGPT</b> 一起使用。它已安裝到系統裡，能幫你把職業、行業別、用途與痛點整理成更穩定的結構化 skill。</div></div><div class="home-split"><div class="card"><h2>選單設定</h2><div class="form-grid"><div class="field"><label>你的職業 / 身分</label><select id="customRole" data-custom-skill-input>${optionsHtml(["AI 系統開發與管理者","資訊主管 / IT 管理者","行政人員","業務人員","工務人員","會計人員","人事人員","採購 / 採發人員","總務 / 事務人員","行銷企劃 / 品牌經營者","資料整合 / 報表分析人員","專案經理 / 專案助理","客服 / 營運人員","設計 / 美編人員","工程師 / 軟體開發人員","門市 / 店長 / 現場管理","創業者 / 老闆","自訂"],d.role)}</select></div><div class="field"><label>行業別</label><input id="customIndustry" data-custom-skill-input value="${esc(d.industry)}" placeholder="例如：營造業、餐飲業、貿易業、電商、製造業、顧問服務"><div class="summary" style="margin-top:6px">這個欄位很重要，特別是選到創業者、老闆、業務或行政時，補上行業別後，AI 產生的 skill 會更貼近你的實際工作。</div></div><div class="field"><label>主要用途</label><select id="customScenario" data-custom-skill-input>${optionsHtml(["工作決策陪練與挑刺","AI 系統規劃與專案推進","提示詞工程與 SOP 建立","資料查詢、整合與報告產出","跨角色溝通與主管簡報"],d.scenario)}</select></div><div class="field"><label>AI 互動風格</label><select id="customStyle" data-custom-skill-input>${optionsHtml(["直接、務實、先挑風險","新手教學、一步一步帶我做","主管視角、重點摘要與決策建議","顧問式追問、先釐清再行動"],d.style)}</select></div><div class="field"><label>安裝目標</label><select id="customTarget" data-custom-skill-input>${optionsHtml(["Codex 專用","Claude Code 專用","Codex + Claude Code 都安裝","先只產生 SKILL.md，不安裝"],d.target)}</select></div><div class="field"><label>Skill 名稱</label><input id="customSkillName" data-custom-skill-input value="${esc(d.skillName)}" placeholder="可留白，讓 AI 自動命名"><div class="summary" style="margin-top:6px">這個欄位可以不填。留白時，會交給 AI 依照你的角色、用途與痛點自動幫你取名字。</div></div><div class="field"><label>回答深度</label><select id="customLevel" data-custom-skill-input>${optionsHtml(["先給結論，再補背景","完整深入分析","只給最短可執行版本"],d.level)}</select></div><div class="field full"><label>你目前最想解決的痛點</label><textarea id="customPain" data-custom-skill-input>${esc(d.pain)}</textarea></div><div class="field full"><label>其他要求</label><textarea id="customExtra" data-custom-skill-input>${esc(d.extra)}</textarea></div></div><div class="builder-actions"><button class="copy-btn" type="button" id="customSkillReset">清空重選</button></div></div><div class="card"><h2>可複製提示詞</h2><pre class="prompt-body builder-preview" id="customSkillPrompt"></pre><button class="copy-btn" type="button" id="customSkillCopy">複製提示詞</button></div></div></div>`}
 function updateCustomSkill(){const d=customSkillRead();const out=document.getElementById("customSkillPrompt");if(out)out.textContent=customSkillPromptText(d)}
 function bindCustomSkill(){updateCustomSkill();document.querySelectorAll("[data-custom-skill-input]").forEach(el=>el.oninput=el.onchange=updateCustomSkill);const copy=document.getElementById("customSkillCopy");if(copy)copy.onclick=()=>copyText(document.getElementById("customSkillPrompt")?.textContent||"",copy);const reset=document.getElementById("customSkillReset");if(reset)reset.onclick=()=>{localStorage.removeItem("custom-skill-builder");const contentEl=document.getElementById("content");contentEl.innerHTML=customSkillHtml();bindCustomSkill()}}
-function render(){const chips=document.getElementById("chips"),content=document.getElementById("content"),countLine=document.getElementById("countLine"),search=document.querySelector(".search"),searchSlot=document.getElementById("searchSlot");if(tab==="prompts")flowMode="common";renderOnlineBanner();renderLaunchTip();renderIntro();const showSearch=tab==="skills"||tab==="prompts";if(search){if(showSearch&&searchSlot){search.style.display="flex";searchSlot.appendChild(search)}else{search.style.display="none"}}chips.innerHTML=cats().map(c=>`<button class="chip ${c===cat?"active":""}" data-cat="${esc(c)}">${esc(c)}</button>`).join("");chips.querySelectorAll(".chip").forEach(ch=>ch.onclick=()=>{cat=ch.dataset.cat;if(tab==="prompts"&&cat!=="全部")flowMode="common";render()});if(tab==="backup"){countLine.textContent="";content.innerHTML=backupHtml();return}if(tab==="installGuide"){countLine.textContent="";content.innerHTML=installGuideHtml();return}if(tab==="guide"){countLine.textContent="";content.innerHTML=homeHtml();bindHome();return}if(tab==="daily"){countLine.textContent="";content.innerHTML=dailyHtml();return}if(tab==="customSkill"){countLine.textContent="";content.innerHTML=customSkillHtml();bindCustomSkill();return}if(tab==="progress"){countLine.textContent="";content.innerHTML=progressHtml();bindProgress();return}if(tab==="skills"){const items=DATA.skills.filter(s=>(cat==="全部"||s.category===cat)&&match(s,["name","summary","category","triggers","notes"]));countLine.textContent=`共 ${items.length} 個 skill`;content.innerHTML=renderSkillLibrary();bindCapture();return}if(tab==="prompts"){const commonPrompts=DATA.prompts.filter(p=>(p.flow||"common")==="common");const count=commonPrompts.filter(p=>(cat==="全部"||p.category===cat)&&match(p,["title","usage","category","prompt","flow","stage"])).length;countLine.textContent=`目前顯示 ${count} 則提示詞，總共 ${commonPrompts.length} 則`;content.innerHTML=renderPromptFlow();bindCapture()}}
+function render(){const chips=document.getElementById("chips"),content=document.getElementById("content"),countLine=document.getElementById("countLine"),search=document.querySelector(".search"),searchSlot=document.getElementById("searchSlot");if(tab==="prompts")flowMode="common";renderOnlineBanner();renderLaunchTip();renderIntro();const showSearch=tab==="skills"||tab==="prompts";if(search){if(showSearch&&searchSlot){search.style.display="flex";searchSlot.appendChild(search)}else{search.style.display="none"}}chips.innerHTML=cats().map(c=>`<button class="chip ${c===cat?"active":""}" data-cat="${esc(c)}">${esc(c)}</button>`).join("");chips.querySelectorAll(".chip").forEach(ch=>ch.onclick=()=>{cat=ch.dataset.cat;if(tab==="prompts"&&cat!=="全部")flowMode="common";render()});if(tab==="backup"){countLine.textContent="";content.innerHTML=backupHtml();return}if(tab==="installGuide"){countLine.textContent="";content.innerHTML=installGuideHtml();bindInstallGuide();return}if(tab==="guide"){countLine.textContent="";content.innerHTML=homeHtml();bindHome();return}if(tab==="daily"){countLine.textContent="";content.innerHTML=dailyHtml();return}if(tab==="customSkill"){countLine.textContent="";content.innerHTML=customSkillHtml();bindCustomSkill();return}if(tab==="progress"){countLine.textContent="";content.innerHTML=progressHtml();bindProgress();return}if(tab==="skills"){const items=DATA.skills.filter(s=>(cat==="全部"||s.category===cat)&&match(s,["name","summary","category","triggers","notes"]));countLine.textContent=`共 ${items.length} 個 skill`;content.innerHTML=renderSkillLibrary();bindCapture();return}if(tab==="prompts"){const commonPrompts=DATA.prompts.filter(p=>(p.flow||"common")==="common");const count=commonPrompts.filter(p=>(cat==="全部"||p.category===cat)&&match(p,["title","usage","category","prompt","flow","stage"])).length;countLine.textContent=`目前顯示 ${count} 則提示詞，總共 ${commonPrompts.length} 則`;content.innerHTML=renderPromptFlow();bindCapture()}}
 function setTab(next){document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));document.querySelector(`[data-tab="${next}"]`)?.classList.add("active");tab=next;cat="全部";render()}
 document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>setTab(t.dataset.tab));document.getElementById("searchBox").addEventListener("input",e=>{q=e.target.value.trim();render()});render();
 </script>
@@ -1116,6 +1246,7 @@ document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>setTab(t.dataset.tab)
 out = ROOT / "index.html"
 html_out = (
     TEMPLATE.replace("__DATA_JSON__", data_json)
+    .replace("__INSTALL_GUIDE_ASSETS__", install_guide_assets_json)
     .replace("__WORKFLOW_HTML__", workflow_json)
     .replace("__GUIDE_HTML__", guide_json)
     .replace("__STATE_HTML__", state_html)

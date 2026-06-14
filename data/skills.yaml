@@ -284,6 +284,15 @@
   summary: 對話開始時建立「先找有沒有合適 skill 再回答」的工作習慣
   triggers:
   - （自動觸發）每次對話開始時 AI 會自行套用
+- name: langgpt
+  category: Skill 管理
+  risk: 低
+  summary: 結構化提示詞與 skill 設計框架。把需求整理成 Role、Profile、Goal、Skills、Rules、Workflow 結構，特別適合做職業型 skill、角色 prompt 與可重複使用的 AI 工作模板
+  triggers:
+  - 使用 langgpt 幫我把這段需求整理成結構化提示詞
+  - 用 langgpt 幫我設計一個職業型 skill
+  - 把這份 prompt 改寫成 LangGPT 結構
+  notes: 已安裝到 Codex 與 Claude Code。來源 langgptai/LangGPT 的官方 langgpt.skill；適合搭配「個人化設定」頁，把職業、行業別、用途與痛點整理成更完整的 skill 骨架
 - name: dual-ai-workflow
   category: 規劃與協作
   risk: 低

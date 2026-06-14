@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>自製專屬 Skill 產生器</title>
+<style>
+  :root{--bg:#f5f7fb;--card:#fff;--panel:#eef2f8;--border:#d9e1ef;--text:#1f2937;--muted:#657085;--accent:#315fd1;--green:#168a55;--shadow:0 1px 4px rgba(30,40,80,.08);}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:"PingFang TC","Microsoft JhengHei","Noto Sans TC",sans-serif;line-height:1.6}
+  header,main{max-width:1120px;margin:0 auto;padding:18px 22px}
+  header h1{font-size:1.45rem;margin-bottom:6px}
+  header p{color:var(--muted);max-width:820px}
+  .grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:14px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;box-shadow:var(--shadow)}
+  .card h2{font-size:1.08rem;margin-bottom:8px}
+  .summary,.help{font-size:.9rem;color:var(--muted)}
+  .steps{display:grid;gap:10px;margin-top:12px}
+  .step{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+  .step b{display:block;margin-bottom:3px}
+  .field{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+  label{font-size:.86rem;font-weight:700}
+  input,select,textarea{width:100%;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);font:inherit;font-size:.92rem;padding:9px 10px}
+  textarea{min-height:74px;resize:vertical}
+  pre{white-space:pre-wrap;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px;min-height:560px;max-height:70vh;overflow:auto;font-family:inherit;font-size:.86rem;color:#27344f}
+  button,.button{border:none;border-radius:8px;background:var(--accent);color:#fff;padding:9px 13px;font-size:.88rem;cursor:pointer;text-decoration:none;text-align:center}
+  button.secondary{background:#e7ecf6;color:#263551;border:1px solid var(--border)}
+  button.done{background:var(--green)}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+  .notice{background:#fff7d6;border:1px solid #ead48b;color:#6f5208;border-radius:10px;padding:10px 12px;font-size:.88rem;margin:12px 0}
+  .modal-backdrop{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.42);padding:16px}
+  .modal-backdrop[hidden]{display:none}
+  .modal{width:min(760px,100%);max-height:90vh;overflow:auto;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:0 24px 70px rgba(20,30,60,.28)}
+  .modal-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}
+  .modal-head h2{font-size:1.18rem;margin-bottom:4px}
+  .icon{width:34px;height:34px;border-radius:8px;background:var(--panel);color:var(--muted);border:1px solid var(--border)}
+  .option-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  @media(max-width:780px){header,main{padding:14px}.grid,.option-grid{grid-template-columns:1fr}pre{min-height:420px}.modal-head{display:block}.icon{margin-top:8px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>自製專屬 Skill 產生器</h1>
+  <p>這頁會先讓使用者用選單選職業、用途、AI 風格與安裝目標，然後自動組成一段可複製給 Codex 的完整提示詞。</p>
+</header>
+<main>
+  <div class="notice">第一次打開會自動跳出選單。之後也可以按「重新打開選單」修改設定。</div>
+  <div class="grid">
+    <section class="card">
+      <h2>目前設定</h2>
+      <div id="summary" class="summary"></div>
+      <div class="actions">
+        <button type="button" id="openMenu">重新打開選單</button>
+        <button type="button" class="secondary" id="reset">清空重選</button>
+      </div>
+      <div class="steps">
+        <div class="step"><b>第一段：理解你</b><div class="summary">讓 AI 先當提問者，問到真正懂你的業務、痛點與目標。</div></div>
+        <div class="step"><b>第二段：陪練挑刺</b><div class="summary">禁止無腦誇，要求 AI 直接指出 3 到 5 個風險或盲點。</div></div>
+        <div class="step"><b>第三段：封裝成 Skill</b><div class="summary">把你的職務、人設、痛點、工作方式整理成 SKILL.md。</div></div>
+        <div class="step"><b>第四段：安裝與驗證</b><div class="summary">要求 Codex 先安檢，再安裝到指定位置，最後驗證可用。</div></div>
+      </div>
+    </section>
+    <section class="card">
+      <h2>可複製提示詞</h2>
+      <pre id="prompt"></pre>
+      <div class="actions">
+        <button type="button" id="copyPrompt">複製提示詞</button>
+      </div>
+    </section>
+  </div>
+</main>
+
+<div class="modal-backdrop" id="modal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-head">
+      <div>
+        <h2 id="modalTitle">先選你的專屬 Skill 設定</h2>
+        <div class="summary">不確定就先用預設值，之後可以再回來改。</div>
+      </div>
+      <button type="button" class="icon" id="closeMenu" aria-label="關閉">x</button>
+    </div>
+    <div class="option-grid">
+      <div class="field">
+        <label for="role">你的職業 / 身分</label>
+        <select id="role">
+          <option>AI 系統開發與管理者</option>
+          <option>資訊主管 / IT 管理者</option>
+          <option>行銷企劃 / 品牌經營者</option>
+          <option>資料整合 / 報表分析人員</option>
+          <option>創業者 / 老闆</option>
+          <option>自訂</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="scenario">主要用途</label>
+        <select id="scenario">
+          <option>工作決策陪練與挑刺</option>
+          <option>AI 系統規劃與專案推進</option>
+          <option>提示詞工程與 SOP 建立</option>
+          <option>資料查詢、整合與報告產出</option>
+          <option>跨角色溝通與主管簡報</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="style">AI 互動風格</label>
+        <select id="style">
+          <option>直接、務實、先挑風險</option>
+          <option>新手教學、一步一步帶我做</option>
+          <option>主管視角、重點摘要與決策建議</option>
+          <option>顧問式追問、先釐清再行動</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="target">安裝目標</label>
+        <select id="target">
+          <option>Codex 專用</option>
+          <option>Claude Code 專用</option>
+          <option>Codex + Claude Code 都安裝</option>
+          <option>先只產生 SKILL.md，不安裝</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="skillName">Skill 名稱</label>
+        <input id="skillName" value="personal-work-coach" placeholder="例如 personal-work-coach">
+        <div class="help">建議用英文小寫與連字號。</div>
+      </div>
+      <div class="field">
+        <label for="level">回答深度</label>
+        <select id="level">
+          <option>先給結論，再補背景</option>
+          <option>完整深入分析</option>
+          <option>只給最短可執行版本</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="pain">你目前最想解決的痛點</label>
+      <textarea id="pain" placeholder="例如：我常有很多 AI 系統想法，但需要有人幫我追問需求、挑風險、整理成可執行路線。"></textarea>
+    </div>
+    <div class="field">
+      <label for="extra">其他要求</label>
+      <textarea id="extra" placeholder="例如：請用繁體中文、不要客套、不要批量刪檔、遇到不清楚先問我。"></textarea>
+    </div>
+    <div class="actions">
+      <button type="button" id="apply">更新提示詞</button>
+      <button type="button" class="secondary" id="cancel">先關閉</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const storeKey = "custom-skill-builder";
+const $ = id => document.getElementById(id);
+const fields = ["role","scenario","style","target","skillName","level","pain","extra"];
+const defaults = {
+  role:"AI 系統開發與管理者",
+  scenario:"工作決策陪練與挑刺",
+  style:"直接、務實、先挑風險",
+  target:"Codex 專用",
+  skillName:"personal-work-coach",
+  level:"先給結論，再補背景",
+  pain:"我需要一個懂我職務、業務痛點與工作習慣的 AI 陪練，能先追問、再挑刺、最後把流程封裝成可重複使用的 skill。",
+  extra:"請用繁體中文。不要無腦誇。需求不清楚時先問關鍵問題。涉及安裝或改檔時先說風險。"
+};
+function load(){
+  let data = {};
+  try{data = JSON.parse(localStorage.getItem(storeKey) || "{}")}catch{}
+  data = {...defaults, ...data};
+  fields.forEach(id => { if($(id)) $(id).value = data[id] || defaults[id] || ""; });
+  return data;
+}
+function read(){
+  const data = {};
+  fields.forEach(id => data[id] = $(id)?.value || "");
+  localStorage.setItem(storeKey, JSON.stringify(data));
+  return data;
+}
+function promptText(d){
+return `我想建立一個自己的個人化專屬 skill，請用 Codex 專用流程協助我完成。
+
+我的基本設定：
+- 我的職業 / 身分：${d.role}
+- 主要用途：${d.scenario}
+- 期待 AI 互動風格：${d.style}
+- 回答深度：${d.level}
+- Skill 名稱：${d.skillName}
+- 安裝目標：${d.target}
+- 目前痛點：${d.pain || "請先追問我，協助我釐清。"}
+- 其他要求：${d.extra || "請用繁體中文，需求不清楚時先問。"}
+
+第一段：徹底理解我
+現在你的首要身份是一個提問者。
+請你問我所有你需要的問題，直到你真正理解：
+1. 我的職務與日常工作情境
+2. 我的業務核心訴求
+3. 我的真實痛點
+4. 我最常卡住的決策點
+5. 我希望 AI 在工作中扮演的角色
+
+請一次最多問 5 個問題。問題要具體、好回答；必要時提供選項。
+不要急著產出 skill。你要先問到能和我一起梳理出清晰路徑。
+
+第二段：做我的陪練與挑刺者
+根據你對我的了解，接下來做我的陪練。
+不管我提出什麼想法，不管我拋出什麼計劃，禁止無腦誇。
+你的唯一任務是挑刺，請直白指出 3 到 5 個：
+1. 我沒想到的風險點
+2. 我忽略的關鍵問題
+3. 可能導致失敗的假設
+4. 需要先驗證的地方
+5. 更務實的下一步
+
+輸出格式請固定為：
+結論 / 建議
+3 到 5 個風險點
+我應該先回答或確認的問題
+下一步最小行動
+
+第三段：封裝成 skill
+當你已經懂我的痛點、職務人設與工作方式後，請幫我封裝成一個 skill。
+請產出完整 skill 資料夾設計，至少包含：
+1. skill 名稱：${d.skillName}
+2. SKILL.md 完整內容
+3. 觸發規則：什麼情境下 AI 必須使用這個 skill
+4. AI 回答規則：語氣、格式、禁止事項、風險提醒方式
+5. 範例觸發句：至少 5 句
+6. 安裝前風險檢查：是否會讀寫檔案、是否需要網路、是否接觸敏感資料
+
+SKILL.md 要適合 ${d.target}，並且用繁體中文說明清楚。
+
+第四段：安裝與驗證
+請在封裝完成後，先停止並列出安裝計畫與風險。
+如果我確認要安裝，才進行安裝。
+
+安裝要求：
+1. 不要刪除任何既有文件或資料夾。
+2. 不要使用批量刪除指令。
+3. 安裝前先檢查目標路徑是否存在。
+4. ${d.target === "Codex + Claude Code 都安裝" ? "安裝到 Codex 與 Claude Code 兩邊可讀的位置。" : `依「${d.target}」處理。`}
+5. 安裝後驗證該 skill 的 SKILL.md 存在。
+6. 回報安裝位置、檔案清單、如何觸發、如何測試。
+
+請先從第一段開始，不要跳到第三段，也不要直接寫檔。`;
+}
+function render(){
+  const d = read();
+  $("summary").innerHTML = `職業：${d.role}<br>用途：${d.scenario}<br>風格：${d.style}<br>安裝目標：${d.target}<br>Skill 名稱：${d.skillName}`;
+  $("prompt").textContent = promptText(d);
+}
+function openMenu(){ $("modal").hidden = false; }
+function closeMenu(){ $("modal").hidden = true; }
+function copyPrompt(btn){
+  const text = $("prompt").textContent;
+  const done = () => { const old = btn.textContent; btn.textContent = "已複製"; btn.classList.add("done"); setTimeout(()=>{btn.textContent=old;btn.classList.remove("done")},1400); };
+  if(navigator.clipboard?.writeText) navigator.clipboard.writeText(text).then(done);
+  else { const ta=document.createElement("textarea"); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); done(); }
+}
+load();
+render();
+openMenu();
+fields.forEach(id => $(id)?.addEventListener("input", render));
+$("openMenu").onclick = openMenu;
+$("closeMenu").onclick = closeMenu;
+$("cancel").onclick = closeMenu;
+$("apply").onclick = () => { render(); closeMenu(); };
+$("reset").onclick = () => { localStorage.removeItem(storeKey); load(); render(); openMenu(); };
+$("copyPrompt").onclick = e => copyPrompt(e.currentTarget);
+</script>
+</body>
+</html>
