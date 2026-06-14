@@ -57,7 +57,7 @@
 python3 scripts/build.py
 ```
 
-接著重新打開 `index.html`，就會看到自己的版本。
+接著重新啟動本地控制台網址，就會看到自己的版本。
 
 ## 安裝會發生什麼事？
 
@@ -105,7 +105,8 @@ curl -fsSL https://raw.githubusercontent.com/kagenhsu/codex-claude-skills-backup
 安裝完成後，請重新啟動 Codex 和 Claude Code。
 
 Windows 會在桌面建立 `二刀流開發助手控制台` 捷徑。  
-macOS 會在桌面建立 `二刀流開發助手控制台.command`。
+macOS 會在桌面建立 `二刀流開發助手控制台.command`。  
+雙擊後會先啟動本地網址，再自動打開瀏覽器。  
 
 ## 比較安全的安裝方式
 
@@ -137,7 +138,7 @@ bash install.sh
 二刀流開發助手控制台
 ```
 
-雙擊打開即可。
+雙擊後會自動啟動本地網址，並打開瀏覽器。
 
 ### macOS
 
@@ -147,20 +148,21 @@ bash install.sh
 二刀流開發助手控制台.command
 ```
 
-雙擊打開即可。
+雙擊後會自動啟動本地網址，並打開瀏覽器。
 
 如果第一次雙擊出現「來自無法識別的開發者」或「已損毀」，可以用其中一種方式處理：
 
 - 在 Finder 對檔案按右鍵，選擇「打開」。
 - 在 Terminal 執行 `xattr -d com.apple.quarantine 更新並開啟控制台.command`。
 
-如果你是下載整個 repo，也可以直接雙擊：
+如果你是下載整個 repo，建議直接雙擊：
 
 ```text
-index.html
+更新並開啟控制台.command
 ```
 
-`index.html` 是本機 HTML 單頁控制台，可以查 skills、複製提示詞、看二刀流工作流。
+它會先重建頁面，再啟動本地網址並自動打開瀏覽器。  
+如果只是直接雙擊 `index.html`，有些瀏覽器情境下會少掉本地網址環境，體驗比較不穩。
 
 ## 適合誰使用？
 
@@ -182,12 +184,13 @@ index.html
 
 ## 專案內容
 
-- `index.html` - 本機二刀流開發助手控制台，雙擊開啟。
+- `index.html` - 本機二刀流開發助手控制台頁面內容。
 - `codex-skills-backup.tar.gz` - 可攜式 skills 備份包。
 - `install.ps1` - Windows 一行安裝腳本。
 - `install.sh` - macOS 一行安裝腳本。
 - `restore-skills.sh` - macOS 離線還原腳本，適合已經完整下載 repo 的情境。
-- `更新並開啟控制台.command` - macOS 用，一鍵更新並打開本機控制台。
+- `更新並開啟控制台.command` - macOS 用，一鍵更新、啟動本地網址並打開控制台。
+- `scripts/serve_console.py` - 啟動本地網址並自動打開瀏覽器。
 - `data/skills.yaml` - 控制台的 skill 目錄資料。
 - `data/prompts.yaml` - 控制台的提示詞庫資料。
 - `scripts/build.py` - 由 YAML 重建 `index.html`。

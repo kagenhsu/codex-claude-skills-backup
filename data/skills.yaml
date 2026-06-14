@@ -287,7 +287,7 @@
 - name: dual-ai-workflow
   category: 規劃與協作
   risk: 低
-  summary: 自製 skill：二刀流工作流（Codex＝主力工程師，負責規劃、分段實作、測試與修正；Claude Code（VS Code）＝審查員，負責架構審查、風險檢查與複審），並用 DUAL-AI-STATE.md 記錄進度
+  summary: 自製 skill：二刀流工作流（Codex＝主力工程師，負責規劃、分段實作、測試、修正與延伸開發；Claude Code（VS Code）＝審查員，負責架構審查、風險檢查、修改建議與複審），並用 DUAL-AI-STATE.md 記錄進度
   triggers:
   - 使用 dual-ai-workflow 開始二刀流工作流，任務是：【任務描述】
   - 這是另一個 AI 的輸出，依 dual-ai-workflow 接續下一階段
@@ -312,3 +312,14 @@
   - 改這個函式會影響哪些地方？
   - 用 codegraph 幫我理解這個功能的架構
   notes: 需先安裝二進位（v0.9.8 已裝，最新 v0.9.9）；索引比寫檔落後約 1 秒；來源 github.com/colbymchenry/codegraph（46k+ stars，MIT）；已作為 MCP 伺服器整合到 Claude Code
+- name: meeting-audio-project-assistant
+  category: Skill 管理
+  risk: 中
+  summary: 自製 skill：把會議錄音、逐字稿或口述內容整理成會議記錄、風險清單、待辦事項、工程師版開發規劃與主管版摘要；預設先檢查敏感資料，不綁定任何轉錄工具
+  triggers:
+  - 使用 meeting-audio-project-assistant 幫我把這段會議錄音整理成會議記錄
+  - 使用 meeting-audio-project-assistant 把這份逐字稿整理成專案推進清單
+  - 這段錄音可能有客戶資料，請用 meeting-audio-project-assistant 先判斷處理風險
+  - 使用 meeting-audio-project-assistant 把會議內容轉成工程師可以執行的開發規格
+  - 使用 meeting-audio-project-assistant 幫我整理主管看的會議摘要
+  notes: 已安裝到 Codex 與 Claude Code；初版只提供安全流程與整理規則，不會自動轉錄、不會上傳雲端。客戶或個資內容預設禁止上雲，逐字稿與整理稿要分開保存

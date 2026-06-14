@@ -2,7 +2,20 @@ __pycache__/
 *.pyc
 .DS_Store
 server-*.log
-private/
-index.private.html
+
+# 私密資料與個人工作區
+.claude/
+.private/
+相關資料/
+
+# 私用提示詞與私用 skill
+data/private-*.yaml
+data/*-private.yaml
+skills/private-*/
+skills/*-private/
+
+# 本機暫存副本
+* 2.*
+
 skills/*
 !skills/dual-ai-workflow/

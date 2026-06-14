@@ -12,7 +12,7 @@
 
 ## 推薦工作模式
 
-- 重要系統修改：Codex 先規劃與分段實作 → Claude Code（VS Code）審查 → Codex 修正 → Claude Code（VS Code）複審 → Codex 存檔。
+- 重要系統修改：Codex 先規劃與分段實作 → Claude Code（VS Code）審查＋修改 → Codex 修正＋開發 → Claude Code（VS Code）複審＋修改 → Codex 存檔。
 - 單一 AI 工作：如果同事只用 Codex、Claude Code，也可以照控制台的提示詞卡工作，不一定要二刀流。
 
 ## 什麼情況找誰

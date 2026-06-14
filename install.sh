@@ -4,6 +4,7 @@ set -euo pipefail
 REPO_RAW_BASE="${REPO_RAW_BASE:-https://raw.githubusercontent.com/kagenhsu/codex-claude-skills-backup/main}"
 ARCHIVE_NAME="codex-skills-backup.tar.gz"
 INDEX_NAME="index.html"
+SERVE_SCRIPT_REL="scripts/serve_console.py"
 
 if [ "$(uname -s)" != "Darwin" ]; then
   echo "This installer supports macOS only." >&2
@@ -18,6 +19,7 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOCAL_ARCHIVE="$SCRIPT_DIR/$ARCHIVE_NAME"
 LOCAL_INDEX="$SCRIPT_DIR/$INDEX_NAME"
+LOCAL_SERVE_SCRIPT="$SCRIPT_DIR/$SERVE_SCRIPT_REL"
 TMP_DIR="$(mktemp -d)"
 EXTRACT_DIR="$TMP_DIR/extract"
 mkdir -p "$EXTRACT_DIR"
@@ -82,7 +84,10 @@ install_skills "$HOME/.claude/skills"
 
 CONSOLE_DIR="$HOME/Documents/CodexClaudeSkillsConsole"
 CONSOLE_INDEX="$CONSOLE_DIR/$INDEX_NAME"
+CONSOLE_SCRIPT_DIR="$CONSOLE_DIR/scripts"
+CONSOLE_SERVE_SCRIPT="$CONSOLE_DIR/$SERVE_SCRIPT_REL"
 mkdir -p "$CONSOLE_DIR"
+mkdir -p "$CONSOLE_SCRIPT_DIR"
 
 if [ -f "$LOCAL_INDEX" ]; then
   cp "$LOCAL_INDEX" "$CONSOLE_INDEX"
@@ -99,12 +104,42 @@ else
   echo "Console downloaded: $CONSOLE_INDEX"
 fi
 
+if [ -f "$LOCAL_SERVE_SCRIPT" ]; then
+  cp "$LOCAL_SERVE_SCRIPT" "$CONSOLE_SERVE_SCRIPT"
+  echo "Console launcher copied: $CONSOLE_SERVE_SCRIPT"
+else
+  SERVE_URL="$REPO_RAW_BASE/$SERVE_SCRIPT_REL"
+  echo "Downloading console launcher: $SERVE_URL"
+  if command -v curl >/dev/null 2>&1; then
+    curl -fsSL "$SERVE_URL" -o "$CONSOLE_SERVE_SCRIPT"
+  else
+    echo "Missing curl. Please install curl and retry." >&2
+    exit 1
+  fi
+  echo "Console launcher downloaded: $CONSOLE_SERVE_SCRIPT"
+fi
+
 DESKTOP_DIR="$HOME/Desktop"
 LAUNCHER="$DESKTOP_DIR/二刀流開發助手控制台.command"
 mkdir -p "$DESKTOP_DIR"
 cat > "$LAUNCHER" <<EOF
 #!/usr/bin/env bash
-open "$CONSOLE_INDEX"
+set -euo pipefail
+
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "找不到 python3，無法啟動本地控制台網址。"
+  echo "請先安裝 Python 3，再重新雙擊此檔案。"
+  echo
+  printf '按 Enter 關閉視窗...'
+  read -r _
+  exit 1
+fi
+
+echo "正在啟動本地控制台網址..."
+echo "瀏覽器會自動打開 http://127.0.0.1:8000/index.html（若 8000 被占用，會改用其他可用連接埠）。"
+echo "這個視窗請先不要關閉；關閉後，本地網址就會停止。"
+echo
+python3 "$CONSOLE_SERVE_SCRIPT" --root "$CONSOLE_DIR" --open-browser
 EOF
 chmod +x "$LAUNCHER"
 echo "Desktop launcher created: $LAUNCHER"

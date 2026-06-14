@@ -6,15 +6,17 @@
       custom_intro: 第一步，先把討論過的設計方向整理成專案規則文件。
     - prompt_title: 梳理需求並產出 PRD
       custom_intro: 第二步，把需求整理成可開發、可驗收的 PRD。
+    - prompt_title: 建立 .gitignore + 種子 DUAL-AI-STATE
+      custom_intro: 第三步，先補版控忽略規則與初始進度檔，讓後面接手不會亂掉。
     - prompt_title: 首次上傳 GitHub：繁體中文專案敘述
-      custom_intro: 第三步，整理繁體中文 repo 說明、版本摘要與 push 前檢查。
+      custom_intro: 第四步，整理繁體中文 repo 說明、版本摘要與 push 前檢查。
 - title: 二刀流審查修正包
   usage: Codex 做完實作後，交給 Claude Code 審查，再回到 Codex 修正與收尾。
   category: 二刀流協作
   steps:
     - prompt_title: 深度同行評審：5 子代理 Code Review
       custom_intro: 【進階】需填入完整專案背景時使用，適合 release 或複雜改動前的深度審查。
-    - prompt_title: ③ 第三階段：Claude Code（VS Code）審查
+    - prompt_title: ③ 第三階段：Claude Code（VS Code）審查＋修改
       custom_intro: 【標準】直接貼入 Codex 交接摘要使用，已內建 5 子代理，適合日常審查。
     - prompt_title: 給 Codex 的逐條修正轉交提示詞（模板）
       custom_intro: 審查完後，把問題逐條搬回 Codex 修正。
