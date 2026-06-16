@@ -2,6 +2,51 @@
 
 本文件用繁體中文記錄每次推到 GitHub 的主要變更，方便之後回頭看「這一版增加了什麼功能」。
 
+## v2.4.0 — 專案開發分頁說明卡與 plan-progress skill
+
+發布日期：2026-06-16
+
+### 一句話說明
+
+把「專案接續」分頁升級成「專案開發（雙刀／單刀）」：上方新增 Claude Code × Codex 搭配說明卡、下方開發階段卡改成單欄可摺疊版面、並會根據專案資料夾內實際存在的檔案自動告訴你「目前做到哪一階段、下一個小步驟是什麼」。同步新增 `plan-progress` skill，讓 Codex / Claude Code 在終端機也能跑出同樣的進度報告。
+
+### 新增功能
+
+- 「專案接續」分頁重新命名為「**專案開發（雙刀／單刀）**」（連結與頁面標題）。
+- 分頁最上方新增「**🗡️ Claude Code × Codex：怎麼搭配開發專案**」可摺疊資訊卡，含：
+  - 兩個 AI 各自的角色（Codex 主力工程師 / Claude Code 審查員）
+  - 雙刀流 6 棒流程（規劃 → 實作 → 審查 → 修正 → 複審 → 收尾）
+  - 單刀流 3 段（釐清 → 分段 → 自審）
+  - 何時用雙刀流 vs 單刀流的對照
+  - 三條共用紀律
+- 「本專案的全部開發階段」資訊卡改為**單欄可摺疊**版面：
+  - 點階段標題可展開／收合，目前進行中的階段預設展開
+  - 每張卡片含狀態徽章（✓ 已完成 / ⏳ 進行中 / ⏳ 部分完成 / ⭕ 尚未開始 / 參考）
+- 新增「**進度看板**」自動偵測：
+  - 依專案資料夾內實際存在的關鍵檔案，判斷每個小步驟（如 4.3、6.5）是否完成
+  - 顯示「目前階段」「下一個小步驟」「總進度條（N / Total + %）」
+  - 每個小步驟旁有獨立狀態：✓ 已完成（綠底劃線）／➤ 目前要做（黃底）／○ 尚未開始
+- 新增 `plan-progress` **skill**（規劃與協作分類）：
+  - 讀 `專案規劃表.md` 後對照資料夾檔案，輸出進度報告
+  - 第一次跑會推論並寫進 `.plan-rules.yaml` 快取，第二次起無需重推
+  - 不修改任何原始檔（除規則快取），不執行 git 寫操作
+- 新增專案根目錄 `**專案規劃表.md**`：7 個階段（第 0–6 階段）×「要做什麼／細項開發步驟／會產出什麼／完成判斷」四段式格式。
+
+### 技術變更
+
+- `build.py` 新增 `collect_console_paths()`：掃描 ROOT 內檔案內嵌為 `CONSOLE_FILE_PATHS`，供前端進度偵測；跳過 `.git/` 內檔避免 HTML 過肥，僅保留標記路徑供「2.3 初始化 Git」偵測。
+- `progressSource()` 與 `loadProjectFolder()` 新增 `filePaths` 欄位。
+- `parseProjectPlanStages()` 改為輸出含小步驟 ID 的 bullets（`{id, text}`）。
+- 新增 `PLAN_DETECTION_RULES`（31 條規則）與 `detectPlanDone()` 偵測 helper。
+- 新增 CSS：`.plan-progress-banner`、`.plan-list`、`.plan-stage`、`.plan-step` 等單欄摺疊卡片所需樣式。
+- `.gitignore` 加 `!skills/plan-progress/` 例外，讓新 skill 進得了版控。
+
+### 驗證結果
+
+- `python3 scripts/build.py` 成功輸出：`50 skills / 50 prompts / 3 combos`
+- `node --check` 抽出的 inline script 通過語法檢查。
+- 偵測規則對本控制台 13 個關鍵小步驟全數命中（含 `.git`、`AGENTS.md`、`PRD.md`、`README.md`、`install.sh/ps1`、`build.py`、`data/skills.yaml`、`data/prompts.yaml`、`codex-skills-backup.tar.gz`、`CHANGELOG.md`、`restore-skills.sh`、`index.html`）。
+
 ## v2.1.0 — 新手分工提示與雙 AI 專案討論
 
 發布日期：2026-06-06
