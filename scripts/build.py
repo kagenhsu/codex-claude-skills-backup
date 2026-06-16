@@ -164,6 +164,7 @@ state_path = ROOT / "DUAL-AI-STATE.md"
 next_path = ROOT / "NEXT-AI-TASK.md"
 agents_path = ROOT / "AGENTS.md"
 prd_path = ROOT / "PRD.md"
+plan_path = ROOT / "專案規劃表.md"
 state_html = json.dumps(
     {
         "raw": state_path.read_text(encoding="utf-8") if state_path.exists() else "",
@@ -192,8 +193,34 @@ next_html = json.dumps(
     },
     ensure_ascii=False,
 ).replace("</", "<\\/")
+plan_html = json.dumps(
+    {
+        "raw": plan_path.read_text(encoding="utf-8") if plan_path.exists() else "",
+        "html": markdown_to_cards(plan_path, "專案規劃表", "尚未設定。"),
+    },
+    ensure_ascii=False,
+).replace("</", "<\\/")
 project_path_json = json.dumps(str(ROOT), ensure_ascii=False).replace("</", "<\\/")
 project_url_json = json.dumps(ROOT.as_uri() + "/", ensure_ascii=False).replace("</", "<\\/")
+
+def collect_console_paths(root: Path):
+    # 跳過：.git（內檔太多會讓 HTML 肥大；用標記路徑代替）、node_modules、暫存、編譯產物
+    skip_dirs = {".git", "node_modules", ".codex-tmp", "__pycache__", ".DS_Store"}
+    paths = []
+    for p in root.rglob("*"):
+        rel = p.relative_to(root)
+        parts = rel.parts
+        if any(part in skip_dirs for part in parts):
+            continue
+        if p.is_file():
+            paths.append(root.name + "/" + str(rel).replace("\\", "/"))
+    # 若有 .git/ 資料夾（代表已 git init），補一個標記路徑供前端偵測「2.3 初始化 Git」
+    if (root / ".git").is_dir():
+        paths.append(root.name + "/.git/HEAD")
+    paths.sort()
+    return paths
+
+console_file_paths_json = json.dumps(collect_console_paths(ROOT), ensure_ascii=False).replace("</", "<\\/")
 
 TEMPLATE = r'''<!DOCTYPE html>
 <html lang="zh-Hant">
@@ -422,13 +449,56 @@ TEMPLATE = r'''<!DOCTYPE html>
   .skill-capture-fold{margin-top:12px;}
   .lifecycle-features{margin-top:8px; padding-left:1.1em; color:var(--muted); font-size:.78rem; line-height:1.5;}
   .lifecycle-features li{margin:3px 0;}
+  .plan-progress-banner{background:linear-gradient(135deg,#eef7ee 0%,#e8efff 100%);border:1px solid #c6e5c9;border-radius:10px;padding:14px 16px;margin:12px 0;}
+  .plan-progress-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;}
+  .plan-progress-cell{min-width:0;}
+  .plan-prog-label{font-size:.75rem;color:#4b5563;margin-bottom:4px;letter-spacing:.02em;}
+  .plan-prog-value{font-size:.92rem;font-weight:600;color:#166534;word-break:break-word;line-height:1.4;}
+  .plan-prog-next{color:#92400e;}
+  .plan-prog-pct{font-weight:500;color:#4b5563;font-size:.85rem;}
+  .plan-prog-bar{height:8px;background:#e5e7eb;border-radius:99px;overflow:hidden;margin-top:10px;}
+  .plan-prog-bar > span{display:block;height:100%;background:linear-gradient(90deg,#2f63da,#16a34a);transition:width .4s ease;}
+  .plan-prog-hint{font-size:.74rem;color:var(--muted);margin-top:6px;}
+  .plan-list{display:flex;flex-direction:column;gap:8px;margin-top:6px;}
+  .plan-stage{background:var(--panel);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+  .plan-stage[open]{border-color:#2f63da;box-shadow:0 2px 6px rgba(47,99,218,.08);}
+  .plan-stage.status-done{border-color:#c6e5c9;}
+  .plan-stage.status-current{border-color:#f3d68b;}
+  .plan-stage > summary{list-style:none;cursor:pointer;padding:12px 14px;display:flex;align-items:center;gap:10px;background:#f5f7fa;user-select:none;}
+  .plan-stage > summary::-webkit-details-marker{display:none;}
+  .plan-stage[open] > summary{background:#eef2f8;border-bottom:1px solid var(--border);}
+  .plan-stage-badge{font-size:.72rem;padding:2px 9px;border-radius:99px;font-weight:600;flex-shrink:0;}
+  .badge-done{background:#dcf2dd;color:#166534;}
+  .badge-current{background:#fef3c7;color:#92400e;}
+  .badge-todo{background:#e5e7eb;color:#4b5563;}
+  .badge-partial{background:#fef3c7;color:#92400e;}
+  .badge-ref{background:#e0e7ff;color:#3730a3;}
+  .plan-stage-title{flex:1;font-weight:600;color:#2a3b5f;font-size:.92rem;line-height:1.4;}
+  .plan-stage-count{font-size:.8rem;color:#4b5563;font-variant-numeric:tabular-nums;font-family:"SF Mono",Menlo,monospace;}
+  .plan-stage-caret{color:var(--accent);font-size:.9rem;transition:transform .2s;}
+  .plan-stage[open] .plan-stage-caret{transform:rotate(90deg);}
+  .plan-stage-body{padding:12px 16px 16px;}
+  .plan-stage-desc{font-size:.84rem;color:#4b5563;margin-bottom:8px;line-height:1.55;}
+  .plan-step-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px;}
+  .plan-step{display:flex;align-items:flex-start;gap:8px;padding:7px 10px;border-radius:6px;font-size:.84rem;line-height:1.5;border:1px solid transparent;}
+  .plan-step.done{background:#eef7ee;color:#166534;}
+  .plan-step.done .plan-step-text{text-decoration:line-through;text-decoration-color:rgba(22,101,52,.3);}
+  .plan-step.current{background:#fffaf0;border-color:#f3d68b;color:#7c2d12;font-weight:500;}
+  .plan-step.todo{background:#fafbfc;color:#4b5563;}
+  .plan-step.note{color:var(--muted);font-size:.8rem;}
+  .plan-step-mark{min-width:18px;text-align:center;font-weight:700;flex-shrink:0;}
+  .plan-step-id{font-family:"SF Mono",Menlo,monospace;font-size:.72rem;background:#fff;border:1px solid var(--border);border-radius:4px;padding:1px 6px;margin-right:2px;flex-shrink:0;color:#4b5563;}
+  .plan-step.current .plan-step-id{background:#fef3c7;border-color:#f3d68b;color:#92400e;}
+  .plan-step.done .plan-step-id{background:#dcf2dd;border-color:#c6e5c9;color:#166534;}
+  .plan-step-text{flex:1;word-break:break-word;}
+  @media (max-width:760px){.plan-progress-row{grid-template-columns:1fr;}}
   .empty{color:var(--muted); text-align:center; padding:36px 0;}
   footer{text-align:center; color:var(--muted); font-size:.75rem; padding:20px;}
   @media (max-width:760px){main,header{padding-left:14px; padding-right:14px;} .grid,.intro-grid,.workflow-guide,.state-summary,.form-grid,.capture-link,.home-kpis,.home-steps,.home-split,.role-grid,.daily-principles,.install-grid,.install-result-grid,.advanced-grid{grid-template-columns:1fr;} .capture-arrow{transform:rotate(90deg); justify-self:center;} .capture-status{justify-self:start;} .section-head,.daily-section-head{display:block;} }
 </style>
 </head>
 <body>
-<header><div class="head-inner"><h1>新手 AI 外掛控制台 <span class="sub">Codex Pro × Claude Code 入門系統</span></h1><div class="tabs"><button class="tab active" data-tab="guide">新手快速開始</button><button class="tab" data-tab="installGuide">安裝與外掛</button><button class="tab" data-tab="customSkill">個人化設定</button><button class="tab" data-tab="daily">日常提示詞</button><button class="tab" data-tab="progress">專案接續</button><button class="tab" data-tab="prompts">提示詞庫</button><button class="tab" data-tab="skills">外掛 / Skill庫</button><button class="tab" data-tab="backup">換機 / 同步</button></div></div></header>
+<header><div class="head-inner"><h1>新手 AI 外掛控制台 <span class="sub">Codex Pro × Claude Code 入門系統</span></h1><div class="tabs"><button class="tab active" data-tab="guide">新手快速開始</button><button class="tab" data-tab="installGuide">安裝與外掛</button><button class="tab" data-tab="customSkill">個人化設定</button><button class="tab" data-tab="daily">日常提示詞</button><button class="tab" data-tab="progress">專案開發（雙刀／單刀）</button><button class="tab" data-tab="prompts">提示詞庫</button><button class="tab" data-tab="skills">外掛 / Skill庫</button><button class="tab" data-tab="backup">換機 / 同步</button></div></div></header>
 <main><div id="onlineBanner"></div><div id="launchTip"></div><div id="pageIntro" class="page-intro"></div><div id="searchSlot"></div><div class="search"><span class="icon">搜</span><input id="searchBox" type="text" placeholder="搜尋 skill、提示詞、觸發句、角色、分工、導覽，例如：git、翻譯、審查、二刀流"></div><div id="chips" class="chips"></div><div id="countLine" class="count"></div><div id="content"></div></main>
 <footer>資料來源：data/skills.yaml + data/prompts.yaml + data/combos.yaml；修改後執行 python3 scripts/build.py 重建</footer>
 <script>
@@ -441,6 +511,8 @@ const STATE_HTML = __STATE_HTML__;
 const NEXT_HTML = __NEXT_HTML__;
 const AGENTS_HTML = __AGENTS_HTML__;
 const PRD_HTML = __PRD_HTML__;
+const PLAN_HTML = __PLAN_HTML__;
+const CONSOLE_FILE_PATHS = __CONSOLE_FILE_PATHS__;
 const PROJECT_PATH = __PROJECT_PATH__;
 const PROJECT_URL = __PROJECT_URL__;
 let tab = "guide", cat = "全部", q = "", flowMode = "dualai", dailyMode = "全部", captureMode = "prompt", progressMode = "status", selectedProject = null, progressPickerMessage = "", progressNextPromptOpen = false, installGuideTopic = "codex";
@@ -1010,7 +1082,7 @@ const PAGE_INTROS = {
   prompts:{title:"提示詞庫",lead:"常用提示詞集中管理，適合你直接複製給 Codex 或 Claude Code（VS Code）。",purpose:"快速啟動工作流程。",first:"先選二刀流、單一 AI 或通用分類，再複製。",when:"要交辦任務、請 AI 審查、整理交接或產出文件時。"},
   capture:{title:"收錄新內容",lead:"看到好用提示詞或 skill 時，先填表產生交辦提示詞與 YAML 片段，再交給 Codex 寫入、重建、驗證與 commit。",purpose:"安全收錄新內容，不需要你手寫 YAML。",first:"先選提示詞或 Skill；新手請複製「給 Codex 的完整交辦提示詞」。",when:"看到新 skill、實用提示詞，或想把工作流模板收入控制台時。"},
   control:{title:"二刀流中控",lead:"v1 是靜態教學頁，不讀取 DUAL-AI-STATE.md；按鈕只會跳到提示詞庫並複製對應提示詞。",purpose:"讓每個階段知道要找誰、做什麼、複製哪張提示詞。",first:"先看目前要進哪一階段，再按卡片按鈕複製對應提示詞。",when:"要從規劃、實作、審查、修正、複審到存檔收尾一路接續時。"},
-  progress:{title:"專案接續",lead:"這頁把目前專案做到哪裡、下一步要做什麼一次整理出來。",purpose:"不用翻文件也能快速知道現在進度、是否有卡點，以及下一步該做什麼。",first:"先看目前階段與下一步；如果有未解決問題，先處理警示區。",when:"接續開發、換 AI 接手、或想確認這個專案現在是不是可以往下一步走時。"},
+  progress:{title:"專案開發（雙刀／單刀）",lead:"這頁把目前專案做到哪裡、下一步要做什麼一次整理出來。",purpose:"不用翻文件也能快速知道現在進度、是否有卡點，以及下一步該做什麼。",first:"先看目前階段與下一步；如果有未解決問題，先處理警示區。",when:"接續開發、換 AI 接手、或想確認這個專案現在是不是可以往下一步走時。"},
   daily:{title:"日常提示詞",lead:"不知道怎麼開口時，先從這裡複製。這頁把開發、查資料、整理資料、整理電腦檔案、生成圖片、生成影片、生成簡報與生成網站整理成新手可直接使用的提示詞。",purpose:"把日常最常用的 AI 交辦方式整理成安全、直接可複製的新手版。",first:"先選你現在想做什麼，再複製對應卡片。整理電腦檔案時，只先規劃，不直接動檔。",when:"開發系統、找資料比對、整理文字資料、分類電腦檔案、產生圖片 prompt、產生影片 prompt、整理簡報需求或規劃網站需求時。"},
   customSkill:{title:"個人化設定",lead:"用選單自動組出「個人化專屬 skill」提示詞。使用者先選職業、用途、AI 風格、安裝目標，再複製整段給 Codex。",purpose:"把你的工作痛點、陪練方式與封裝安裝流程，變成可重複使用的專屬 AI 工作 skill。",first:"進頁面後會跳出選單；先選好欄位，再按「更新提示詞」或直接複製。",when:"想讓 AI 先理解你的職務與業務，再替你做挑刺陪練，最後封裝成可安裝 skill 時。"},
   guide:{title:"新手快速開始",lead:"這一頁改成新手版入口，專門幫你用最簡單的方式認識這套外掛系統，知道先裝什麼、先開什麼、接著怎麼用。",purpose:"讓第一次接觸的人不用先懂很多指令，也能照著控制台把工具、外掛與提示詞順順接起來。",first:"先看下方的新手 3 步驟，再按你現在需要的入口進去。",when:"第一次使用這套控制台、要教新手上手，或想快速整理自己目前該從哪裡開始時。"}
@@ -1164,12 +1236,15 @@ function stateSummaryHtml(parsed){return parsed.ok?`<div class="state-summary"><
 function mdSection(text,label){const escaped=label.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");const match=text.match(new RegExp(`(?:^|\\n)## ${escaped}\\s*\\n([\\s\\S]*?)(?=\\n## |$)`));return match?match[1].trim():"尚未設定。"}
 function simpleMarkdownHtml(raw,fallbackTitle){if(!raw.trim())return`<div class="sop"><div class="card"><h2>${esc(fallbackTitle)}</h2><div class="summary">尚未設定。</div></div></div>`;return`<pre class="prompt-body">${esc(raw)}</pre>`}
 function prdFeatures(raw){const section=mdSection(raw,"4. 功能清單");if(!section||section==="尚未設定。")return[];return section.split(/\n/).map(line=>line.trim()).filter(line=>/^\d+\./.test(line)).map(line=>line.replace(/^\d+\.\s*/,""))}
-function progressSource(){return selectedProject||{name:"目前控制台資料夾",path:PROJECT_PATH,state:STATE_HTML,next:NEXT_HTML,agents:AGENTS_HTML,prd:PRD_HTML,projectType:"console"}}
+function progressSource(){return selectedProject||{name:"目前控制台資料夾",path:PROJECT_PATH,state:STATE_HTML,next:NEXT_HTML,agents:AGENTS_HTML,prd:PRD_HTML,plan:PLAN_HTML,filePaths:CONSOLE_FILE_PATHS,projectType:"console"}}
 function progressMissingFiles(src){return [["DUAL-AI-STATE.md",src.state.raw],["NEXT-AI-TASK.md",src.next.raw],["AGENTS.md",src.agents.raw],["PRD.md",src.prd.raw]].filter(([,raw])=>!raw.trim()).map(([name])=>name)}
 function progressSetupPrompt(src,missing){return`請幫我檢查這個專案資料夾，並補齊開發進度控制台需要的 markdown 檔案。\n\n專案資料夾：${src.path||src.name}\n缺少檔案：${missing.join("、")}\n\n請建立或補齊：\n- DUAL-AI-STATE.md：記錄任務名稱、目前階段、已完成事項、下一步、未解決問題、最後更新時間。\n- NEXT-AI-TASK.md：記錄上一棒 AI、下一棒 AI、交棒目的、必讀檔案、已完成、下一棒要做、驗證要求。\n- AGENTS.md：記錄專案名稱、專案簡介、開發協作規範與檔案結構。\n- PRD.md：記錄專案背景、目標、痛點、功能清單、不做的事與驗收標準。\n\n請先讀現有檔案與 git 狀態，再用繁體中文補檔；不要刪除既有內容。`}
 function progressFileCheckHtml(src){const missing=progressMissingFiles(src);if(!missing.length)return`<div class="card"><h2>必備檔案檢查</h2><div class="summary">✅ 已找到 DUAL-AI-STATE.md、NEXT-AI-TASK.md、AGENTS.md、PRD.md，下方資料卡可以正常顯示。</div></div>`;const prompt=progressSetupPrompt(src,missing);return`<div class="warning"><div><b>缺少必要 .md 檔案：</b>${esc(missing.join("、"))}</div><div class="summary" style="margin-top:6px">這個專案可能是新專案，或還沒建立交接文件。請先把下方提示詞交給 AI 補齊檔案，補完後重新選擇資料夾。</div><button class="copy-btn" style="margin-top:8px" data-copy="${encodeURIComponent(prompt)}">複製給 AI 補檔提示詞</button></div>`}
 function progressPickerHtml(src){const helper=progressPickerMessage?`<div class="summary" style="margin-top:8px;color:var(--amber)">${esc(progressPickerMessage)}</div>`:`<div class="summary" style="margin-top:8px">如果按了「選擇專案資料夾」沒有跳出視窗，通常是瀏覽器不支援資料夾選取；這時會自動改走備援方式，或在這裡顯示原因。</div>`;return`<div class="warning"><div>請選擇要查看的專案資料夾；系統會自動檢查 DUAL-AI-STATE.md / NEXT-AI-TASK.md / AGENTS.md / PRD.md 是否存在。</div><div class="trigger" style="margin-top:8px"><code>${esc(src.path||src.name)}</code><button class="copy-btn" type="button" data-progress-pick>選擇專案資料夾</button><button class="copy-btn" type="button" data-copy="${encodeURIComponent(src.path||src.name)}">複製目前名稱</button><input id="projectFolderInput" type="file" webkitdirectory directory multiple style="display:none"></div>${helper}</div>`}
-function progressModeButtons(){const modes=[["startup","第 0 步：先把開工前的 5 個東西建起來","先建立文件、規劃表、忽略規則與下一階段提示詞，後面不管是單一 AI 還是雙 AI 開發都比較不會走歪。"],["status","第 1 步：先看目前狀態","先確認這個專案現在卡在哪裡、上一棒做了什麼、下一步是什麼。"],["project","第 2 步：看專案敘述","先看這個專案到底要做什麼、目標是什麼、有哪些功能。"],["docs","第 3 步：讀規則文件","打開 AGENTS / PRD / 狀態檔，確認細節、規則與交接內容。"],["stages","第 4 步：看開發階段","照專案規劃表確認現在做到哪個功能階段，下一段要做什麼。"],["acceptance","第 5 步：驗收、上傳備份、上架到哪裡去","最後確認驗收有沒有完成，再決定這版是只上傳 GitHub 備份，還是正式上架到要部署的地方。"]];return`<div class="card"><h2>新手從零開始，請照這個順序看</h2><div class="summary">如果你是第一次接這個專案，不要急著改檔。先做第 0 步把開工前的東西建起來，再照下面第 1 到第 5 步往下看，這樣比較不會漏掉關鍵資訊。</div><div class="workflow-guide">${modes.map(([key,label,desc])=>`<div class="guide-item"><div class="guide-label">${esc(label)}</div><div class="guide-text">${esc(desc)}</div><button class="flow-btn ${progressMode===key?"active":""}" data-progress-mode="${key}" style="margin-top:8px">${esc(label)}</button></div>`).join("")}</div></div>`}
+function progressDualSoloIntroHtml(){
+  return`<div class="card"><details class="doc-fold" open><summary><div class="doc-fold-title"><b>🗡️ Claude Code × Codex：怎麼搭配開發專案</b><div class="summary">兩個 AI 各有專長，搭配使用比單獨用更穩定。下面用最白話的方式說它們的分工，以及什麼時候用「雙刀流」、什麼時候用「單刀流」。點標題可收合。</div></div><span class="doc-fold-arrow">›</span></summary><div class="doc-fold-body"><h3 style="margin:14px 0 8px;font-size:.95rem">兩個 AI 各自的角色</h3><div class="workflow-guide"><div class="guide-item"><div class="guide-label">⚒️ Codex（主力工程師）</div><div class="guide-text">在終端機跑的 AI agent，會直接讀檔、寫程式、跑指令、做驗證。負責規劃任務、實際改檔、跑 build／測試、整理交接摘要。</div></div><div class="guide-item"><div class="guide-label">🔍 Claude Code（VS Code，審查員）</div><div class="guide-text">VS Code 內的 Claude，擅長從架構、安全、可維護性角度審查。接到 Codex 的 diff 後，標出 P0／P1／P2 風險與修改建議。</div></div></div><h3 style="margin:16px 0 8px;font-size:.95rem">雙刀流：兩個 AI 接力（適合重要修改）</h3><div class="summary">同時間只有一個 AI 動手，每一棒做完都整理交接內容給下一棒。順序如下：</div><div class="workflow-guide" style="margin-top:8px"><div class="guide-item"><div class="guide-label">① Codex 規劃</div><div class="guide-text">讀檔、拆任務、提方案 → 你確認再進下一棒。</div></div><div class="guide-item"><div class="guide-label">② Codex 實作</div><div class="guide-text">分段改檔、跑 build、做驗證 → 整理交接摘要。</div></div><div class="guide-item"><div class="guide-label">③ Claude Code 審查</div><div class="guide-text">看 diff、抓 P0／P1／P2 風險與修改建議。</div></div><div class="guide-item"><div class="guide-label">④ Codex 修正</div><div class="guide-text">逐條處理審查意見、重新驗證。</div></div><div class="guide-item"><div class="guide-label">⑤ Claude Code 複審</div><div class="guide-text">確認上一輪問題真的解掉。</div></div><div class="guide-item"><div class="guide-label">⑥ Codex 收尾</div><div class="guide-text">更新 DUAL-AI-STATE.md、本地 commit；是否 push 由你決定。</div></div></div><h3 style="margin:16px 0 8px;font-size:.95rem">單刀流：一個 AI 走完（適合小修小改）</h3><div class="summary">只有一個 AI 也要強制走「先規劃 → 再實作 → 最後自審」三段，不要讓它一開口就動手。</div><div class="workflow-guide" style="margin-top:8px"><div class="guide-item"><div class="guide-label">① 釐清任務</div><div class="guide-text">AI 先讀檔、提出做法 → 你確認方案再動手。</div></div><div class="guide-item"><div class="guide-label">② 分段執行</div><div class="guide-text">一次改一小段，做完報告，避免一次改太大難回溯。</div></div><div class="guide-item"><div class="guide-label">③ 自審</div><div class="guide-text">請 AI 用「審查員」的視角檢查自己的改動，列出風險。</div></div></div><h3 style="margin:16px 0 8px;font-size:.95rem">什麼時候用哪一種</h3><div class="workflow-guide"><div class="guide-item"><div class="guide-label">用雙刀流</div><div class="guide-text">動到核心邏輯、資料庫、外部 API、安全相關、刪檔重構，或使用者看得到的主功能。</div></div><div class="guide-item"><div class="guide-label">用單刀流</div><div class="guide-text">小段文案、配色、加註解、修錯字、純資料維護（改 yaml），或只有一個 AI 帳號可用時。</div></div></div><h3 style="margin:16px 0 8px;font-size:.95rem">三條共用紀律</h3><ul class="lifecycle-features" style="font-size:.85rem"><li><b>一次只有一個 AI 動手</b>，另一個暫停，避免互相覆蓋。</li><li><b>每棒結束都要更新 <code>DUAL-AI-STATE.md</code></b>，下一棒（或下次自己接手）才能無痛上手。</li><li><b>重要動作要使用者明確同意</b>：push、刪檔、改設定、改受保護函式，AI 不自己決定。</li></ul></div></details></div>`;
+}
+function progressModeButtons(){const modes=[["startup","第 0 步：先把開工前的 5 個東西建起來","先建立文件、規劃表、忽略規則與下一階段提示詞，後面不管是單一 AI 還是雙 AI 開發都比較不會走歪。"],["status","第 1 步：先看目前狀態","先確認這個專案現在卡在哪裡、上一棒做了什麼、下一步是什麼。"],["project","第 2 步：看專案敘述","先看這個專案到底要做什麼、目標是什麼、有哪些功能。"],["docs","第 3 步：讀規則文件","打開 AGENTS / PRD / 狀態檔，確認細節、規則與交接內容。"],["stages","第 4 步：看開發階段","照專案規劃表確認現在做到哪個功能階段，下一段要做什麼。"],["acceptance","第 5 步：驗收、上傳備份、上架到哪裡去","最後確認驗收有沒有完成，再決定這版是只上傳 GitHub 備份，還是正式上架到要部署的地方。"]];return`${progressDualSoloIntroHtml()}<div class="card" style="margin-top:12px"><h2>新手從零開始，請照這個順序看</h2><div class="summary">如果你是第一次接這個專案，不要急著改檔。先做第 0 步把開工前的東西建起來，再照下面第 1 到第 5 步往下看，這樣比較不會漏掉關鍵資訊。</div><div class="workflow-guide">${modes.map(([key,label,desc])=>`<div class="guide-item"><div class="guide-label">${esc(label)}</div><div class="guide-text">${esc(desc)}</div><button class="flow-btn ${progressMode===key?"active":""}" data-progress-mode="${key}" style="margin-top:8px">${esc(label)}</button></div>`).join("")}</div></div>`}
 function progressStartupHtml(){const setupItems=[{title:"建立 AGENTS.md 頂層規則文件",label:"1. 建立 AGENTS.md",button:"建立 AGENTS.md",desc:"先把專案規則、協作方式與檔案結構講清楚，後面 AI 才不會各做各的。",fallback:"請在專案根目錄只建立一個頂層規則文件 AGENTS.md，把我們的協作規範寫進去。之後每次回答都要用我聽得懂的話解釋，不要亂刪文件。專案名稱：【】專案簡介：【】"},{title:"梳理需求並產出 PRD",label:"2. 建立 PRD.md",button:"建立 PRD.md",desc:"需求還沒落成文件前，先整理目標、痛點、功能清單與驗收標準。",fallback:"先和我討論、梳理需求，確認後再建立 PRD.md 檔案，至少包含：專案背景、專案目標、專案痛點、功能清單、不做的事。我們先討論，先不要寫程式。"},{title:"建立專案規劃表（從零到開發結束）",label:"3. 建立 專案規劃表.md",button:"建立 專案規劃表.md",desc:"把整個系統從第 0 步到驗收上架拆成階段，讓新手知道現在做到哪裡。",fallback:"請幫我建立一份「專案規劃表.md」，用繁體中文把這個專案從第 0 步準備、需求整理、環境架設、基礎系統、功能開發、驗收、上架，依序拆成可理解的階段。每個階段都要寫出：這一階段要做什麼、會產出什麼、完成後怎麼判斷可以進下一步。"},{title:"建立 .gitignore + 種子 DUAL-AI-STATE",label:"4. 建立 .gitignore",button:"建立 .gitignore",desc:"正式開發前先補版控忽略規則與初始進度檔，之後接手比較不會亂。",fallback:"請先不要開始寫功能，先幫我做新專案開工前的基礎準備。檢查專案根目錄後，建立或補齊 .gitignore，並建立一份種子 DUAL-AI-STATE.md，先填好任務名稱、目前階段、已完成事項、下一步、未解決問題、最後更新時間。"},{title:"確認技術棧 / 資料庫 / 上架目標",label:"5. 先確認技術棧 / 資料庫 / 上架目標",button:"先確認技術棧 / 資料庫 / 上架目標",desc:"先讓 AI 讀檔判斷這個專案用了哪些程式語言、框架、資料庫，最後準備部署到哪裡。",fallback:"請先不要直接改程式，先幫我確認這個專案使用哪些程式語言、框架、資料庫，以及最後要上架到哪裡。"},{title:"給下一棒開發提示詞（通用模板）",label:"6. 建立下一階段提示詞",button:"展開下一階段提示詞資訊卡",desc:"按下按鈕後，下面會展開雙刀流與一刀流的提示詞資訊卡，讓你選擇接下來要交給哪種工作模式。",fallback:"請依照目前專案已經建立好的 AGENTS.md、PRD.md、專案規劃表.md、DUAL-AI-STATE.md，幫我產生 2 到 3 組下一階段可直接貼給 AI 的開工提示詞。每組都要說明適合什麼情境，例如：交給 Codex 規劃、交給 Codex 實作、交給 Claude Code 審查。",toggle:true}];const dualaiInfo=promptInfoByTitle("① 第一階段：Codex 規劃","請先讀取專案結構與相關文件，不要直接修改。先提出方案，再等我確認。");const soloInfo=promptInfoByTitle("單一 AI 也能用控制台","我現在只使用一個 AI，但想用這套二刀流開發助手控制台輔助工作。請先幫我釐清任務目標，提出方案，再分段執行。");return`<div class="card"><div class="section-head"><h2>第 0 步：先把開工前的東西建起來</h2><span class="hint">先把基礎文件與提示詞準備好，後面才不會越做越亂</span></div><div class="summary">這一區只顯示第 0 步要先準備的內容，不是正式開發流程。先把這些提示詞用起來，再進到第 1 階段之後的開發、審查、修正與收尾。</div><div class="workflow-guide">${setupItems.map(item=>{const info=promptInfoByTitle(item.title,item.fallback);const action=item.toggle?`<button class="copy-btn" type="button" style="margin-top:8px" data-progress-next-prompts-toggle>${esc(progressNextPromptOpen?"收合下一階段提示詞資訊卡":item.button)}</button>`:`<button class="copy-btn" type="button" style="margin-top:8px" data-copy="${encodeURIComponent(info.prompt)}">${esc(item.button)}</button>`;return`<div class="guide-item"><div class="guide-label">${esc(item.label)}</div><div class="guide-text">${esc(item.desc)}</div>${action}</div>`}).join("")}</div></div>${progressNextPromptOpen?`<div class="card" style="margin-top:12px"><div class="section-head"><h2>下一層提示詞資訊卡</h2><span class="hint">依你接下來要怎麼做，選擇雙刀流或一刀流</span></div><div class="workflow-guide"><div class="guide-item"><div class="guide-label">雙刀流提示詞資訊卡</div><div class="guide-text">適合重要系統修改。先交給 Codex 規劃，再依序走 Codex 實作、Claude Code 審查與後續接棒流程。</div><button class="copy-btn" type="button" style="margin-top:8px" data-copy="${encodeURIComponent(dualaiInfo.prompt)}">複製雙刀流開工提示詞</button></div><div class="guide-item"><div class="guide-label">一刀流提示詞資訊卡</div><div class="guide-text">如果你現在只有一個 AI，就先用這張提示詞，讓它先釐清任務、提出方案，再分段執行。</div><button class="copy-btn" type="button" style="margin-top:8px" data-copy="${encodeURIComponent(soloInfo.prompt)}">複製一刀流開工提示詞</button></div></div></div>`:""}`}
 function progressStageFlowHtml(){const flowItems=[{title:"① 第一階段：Codex 規劃",label:"第 1 階段：Codex 規劃",desc:"先交給 Codex 讀檔、拆任務、提出方案，不要一開始就直接改。",fallback:"請先讀取專案結構與相關文件，不要直接修改。先提出方案，再等我確認。"},{title:"② 第二階段：Codex 分段實作",label:"第 2 階段：Codex 實作",desc:"方案確認後，交給 Codex 分段開發、build、驗證，再整理交棒內容。",fallback:"現在由 Codex 負責分段實作，其他 AI 暫停動作。請依照已確認的方案，在真實專案中分段修改。修改完成後請回報修改檔案、驗證結果與交給下一棒的提示詞。"},{title:"③ 第三階段：Claude Code（VS Code）審查＋修改",label:"第 3 階段：Claude Code 審查＋修改",desc:"把 Codex 的交接摘要、diff 與驗證結果貼給 Claude Code 做審查，並附修改建議。",fallback:"現在由 Claude Code（VS Code）負責審查，其他 AI 暫停動作。請審查這次改動、diff 與驗證結果，列出 P0/P1/P2 風險與修改建議。"},{title:"④ 第四階段：Codex 修正＋開發",label:"第 4 階段：Codex 修正＋開發",desc:"把審查意見貼回 Codex，逐條處理、補開發、重新驗證。",fallback:"現在由 Codex 負責修正，其他 AI 暫停動作。請逐條判斷審查意見，處理必要修正並重新驗證。"},{title:"⑤ 第五階段：Claude Code（VS Code）複審＋修改",label:"第 5 階段：Claude Code 複審＋修改",desc:"修正後再交給 Claude Code 複審，確認前一輪問題真的有解掉。",fallback:"現在由 Claude Code（VS Code）負責複審，其他 AI 暫停動作。請再次檢查修正後的結果，確認前一輪問題是否已處理。",kind:"review"},{title:"給 Codex 的存檔收尾提示詞（模板）",label:"第 6 階段：Codex 存檔收尾",button:"第 6 階段：Codex 存檔收尾",desc:"複審通過後，交回 Codex 做最終驗證、本地 commit，並由使用者決定是否 push。",fallback:"請執行最終驗證、更新 DUAL-AI-STATE.md、建立本地 commit，並把是否 push origin/main 的決定權交回使用者。",kind:"archive"}];const githubInfo=promptInfoByTitle("首次上傳 GitHub：繁體中文專案敘述","請協助我準備這個專案首次上傳 GitHub 的繁體中文說明與存檔流程。");const downloadInfo=promptInfoByTitle("跨地點 / 跨系統接續","請協助我做跨地點 / 跨系統接續存檔與交接，本輪不要自動 push，除非我明確確認。");return`<div class="card"><div class="section-head"><h2>開發階段提示詞資訊卡</h2><span class="hint">按按鈕就能複製對應提示詞，交給另一個 AI 接棒</span></div><div class="summary">這一區是正式開發後的交接流程。每一張卡都對應一棒提示詞，適合拿去交給另一個 AI 做開發、審查、修正、驗收與存檔。</div><div class="workflow-guide">${flowItems.map(item=>{const info=promptInfoByTitle(item.title,item.fallback);const buttonLabel=item.button||item.label;return`<div class="guide-item"><div class="guide-label">${esc(item.label)}</div><div class="guide-text">${esc(item.desc)}</div><button class="copy-btn" type="button" style="margin-top:8px" data-copy="${encodeURIComponent(info.prompt)}">${esc(buttonLabel)}</button></div>`}).join("")}</div><div class="section-head" style="margin-top:12px"><h2>GitHub 備份提示詞</h2><span class="hint">先上傳備份，需要時再下載回來接續</span></div><div class="summary">這裡分成兩個動作：先把目前版本上傳到 GitHub 備份；之後如果換電腦或換工作環境，再從 GitHub 下載回來接續。</div><div class="workflow-guide" style="margin-top:8px"><div class="guide-item"><div class="guide-label">上傳 GitHub 備份提示詞</div><div class="guide-text">這一段只處理把目前版本整理後上傳到 GitHub，方便存檔、備份與團隊接手。</div><button class="copy-btn" type="button" style="margin-top:8px" data-copy="${encodeURIComponent(githubInfo.prompt)}">上傳 GitHub 備份提示詞</button></div><div class="guide-item"><div class="guide-label">下載 GitHub 備份提示詞</div><div class="guide-text">這一段只處理從 GitHub 把備份下載回來，在另一台電腦或另一個環境接續開發。</div><button class="copy-btn" type="button" style="margin-top:8px" data-copy="${encodeURIComponent(downloadInfo.prompt)}">下載 GitHub 備份提示詞</button></div></div></div>`}
 function progressDocPreview(raw,fallback){if(!(raw||"").trim())return fallback;return raw.split(/\n+/).map(line=>line.trim()).filter(Boolean).slice(0,2).join(" ").slice(0,140)}
@@ -1179,12 +1254,153 @@ function progressLifecycleHtml(details,src){const features=prdFeatures(src.prd.r
 function progressStageMapHtml(parsed,src){const details=parseProjectStageDetails(src);const roleMap={1:"Codex",2:"Codex",3:"Claude Code（VS Code）",4:"Codex",5:"Claude Code（VS Code）"};const role=details.workflow.stage?roleMap[details.workflow.stage]||"尚未判斷":"尚未判斷";const subline=src.projectType!=="console"?"這裡顯示的是你目前選到的專案狀態，不再混入控制台自己的版本歷史。":"這裡只顯示目前真正做到哪一階段，不再顯示控制台自己的版本地圖。";return`<div class="card"><h2>目前開發階段</h2><div class="summary">${esc(subline)}</div><div class="state-summary"><div class="state-item full"><div class="state-label">任務名稱</div><div class="state-value">${esc(details.task)}</div></div><div class="state-item"><div class="state-label">目前階段</div><div class="state-value">${esc(details.current)}</div></div><div class="state-item"><div class="state-label">目前負責 AI</div><div class="state-value">${esc(role)}</div></div><div class="state-item full"><div class="state-label">目前狀態</div><div class="state-value">${esc(details.status||"尚未設定。")}</div></div><div class="state-item full"><div class="state-label">交棒目的</div><div class="state-value">${esc(details.nextTask.handoff||"尚未設定。")}</div></div><div class="state-item"><div class="state-label">下一棒 AI</div><div class="state-value">${esc(details.nextTask.nextOwner||"尚未設定。")}</div></div><div class="state-item"><div class="state-label">最後更新</div><div class="state-value">${esc(details.updated)}</div></div></div></div>`}
 function progressStatusHtml(parsed,src){const details=parseProjectStageDetails(src);if(!parsed.ok||!src.state.raw.trim()||!details.current||details.current==="尚未設定。"||!details.task||details.task==="尚未設定。")return"";return progressStageMapHtml(parsed,src)}
 function progressProjectHtml(src){const projectIntro=(src.agents.raw.match(/專案簡介：\s*(.*)/)||[])[1]?.trim()||"尚未設定。";const goal=mdSection(src.prd.raw,"2. 專案目標");const pains=mdSection(src.prd.raw,"3. 專案痛點").split(/\n/).map(line=>line.trim()).filter(line=>line.startsWith("|")&& !line.includes("---")).slice(1,5).map(line=>line.split("|")[2]?.trim()).filter(Boolean);const features=prdFeatures(src.prd.raw).slice(0,4);return`<div class="card"><h2>整個專案系統簡介</h2><div class="summary">${esc(projectIntro)}</div><div class="summary">${esc(goal)}</div><div class="state-summary" style="margin-top:6px"><div class="state-item full"><div class="state-label">這個系統主要在解決什麼？</div><div class="state-value">${esc(pains.join("、")||"尚未設定。")}</div></div><div class="state-item full"><div class="state-label">核心能力</div><div class="state-value">${esc(features.join("、")||"尚未設定。")}</div></div></div></div>`}
-function progressStagesHtml(src){return progressStageFlowHtml()}
+function parseProjectPlanStages(raw){
+  if(!(raw||"").trim())return[];
+  const text=raw.replace(/\r\n/g,"\n");
+  const parts=text.split(/\n(?=##\s+)/);
+  const stages=[];
+  for(const part of parts){
+    const m=part.match(/^##\s+(.+?)\n([\s\S]*)$/);
+    if(!m)continue;
+    const title=m[1].trim();
+    const body=m[2].trim();
+    const bodyLines=body.split(/\n/).map(l=>l.trim());
+    const descLines=[];
+    const bullets=[];
+    let inBullets=false;
+    for(const line of bodyLines){
+      if(!line)continue;
+      if(/^###?\s/.test(line))continue;
+      if(/^[-*]\s/.test(line)){
+        inBullets=true;
+        let txt=line.replace(/^[-*]\s+/,"").replace(/^\*\*(.+?)\*\*[:：]?\s*/,"$1：").trim();
+        const idMatch=txt.match(/^(\d+\.\d+)[\s:：]/);
+        const id=idMatch?idMatch[1]:null;
+        if(id)txt=txt.slice(idMatch[0].length).trim();
+        bullets.push({id:id,text:txt});
+      }else if(!inBullets&&descLines.length<2){
+        descLines.push(line);
+      }
+    }
+    const desc=descLines.join(" ").slice(0,200);
+    const stageMatch=title.match(/第\s*(\d+)\s*階段/);
+    const stageNum=stageMatch?parseInt(stageMatch[1],10):null;
+    stages.push({title:title,desc:desc,bullets:bullets,stageNum:stageNum});
+  }
+  return stages;
+}
+const PLAN_DETECTION_RULES={
+  "1.1":[/\/PRD( \d+)?\.md$/i],
+  "1.2":[/\/PRD( \d+)?\.md$/i],
+  "1.3":[/\/PRD( \d+)?\.md$/i],
+  "1.4":[/\/PRD( \d+)?\.md$/i],
+  "1.5":[/\/PRD( \d+)?\.md$/i],
+  "1.6":[/\/AGENTS\.md$/i],
+  "1.8":[/\/PRD( \d+)?\.md$/i],
+  "2.2":[/\/(data|scripts|docs|skills)\/[^/]+$/i],
+  "2.3":[/\/\.git\//i,/\/\.gitkeep$/i],
+  "2.4":[/\/\.gitignore$/i],
+  "2.6":[/\/index\.html$/i],
+  "2.7":[/\/scripts\/build\.py$/i],
+  "3.3":[/\/data\/skills\.yaml$/i],
+  "3.4":[/\/data\/skills\.yaml$/i],
+  "3.5":[/\/data\/skills\.yaml$/i],
+  "3.6":[/\/data\/skills\.yaml$/i],
+  "3.7":[/\/data\/prompts\.yaml$/i],
+  "3.8":[/\/scripts\/build\.py$/i],
+  "3.9":[/\/index\.html$/i],
+  "3.10":[/\/index\.html$/i],
+  "4.14":[/\/docs\/skill-console-plan\.md$/i],
+  "4.15":[/\/docs\/(v1-1-plan|v1-2-backlog)\.md$/i],
+  "5.9":[/\/docs\/(v1-1-plan|v1-2-backlog)\.md$/i],
+  "6.1":[/\/README( \d+)?\.md$/i],
+  "6.2":[/\/README( \d+)?\.md$/i],
+  "6.3":[/\/codex-skills-backup\.tar\.gz$/i],
+  "6.4":[/\/install( \d+)?\.sh$/i],
+  "6.5":[/\/install( \d+)?\.ps1$/i],
+  "6.6":[/\/restore-skills\.sh$/i],
+  "6.8":[/\/CHANGELOG\.md$/i]
+};
+function detectPlanDone(filePaths){
+  const paths=(filePaths||[]).map(p=>"/"+p);
+  const done=new Set();
+  for(const id of Object.keys(PLAN_DETECTION_RULES)){
+    const rules=PLAN_DETECTION_RULES[id];
+    for(const re of rules){
+      if(paths.some(p=>re.test(p))){done.add(id);break;}
+    }
+  }
+  return done;
+}
+function progressPlanStagesHtml(src){
+  const plan=src.plan||{raw:"",html:""};
+  const stages=parseProjectPlanStages(plan.raw);
+  const planPrompt="請幫我建立一份「專案規劃表.md」，用繁體中文把這個專案從第 0 步準備、需求整理、環境架設、基礎系統、功能開發、驗收、上架，依序拆成可理解的階段。每個階段都要寫出：這一階段要做什麼、會產出什麼、完成後怎麼判斷可以進下一步。";
+  if(!stages.length){
+    return`<div class="card" style="margin-top:12px"><div class="section-head"><h2>本專案的全部開發階段</h2><span class="hint">尚未找到 專案規劃表.md</span></div><div class="summary">沒有在這個專案找到 <code>專案規劃表.md</code>。複製下方提示詞讓 AI 幫你建立這份規劃表；建好後重新選擇資料夾，這裡就會自動顯示所有開發階段的資訊卡。</div><div class="workflow-guide" style="margin-top:8px"><div class="guide-item"><div class="guide-label">建立 專案規劃表.md</div><div class="guide-text">交給 AI 依照專案背景、痛點與功能清單，拆出第 0 階段到驗收、上架的完整階段。</div><button class="copy-btn" type="button" style="margin-top:8px" data-copy="${encodeURIComponent(planPrompt)}">複製「請 AI 寫專案規劃表」提示詞</button></div></div></div>`;
+  }
+  const done=detectPlanDone(src.filePaths);
+  const stageStats=stages.map(s=>{
+    const tracked=s.bullets.filter(b=>b.id);
+    const doneCount=tracked.filter(b=>done.has(b.id)).length;
+    const total=tracked.length;
+    const isDone=total>0&&doneCount===total;
+    const isUntouched=total>0&&doneCount===0;
+    return{doneCount:doneCount,total:total,isDone:isDone,isUntouched:isUntouched};
+  });
+  let currentStageIdx=stageStats.findIndex(st=>st.total>0&&!st.isDone);
+  if(currentStageIdx<0)currentStageIdx=stages.length-1;
+  let currentBulletStage=-1,currentBulletIdx=-1;
+  for(let i=0;i<stages.length&&currentBulletStage<0;i++){
+    for(let j=0;j<stages[i].bullets.length;j++){
+      const b=stages[i].bullets[j];
+      if(b.id&&!done.has(b.id)){currentBulletStage=i;currentBulletIdx=j;break;}
+    }
+  }
+  const totalSteps=stageStats.reduce((s,st)=>s+st.total,0);
+  const doneSteps=stageStats.reduce((s,st)=>s+st.doneCount,0);
+  const progressPct=totalSteps?Math.round(doneSteps/totalSteps*100):0;
+  let nextStepLabel="全部完成 🎉";
+  if(currentBulletStage>=0){
+    const b=stages[currentBulletStage].bullets[currentBulletIdx];
+    nextStepLabel=`${b.id}：${b.text.slice(0,50)}${b.text.length>50?"…":""}`;
+  }
+  const currentTitle=stages[currentStageIdx]?stages[currentStageIdx].title:"—";
+  const banner=`<div class="plan-progress-banner"><div class="plan-progress-row"><div class="plan-progress-cell"><div class="plan-prog-label">目前開發階段</div><div class="plan-prog-value">${esc(currentTitle)}</div></div><div class="plan-progress-cell"><div class="plan-prog-label">下一個小步驟</div><div class="plan-prog-value plan-prog-next">${esc(nextStepLabel)}</div></div><div class="plan-progress-cell"><div class="plan-prog-label">總進度</div><div class="plan-prog-value">${doneSteps} / ${totalSteps}　<span class="plan-prog-pct">(${progressPct}%)</span></div></div></div><div class="plan-prog-bar"><span style="width:${progressPct}%"></span></div><div class="plan-prog-hint">系統會依專案資料夾裡實際存在的關鍵檔案，自動判斷每個小步驟是否完成。</div></div>`;
+  const sourceLabel=(src.path||src.name||"目前專案")+"/專案規劃表.md";
+  const stagesHtml=stages.map((s,i)=>{
+    const st=stageStats[i];
+    let status,statusClass;
+    if(st.total===0){status="參考";statusClass="ref";}
+    else if(st.isDone){status="✓ 已完成";statusClass="done";}
+    else if(i===currentStageIdx){status="⏳ 進行中";statusClass="current";}
+    else if(st.isUntouched){status="⭕ 尚未開始";statusClass="todo";}
+    else{status="⏳ 部分完成";statusClass="partial";}
+    const open=(i===currentStageIdx)?" open":"";
+    const countText=st.total>0?`${st.doneCount} / ${st.total}`:"";
+    const stepsHtml=s.bullets.map((b,j)=>{
+      const isStepDone=b.id&&done.has(b.id);
+      const isCurrentStep=(i===currentBulletStage&&j===currentBulletIdx);
+      let cls="plan-step";
+      if(isStepDone)cls+=" done";
+      else if(isCurrentStep)cls+=" current";
+      else if(b.id)cls+=" todo";
+      else cls+=" note";
+      const mark=isStepDone?"✓":(isCurrentStep?"➤":(b.id?"○":"·"));
+      const idTag=b.id?`<span class="plan-step-id">${b.id}</span>`:"";
+      return`<li class="${cls}"><span class="plan-step-mark">${mark}</span>${idTag}<span class="plan-step-text">${esc(b.text)}</span></li>`;
+    }).join("");
+    const descHtml=s.desc?`<div class="plan-stage-desc">${esc(s.desc)}</div>`:"";
+    return`<details class="plan-stage status-${statusClass}"${open}><summary><span class="plan-stage-badge badge-${statusClass}">${status}</span><span class="plan-stage-title">${esc(s.title)}</span>${countText?`<span class="plan-stage-count">${countText}</span>`:""}<span class="plan-stage-caret">▸</span></summary><div class="plan-stage-body">${descHtml}<ul class="plan-step-list">${stepsHtml}</ul></div></details>`;
+  }).join("");
+  return`<div class="card" style="margin-top:12px"><div class="section-head"><h2>本專案的全部開發階段</h2><span class="hint">來自 ${esc(sourceLabel)}</span></div><div class="summary">這張卡會依專案資料夾內實際存在的關鍵檔案自動判斷進度，告訴你目前做到哪一個階段、哪一個小步驟。點任一階段標題可展開／收合內容。</div>${banner}<div class="plan-list">${stagesHtml}</div></div>`;
+}
+function progressStagesHtml(src){return progressStageFlowHtml()+progressPlanStagesHtml(src)}
 function progressAcceptanceHtml(src){const listHtml=items=>items.length?`<ul class="lifecycle-features">${items.map(item=>`<li>${esc(item)}</li>`).join("")}</ul>`:`<div class="summary">尚未設定。</div>`;const acceptanceInfo=promptInfoByTitle("驗收專案功能是否可交付","請幫我做這個專案版本的驗收檢查，先不要直接改程式。");const githubInfo=promptInfoByTitle("首次上傳 GitHub：繁體中文專案敘述","請協助我準備這個專案首次上傳 GitHub 的繁體中文說明與存檔流程。");const deployInfo=promptInfoByTitle("部署讓別人也能訪問（含 Docker）","我要讓這個專案在本地設備或雲端伺服器上，讓拿到網址的人都能訪問。");return`<div class="card"><h2>驗收與上傳資訊卡</h2><div class="summary">這裡是最後收尾區。先確認這一版能不能交付，再決定要不要本地 commit、上傳 GitHub 做開發中備份，或正式部署上線給別人使用。</div><div class="workflow-guide" style="margin-top:12px"><div class="guide-item"><div class="guide-label">1. 驗收</div><div class="guide-text">先驗收，確認功能正常、沒有阻擋問題，這一版真的可以交付。</div>${listHtml(["先確認核心流程是否可用","確認沒有 P0 / P1 阻擋問題","確認這一版是否已達到交付標準"])}</div><div class="guide-item"><div class="guide-label">2. 備份上傳</div><div class="guide-text">如果這一版只是先存開發中的版本，就整理說明後上傳 GitHub 做備份與接續。</div>${listHtml(["GitHub：偏向版本備份與多人接續","適合自己或團隊之後再接著開發","上傳前先把這一版的說明整理好"])}</div><div class="guide-item"><div class="guide-label">3. 正式上架</div><div class="guide-text">如果這一版要給別人直接打開網址使用，就要確認最後準備上架到哪裡，並安排正式部署。</div>${listHtml(["先確認最後要部署到哪個平台或主機","正式上架：偏向讓外部使用者實際訪問","上架前先完成驗收，再安排部署"])}</div></div><div class="workflow-guide" style="margin-top:12px"><div class="guide-item"><div class="guide-label">驗收提示詞</div><div class="guide-text">先檢查這個版本是否真的可交付，還缺哪些驗收資訊。</div><button class="copy-btn" type="button" style="margin-top:8px" data-copy="${encodeURIComponent(acceptanceInfo.prompt)}">複製驗收提示詞</button></div><div class="guide-item"><div class="guide-label">上傳 GitHub 提示詞</div><div class="guide-text">把這個版本整理成繁體中文說明，再上傳 GitHub 當作開發中的備份。</div><button class="copy-btn" type="button" style="margin-top:8px" data-copy="${encodeURIComponent(githubInfo.prompt)}">複製上傳 GitHub 提示詞</button></div><div class="guide-item"><div class="guide-label">正式上架提示詞</div><div class="guide-text">如果要讓別人真的打開網址使用，就用這張提示詞安排正式部署。</div><button class="copy-btn" type="button" style="margin-top:8px" data-copy="${encodeURIComponent(deployInfo.prompt)}">複製正式上架提示詞</button></div></div></div>`}
 function progressDocsHtml(src){return`<div class="card"><h2>專案文件伸縮資訊卡</h2><div class="summary">這裡把 <code>AGENTS.md</code>、<code>PRD.md</code>、<code>DUAL-AI-STATE.md</code>、<code>NEXT-AI-TASK.md</code> 都改成可展開／收合的資訊卡，先看摘要，需要時再打開全文。</div><div class="doc-accordion">${progressDocAccordion("AGENTS.md","AGENTS",src.agents.raw,src.agents.html,true)}${progressDocAccordion("PRD.md","PRD",src.prd.raw,src.prd.html)}${progressDocAccordion("DUAL-AI-STATE.md","DUAL-AI-STATE",src.state.raw,src.state.html)}${progressDocAccordion("NEXT-AI-TASK.md","NEXT-AI-TASK",src.next.raw,src.next.html)}</div></div>`}
 function progressHtml(){const src=progressSource();const parsed=parseWorkflowState(src.state.raw);const body={startup:progressStartupHtml(),status:progressStatusHtml(parsed,src),project:progressProjectHtml(src),stages:progressStagesHtml(src),docs:progressDocsHtml(src),acceptance:progressAcceptanceHtml(src)}[progressMode]||progressStatusHtml(parsed,src);return`<div class="sop progress-sop">${progressPickerHtml(src)}${progressFileCheckHtml(src)}${progressModeButtons()}${body}</div>`}
 async function filesFromDirectoryHandle(handle,prefix=""){const files=[];for await (const entry of handle.values()){const nextPrefix=prefix?`${prefix}/${entry.name}`:entry.name;if(entry.kind==="file"){const file=await entry.getFile();try{Object.defineProperty(file,"webkitRelativePath",{configurable:true,value:nextPrefix})}catch{}files.push(file)}else if(entry.kind==="directory"){files.push(...await filesFromDirectoryHandle(entry,nextPrefix))}}return files}
-async function loadProjectFolder(files,rootName=""){const list=[...files];if(!list.length){progressPickerMessage="沒有讀到任何檔案；請確認你選的是資料夾，而且瀏覽器允許讀取。";render();return}const root=rootName||(list[0]?.webkitRelativePath||"").split("/")[0]||"使用者選擇的專案";const find=name=>list.find(file=>file.name===name||file.webkitRelativePath.endsWith(`/${name}`));const read=async name=>{const file=find(name);return file?await file.text():""};const state=await read("DUAL-AI-STATE.md"),next=await read("NEXT-AI-TASK.md"),agents=await read("AGENTS.md"),prd=await read("PRD.md");selectedProject={name:root,path:root,state:{raw:state,html:simpleMarkdownHtml(state,"DUAL-AI-STATE")},next:{raw:next,html:simpleMarkdownHtml(next,"NEXT-AI-TASK")},agents:{raw:agents,html:simpleMarkdownHtml(agents,"AGENTS")},prd:{raw:prd,html:simpleMarkdownHtml(prd,"PRD")},projectType:"picked"};progressPickerMessage=`已載入資料夾：${root}`;progressMode="status";render()}
+async function loadProjectFolder(files,rootName=""){const list=[...files];if(!list.length){progressPickerMessage="沒有讀到任何檔案；請確認你選的是資料夾，而且瀏覽器允許讀取。";render();return}const root=rootName||(list[0]?.webkitRelativePath||"").split("/")[0]||"使用者選擇的專案";const find=name=>list.find(file=>file.name===name||file.webkitRelativePath.endsWith(`/${name}`));const read=async name=>{const file=find(name);return file?await file.text():""};const state=await read("DUAL-AI-STATE.md"),next=await read("NEXT-AI-TASK.md"),agents=await read("AGENTS.md"),prd=await read("PRD.md"),plan=await read("專案規劃表.md");const filePaths=list.map(f=>f.webkitRelativePath||f.name);selectedProject={name:root,path:root,state:{raw:state,html:simpleMarkdownHtml(state,"DUAL-AI-STATE")},next:{raw:next,html:simpleMarkdownHtml(next,"NEXT-AI-TASK")},agents:{raw:agents,html:simpleMarkdownHtml(agents,"AGENTS")},prd:{raw:prd,html:simpleMarkdownHtml(prd,"PRD")},plan:{raw:plan,html:simpleMarkdownHtml(plan,"專案規劃表")},filePaths:filePaths,projectType:"picked"};progressPickerMessage=`已載入資料夾：${root}`;progressMode="status";render()}
 async function pickProjectFolder(){const picker=document.getElementById("projectFolderInput");if(window.showDirectoryPicker){try{const handle=await window.showDirectoryPicker();const files=await filesFromDirectoryHandle(handle);await loadProjectFolder(files,handle.name);return}catch(err){if(err?.name==="AbortError")return;if(!picker){progressPickerMessage=`資料夾選取失敗：${err?.message||"目前瀏覽器不支援。"}`;render();return}}}if(!picker){progressPickerMessage="找不到備援的資料夾選取元件，請重新整理頁面再試。";render();return}picker.value="";try{picker.click()}catch(err){progressPickerMessage=`這個瀏覽器沒有成功打開資料夾選取視窗：${err?.message||"可能不支援 file:// 下的資料夾存取。"}`;render()}}
 function bindProgress(){document.querySelectorAll("[data-progress-mode]").forEach(btn=>btn.onclick=()=>{progressMode=btn.dataset.progressMode;render()});const picker=document.getElementById("projectFolderInput");const pickBtn=document.querySelector("[data-progress-pick]");if(pickBtn)pickBtn.onclick=()=>pickProjectFolder();if(picker)picker.onchange=e=>loadProjectFolder(e.target.files);document.querySelectorAll("[data-progress-startup-copy]").forEach(btn=>btn.onclick=()=>copyText(decodeURIComponent(btn.dataset.progressStartupCopy),btn));document.querySelectorAll("[data-progress-next-prompts-toggle]").forEach(btn=>btn.onclick=()=>{progressNextPromptOpen=!progressNextPromptOpen;render()})}
 function stateBoardHtml(){const draft=stateDraft();const parsed=parseWorkflowState(draft);return`<div class="card state-board"><h2>DUAL-AI-STATE 快速看板</h2><div class="summary">把狀態檔全文貼在這裡，控制台只在瀏覽器本機解析與暫存，不上傳、不寫回檔案。</div><textarea id="workflowStateInput" placeholder="貼上 DUAL-AI-STATE.md 全文">${esc(draft)}</textarea><div id="workflowStateResult">${stateSummaryHtml(parsed)}</div></div>`}
@@ -1253,6 +1469,8 @@ html_out = (
     .replace("__NEXT_HTML__", next_html)
     .replace("__AGENTS_HTML__", agents_html)
     .replace("__PRD_HTML__", prd_html)
+    .replace("__PLAN_HTML__", plan_html)
+    .replace("__CONSOLE_FILE_PATHS__", console_file_paths_json)
     .replace("__PROJECT_PATH__", project_path_json)
     .replace("__PROJECT_URL__", project_url_json)
 )

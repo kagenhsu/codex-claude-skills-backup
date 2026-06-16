@@ -19,3 +19,4 @@ skills/*-private/
 
 skills/*
 !skills/dual-ai-workflow/
+!skills/plan-progress/

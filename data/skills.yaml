@@ -239,6 +239,15 @@
   summary: 把計畫／PRD 拆解成一張張可獨立執行的開發任務（issues）
   triggers:
   - 用 to-issues 把這份 PRD 拆成開發任務
+- name: plan-progress
+  category: 規劃與協作
+  risk: 低
+  summary: 讀 專案規劃表.md 對照資料夾內檔案，自動判斷目前做到哪個階段、哪個小步驟，輸出進度報告與下一步建議；第一次跑會把推論結果寫進 .plan-rules.yaml 供下次重用
+  triggers:
+  - 用 plan-progress 看這個專案做到哪了
+  - 跑 plan-progress 報目前進度
+  - 用 plan-progress 告訴我下一步要做什麼
+  notes: 需要專案根目錄存在 專案規劃表.md；只會寫入 .plan-rules.yaml，不改其他原始檔，也不執行 git 寫操作
 - name: triage
   category: 規劃與協作
   risk: 低
