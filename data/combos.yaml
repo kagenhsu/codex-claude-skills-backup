@@ -16,8 +16,8 @@
   steps:
     - prompt_title: 深度同行評審：5 子代理 Code Review
       custom_intro: 【進階】需填入完整專案背景時使用，適合 release 或複雜改動前的深度審查。
-    - prompt_title: ③ 第三階段：Claude Code（VS Code）審查＋修改
-      custom_intro: 【標準】直接貼入 Codex 交接摘要使用，已內建 5 子代理，適合日常審查。
+    - prompt_title: ③ 第三階段：Codex 審查＋修改
+      custom_intro: 【標準】直接貼入 Claude Code 的交接摘要使用，已內建 5 子代理，適合日常審查。
     - prompt_title: 給 Codex 的逐條修正轉交提示詞（模板）
       custom_intro: 審查完後，把問題逐條搬回 Codex 修正。
     - prompt_title: 給 Codex 的存檔收尾提示詞（模板）
@@ -32,3 +32,21 @@
       custom_intro: 另一台電腦接手後，先讀狀態檔確認目前到哪。
     - prompt_title: 額度快滿自動存檔＋換手
       custom_intro: 如果 AI 額度快滿，先保進度再換手，避免工作斷掉。
+- title: 角色互換包（Claude 主刀 → Codex 收尾）
+  usage: 設計／品味活由 Claude Code 主刀，實作／指令由 Codex 主刀；換手前一定先換狀態（寫 DUAL-AI-STATE.md ＋ git commit），最終上架與備份永遠回到 Codex（只有 Codex 能在預覽器內逐條改註記）。
+  category: 二刀流協作
+  steps:
+    - prompt_title: 二刀流分工細節說明
+      custom_intro: 第零步，先把兩邊分工原則對齊，特別釐清「為什麼最後收尾一定回 Codex」。
+    - prompt_title: ① 第一階段：Claude Code 規劃
+      custom_intro: 第一步，由 Claude Code 主刀規劃與設計（長討論、權衡、品味活）。
+    - prompt_title: ② 第二階段：Claude Code 分段實作
+      custom_intro: 第二步，Claude Code 把規劃落成初版實作；換手前先寫 DUAL-AI-STATE.md ＋ git commit「handoff to codex」。
+    - prompt_title: ③ 第三階段：Codex 審查＋修改
+      custom_intro: 第三步，換手到 Codex：先讀狀態檔，再做審查＋跑 build／test／修錯。
+    - prompt_title: ④ 第四階段：Claude Code 修正＋開發
+      custom_intro: 第四步，若還有設計／品味問題，換回 Claude Code 修；同樣先存狀態＋commit「handoff to claude」。
+    - prompt_title: ⑤ 第五階段：Codex 複審＋修改
+      custom_intro: 第五步，回到 Codex 做複審與最後修改，確認可以收。
+    - prompt_title: 給 Codex 的存檔收尾提示詞（模板）
+      custom_intro: 最後一步，永遠由 Codex 收尾：在預覽器內逐條改註記、最終 commit／push／tag、更新 DUAL-AI-STATE.md 為「已交付」。

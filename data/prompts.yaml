@@ -248,15 +248,15 @@
   usage: 入口·沒安裝 skill 時，開任務前貼給主力 AI
   prompt: |
     我們採用二刀流五階段工作流：
-    - Codex：主力工程師，負責規劃、分段實作、跑指令、測試、修正、產出交接摘要
-    - Claude Code（VS Code）：審查員，負責架構審查、程式碼審查、風險檢查、P0/P1/P2 分級與複審
+    - Claude Code（VS Code）：主力工程師，負責規劃、分段實作、跑指令、測試、修正、產出交接摘要
+    - Codex：審查員＋收尾，負責架構審查、程式碼審查、風險檢查、P0/P1/P2 分級與複審
     - 我：兩邊之間轉貼，做最終決定
 
     第一階段：Codex 先讀專案結構與文件，不要修改，提出方案（目標／改哪些檔案／影響／風險／驗證方式），等我確認
     第二階段：Codex 依確認後的方案分段實作、跑 build.py、回報實際結果
-    第三階段：我把 Codex 的交接摘要、diff 與驗證結果交給 Claude Code（VS Code）審查＋修改，請它給 P0/P1/P2 風險與修復建議
-    第四階段：我把審查意見貼回 Codex，讓 Codex 修正＋開發，逐條判斷並重新驗證
-    第五階段：我把修正後結果交給 Claude Code（VS Code）複審＋修改；通過後由 Codex 做 git 存檔
+    第三階段：我把 Claude Code 的交接摘要、diff 與驗證結果交給 Codex 審查＋修改，請它給 P0/P1/P2 風險與修復建議
+    第四階段：我把審查意見貼回 Claude Code，讓 Claude Code 修正＋開發，逐條判斷並重新驗證
+    第五階段：我把修正後結果交給 Codex 複審＋修改；通過後由 Codex 做 git 存檔
 
     現在從第一階段開始，任務是：【任務描述】
   flow: dualai
@@ -276,14 +276,14 @@
     6. 一個最簡單的實際例子：從「我要改一個功能」到「審查通過並存檔」
 
     請特別提醒：
-    - Codex 是主力工程師，負責讀檔、規劃、實作、跑測試、修正與整理交接。
-    - Claude Code（VS Code）是審查員，負責看 diff、找 bug、抓風險、分 P0/P1/P2、複審。
+    - Claude Code（VS Code）是主力工程師，負責讀檔、規劃、實作、跑測試、修正與整理交接。
+    - Codex 是審查員，負責看 diff、找 bug、抓風險、分 P0/P1/P2、複審。
     - 使用者是最後決策者，負責確認方向、轉貼重點、決定是否 commit / push。
     - 同一時間只讓一邊主動改，另一邊負責看與審，避免兩邊同時亂改。
     - 交接時優先靠 DUAL-AI-STATE.md、NEXT-AI-TASK.md、AGENTS.md、PRD.md，不要只靠聊天記憶。
   flow: dualai
   stage: entry
-- title: ① 第一階段：Codex 規劃
+- title: ① 第一階段：Claude Code 規劃
   category: 二刀流協作
   usage: 在 Codex 開新任務，先出方案不動手
   prompt: |
@@ -296,11 +296,11 @@
     5. 修改後如何驗證
   flow: dualai
   stage: '1'
-- title: ② 第二階段：Codex 分段實作
+- title: ② 第二階段：Claude Code 分段實作
   category: 二刀流協作
   usage: 方案確認後，讓 Codex 分段修改、build、驗證
   prompt: |
-    現在由 Codex 負責分段實作，其他 AI 暫停動作。
+    現在由 Claude Code（VS Code）負責分段實作，其他 AI 暫停動作。
     請依照已確認的方案，在真實專案中分段修改。
     修改完成後請回報：
     1. 修改了哪些檔案
@@ -310,12 +310,12 @@
     5. 最後再輸出給 Claude Code（VS Code）的完整審查提示詞；不要在工作尚未完成前提前交棒。
   flow: dualai
   stage: '2'
-- title: ③ 第三階段：Claude Code（VS Code）審查＋修改
+- title: ③ 第三階段：Codex 審查＋修改
   category: 二刀流協作
-  usage: 把 Codex 的交接摘要、diff 與驗證結果貼給 Claude Code 審查，並要求附修改建議
+  usage: 把 Claude Code 的交接摘要、diff 與驗證結果貼給 Codex 審查，並要求附修改建議
   prompt: |
-    現在由 Claude Code（VS Code）負責審查，其他 AI 暫停動作。
-    請以「深度同行評審」模式審查這次 Codex 的交接摘要、diff 與驗證結果。
+    現在由 Codex 負責審查，其他 AI 暫停動作。
+    請以「深度同行評審」模式審查這次 Claude Code 的交接摘要、diff 與驗證結果。
 
     請先依專案類型調整審查重點，然後實例化 5 個專業子代理（Subagent）獨立審查：
     1. Security Agent：安全性審查，檢查權限、機密資料、輸入驗證、依賴與部署風險。
@@ -334,11 +334,11 @@
     3. 給 Codex 的完整修正轉交提示詞
   flow: dualai
   stage: '3'
-- title: ④ 第四階段：Codex 修正＋開發
+- title: ④ 第四階段：Claude Code 修正＋開發
   category: 二刀流協作
-  usage: 把 Claude Code 的審查意見貼回給 Codex 逐條處理，必要時補開發
+  usage: 把 Codex 的審查意見貼回給 Claude Code 逐條處理，必要時補開發
   prompt: |
-    現在由 Codex 負責修正，其他 AI 暫停動作。
+    現在由 Claude Code（VS Code）負責修正，其他 AI 暫停動作。
     請逐條判斷 Claude Code（VS Code）的 review 意見：
     1. 問題是否真的存在
     2. 如果存在，要改什麼、為什麼這樣改
@@ -348,11 +348,11 @@
     修正完成後，最後再輸出給 Claude Code（VS Code）的完整複審提示詞；不要在修正尚未完成前提前交棒。
   flow: dualai
   stage: '4'
-- title: ⑤ 第五階段：Claude Code（VS Code）複審＋修改
+- title: ⑤ 第五階段：Codex 複審＋修改
   category: 二刀流協作
-  usage: 把修正後結果交給 Claude Code 複審，必要時補修改，通過後交回 Codex 存檔
+  usage: 把修正後結果交給 Codex 複審，必要時補修改，通過後交回 Codex 存檔
   prompt: |
-    現在由 Claude Code（VS Code）負責複審，其他 AI 暫停動作。
+    現在由 Codex 負責複審，其他 AI 暫停動作。
     請再次檢查修正後的結果，確認前一輪問題是否已處理，並檢查是否引入新問題。
     如果通過，請先回報複審結果；最後再輸出給 Codex 的存檔轉交提示詞，要求 Codex 做最終驗證與 git commit。
   flow: dualai
@@ -399,11 +399,11 @@
     任務是：【任務描述】
   flow: solo
   stage: entry
-- title: 請 Claude Code（VS Code）審查（含系統背景模板）
+- title: 請 Codex 審查（含系統背景模板）
   category: 二刀流協作
   usage: 進階·需要附完整系統背景做嚴謹審查時
   prompt: |
-    現在由 Claude Code（VS Code）負責審查，其他 AI 暫停動作。
+    現在由 Codex 負責審查，其他 AI 暫停動作。
     請以架構師＋審查員身分審查以下 Codex 改動。
     【系統背景】
     - 系統名稱：【】
@@ -428,7 +428,7 @@
     - 專案名稱：【】
     - 專案類型：【例如：PHP/XAMPP、FastAPI、React、Docker、資料同步 ETL、純 HTML 工具】
     - 目前開發階段：【需求 / 架構 / 實作完成 / 修正後複審 / 上線前】
-    - 本次改動摘要：【貼上 Codex 交接摘要】
+    - 本次改動摘要：【貼上 Claude Code 交接摘要】
     - 本次 diff 或檔案內容：【貼上 git diff、重要檔案、驗證結果】
     - 已執行驗證：【貼上 build/test/lint/browser/DB/API 驗證結果】
 
@@ -626,7 +626,7 @@
        - 修改完成後總結：改了什麼、如何檢查、下一步建議
        - 用小白能聽懂的話解釋，遇到技術名詞順手用一句話解釋
     4. 專案檔案結構（先用樹狀圖列出目前已知的檔案；缺的之後補）
-    5. 若採用二刀流工作流：補一段「AI 角色分工」表格（Codex 主力、Claude Code（VS Code）審查），並指向 docs/dual-ai-workflow.md 與 docs/ai-role-guide.md
+    5. 若採用二刀流工作流：補一段「AI 角色分工」表格（Claude Code（VS Code）主力、Codex 審查＋收尾），並指向 docs/dual-ai-workflow.md 與 docs/ai-role-guide.md
     6. 技術棧與環境需求（若已決定）
 
     【寫作要求】
@@ -640,7 +640,7 @@
   flow: dualai
   stage: '3'
   prompt: |-
-    依 dual-ai-workflow 第 4 階段（Codex 修正），請逐條處理 Claude Code（VS Code）複審意見並重新驗證。
+    依 dual-ai-workflow 第 4 階段（Claude Code 修正），請逐條處理 Codex 複審意見並重新驗證。
 
     【背景】
     - 任務：【任務名稱】
@@ -679,7 +679,7 @@
   flow: dualai
   stage: '5'
   prompt: |-
-    dual-ai-workflow 第 5 階段（Claude Code 複審）已通過，無 P0/P1/P2 殘留問題。
+    dual-ai-workflow 第 5 階段（Codex 複審）已通過，無 P0/P1/P2 殘留問題。
 
     請執行下列存檔收尾工作（不再做功能修改）：
 
@@ -690,7 +690,7 @@
 
     【二、DUAL-AI-STATE.md 收尾】
     - 將「目前階段」改為「✅ 已完成（dual-ai-workflow 第 5 階段複審通過）」。
-    - 「已完成事項」追加一行：「第 5 階段 Claude Code（VS Code）複審通過，無 P0/P1/P2 殘留，commit【hash】為最終存檔。」
+    - 「已完成事項」追加一行：「第 5 階段 Codex 複審通過，無 P0/P1/P2 殘留，commit【hash】為最終存檔。」
     - 「下一步」改為：「等待使用者決定是否 push 到 origin/main；多裝置同步請以本機標準版覆蓋。」
     - 「未解決問題」保留尚未處理但已知的小事項。
     - 更新「最後更新時間」為現在時間。
