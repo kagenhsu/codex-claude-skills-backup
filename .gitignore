@@ -20,3 +20,8 @@ skills/*-private/
 skills/*
 !skills/dual-ai-workflow/
 !skills/plan-progress/
+!skills/handoff-now/
+
+# 緊急現場交接快照（含對話內容，不外流）
+.handoff-now.md
+.handoff-now.bak.md

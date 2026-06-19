@@ -2,6 +2,13 @@
 
 本文件用繁體中文記錄每次推到 GitHub 的主要變更，方便之後回頭看「這一版增加了什麼功能」。
 
+## 未發布
+
+### 改善與修正
+
+- 配額守門員補強 Claude Code context proxy：`latest_session_usage_proxy()` 不再只看 3 個最新 session 檔，避免新開多個尚未收到 assistant 回覆的 session 時誤判成沒有可用 context 資料。
+- 浮動窗改為依內容自動撐高，避免 Claude Code 視窗從 2 行變 3 行後卡片擠到 footer。
+
 ## v2.4.0 — 專案開發分頁說明卡與 plan-progress skill
 
 發布日期：2026-06-16

@@ -53,6 +53,8 @@ P2-V22（給未來使用週後評估，不主動修）：
 - P2-V22-2：`.tar.gz` 對 Win10 純新手可能需要解壓工具提醒。
 - P2-V22-3：下載備份包按鈕視覺與「複製指令」相似。
 - P2-V22-4：`cmdRow` 複製出的指令含 `<...>` placeholder。
+- P2-V22-5：`scripts/quota_guard_snapshot.py` 目前把 Claude session log 的 context 窗口先固定當 `200,000 tokens`；若未來實際接到非 200K 的 Claude 模型，需要按 `message.model` 補一份 context window 對照表再換算。
+- P2-V22-6：`scripts/quota_guard_floating.swift` 的最終交接提示詞已對 Claude / Codex 分流（Claude 用 `/handoff-now`，Codex 讀 `skills/handoff-now/templates/handoff-now.md`）；目前不算實際壞掉。若未來使用者仍覺得繞，再考慮把按鈕文案拆成雙版本。
 
 下一棒要做：
 - 使用者開新專案「人生管理系統」。
