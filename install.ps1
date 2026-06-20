@@ -129,7 +129,7 @@ function Resolve-Python {
 try {
     `$pythonCmd = Resolve-Python
     Write-Host "正在啟動本地控制台網址..."
-    Write-Host "瀏覽器會自動打開 http://127.0.0.1:8000/index.html（若 8000 被占用，會改用其他可用連接埠）。"
+    Write-Host "瀏覽器會自動打開 http://127.0.0.1:7000~7999/index.html 的其中一個可用網址。"
     Write-Host "這個視窗請先不要關閉；關閉後，本地網址就會停止。"
     Write-Host ""
     if (`$pythonCmd.Count -gt 1) {

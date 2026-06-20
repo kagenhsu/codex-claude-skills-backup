@@ -57,14 +57,18 @@ def remaining_text_from_timestamp(timestamp):
         now_local = datetime.now().astimezone()
         target_local = datetime.fromtimestamp(target).astimezone()
         delta_seconds = int((target_local - now_local).total_seconds())
+        day_diff = (target_local.date() - now_local.date()).days
+        hhmm = target_local.strftime("%H:%M")
         if delta_seconds <= 0:
-            return "已重置"
+            if day_diff >= 0:
+                return f"今天 {hhmm} 已重置"
+            if day_diff == -1:
+                return f"昨天 {hhmm} 已重置"
+            return f"{target_local.month}/{target_local.day} {hhmm} 已重置"
         # 一律顯示「現實的幾點幾分重置」，依日期距離切標籤：
         #   今天 → 「今天 HH:MM 重置」
         #   明天 → 「明天 HH:MM 重置」
         #   更遠 → 「M/D HH:MM 重置」
-        day_diff = (target_local.date() - now_local.date()).days
-        hhmm = target_local.strftime("%H:%M")
         if day_diff <= 0:
             return f"今天 {hhmm} 重置"
         if day_diff == 1:
@@ -94,6 +98,22 @@ def is_future_timestamp(timestamp):
         return False
     now = int(datetime.now(timezone.utc).timestamp())
     return target > now
+
+
+def next_cycle_timestamp(timestamp, cycle_seconds):
+    if timestamp in (None, ""):
+        return timestamp
+    try:
+        target = int(timestamp)
+        cycle = int(cycle_seconds)
+    except Exception:
+        return timestamp
+    if cycle <= 0:
+        return target
+    now = int(datetime.now(timezone.utc).timestamp())
+    while target <= now:
+        target += cycle
+    return target
 
 
 def unresolved_window(title, text="尚未接上"):
@@ -135,10 +155,33 @@ def claude_installed():
     )
 
 
+def resolve_codex_binary():
+    # 1) PATH（既有行為，最高優先）
+    binary = shutil.which("codex")
+    if binary:
+        return binary
+    # 2) 已安裝的 Codex.app 內建 codex（macOS App Store / DMG 安裝後不會自動進 PATH）
+    bundled = Path("/Applications/Codex.app/Contents/Resources/codex")
+    if bundled.exists():
+        return str(bundled)
+    # 3) ~/.codex/plugins 內的 app-server plugin 也帶一份 codex
+    plugin = Path.home() / ".codex" / "plugins" / ".plugin-appserver" / "codex"
+    if plugin.exists():
+        return str(plugin)
+    # 4) 有些使用者會把 App 裝在 ~/Applications
+    home_bundled = Path.home() / "Applications" / "Codex.app" / "Contents" / "Resources" / "codex"
+    if home_bundled.exists():
+        return str(home_bundled)
+    return None
+
+
 def read_codex_rate_limits():
+    binary = resolve_codex_binary()
+    if not binary:
+        return None
     try:
         process = subprocess.Popen(
-            ["codex", "app-server", "--stdio"],
+            [binary, "app-server", "--stdio"],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
@@ -401,6 +444,8 @@ def latest_session_usage_proxy():
 
 def claude_window_from_fallback(title, window):
     timestamp = (window or {}).get("resets_at")
+    cycle_seconds = 5 * 3600 if title == "本輪" else 7 * 24 * 3600
+    timestamp = next_cycle_timestamp(timestamp, cycle_seconds)
     if not is_future_timestamp(timestamp):
         return unresolved_claude_window(title)
     return {
@@ -412,13 +457,13 @@ def claude_window_from_fallback(title, window):
 
 
 def claude_windows_from_rate_limits(five_hour, seven_day):
+    five_hour_reset = next_cycle_timestamp(iso_to_timestamp(five_hour.get("resets_at")), 5 * 3600)
+    seven_day_reset = next_cycle_timestamp(iso_to_timestamp(seven_day.get("resets_at")), 7 * 24 * 3600)
     return [
         {
             "title": "本輪",
             "remaining_percent": remaining_percent_from_used(five_hour.get("used_percentage")),
-            "remaining_text": remaining_text_from_timestamp(
-                iso_to_timestamp(five_hour.get("resets_at"))
-            ),
+            "remaining_text": remaining_text_from_timestamp(five_hour_reset),
             "alert_stage": alert_stage_from_remaining_percent(
                 remaining_percent_from_used(five_hour.get("used_percentage"))
             ),
@@ -426,9 +471,7 @@ def claude_windows_from_rate_limits(five_hour, seven_day):
         {
             "title": "本週",
             "remaining_percent": remaining_percent_from_used(seven_day.get("used_percentage")),
-            "remaining_text": remaining_text_from_timestamp(
-                iso_to_timestamp(seven_day.get("resets_at"))
-            ),
+            "remaining_text": remaining_text_from_timestamp(seven_day_reset),
             "alert_stage": alert_stage_from_remaining_percent(
                 remaining_percent_from_used(seven_day.get("used_percentage"))
             ),

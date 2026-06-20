@@ -59,6 +59,37 @@ func unavailableDetailText(_ text: String, percent: Double?) -> String {
     return "可於 \(trimmed) 後再次使用"
 }
 
+func resetBufferHintText(_ text: String, percent: Double?) -> String? {
+    guard percent != nil else { return nil }
+    let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard trimmed.contains("重置") else { return nil }
+    return "建議預留 1~2 小時緩衝"
+}
+
+func stageSummaryText(for status: ProviderStatus) -> String {
+    let stages = status.windows.map(\.alertStage)
+    if stages.contains("reserve") { return "強制收尾" }
+    if stages.contains("handoff") { return "交接準備" }
+    if stages.contains("prepare") { return "整理進度" }
+    if stages.contains("unavailable") { return "等待資料" }
+    return "正常"
+}
+
+func stageBadgeColor(_ stage: String) -> NSColor {
+    switch stage {
+    case "prepare":
+        return NSColor.systemYellow.withAlphaComponent(0.18)
+    case "handoff":
+        return NSColor.systemOrange.withAlphaComponent(0.18)
+    case "reserve":
+        return NSColor.systemRed.withAlphaComponent(0.16)
+    case "unavailable":
+        return NSColor.systemGray.withAlphaComponent(0.18)
+    default:
+        return NSColor.systemGreen.withAlphaComponent(0.16)
+    }
+}
+
 func runCommand(_ launchPath: String, arguments: [String]) -> String? {
     let process = Process()
     process.executableURL = URL(fileURLWithPath: launchPath)
@@ -192,31 +223,55 @@ func loadStatuses() -> [ProviderStatus] {
 final class UsageRowView: NSView {
     init(window: UsageWindow) {
         super.init(frame: .zero)
+        wantsLayer = true
+        layer?.backgroundColor = NSColor.white.withAlphaComponent(0.55).cgColor
+        layer?.cornerRadius = 12
+        layer?.borderWidth = 1
+        layer?.borderColor = NSColor.separatorColor.withAlphaComponent(0.6).cgColor
 
         let label = NSTextField(labelWithString: window.title)
-        label.font = .systemFont(ofSize: 12, weight: .semibold)
+        label.font = .systemFont(ofSize: 11, weight: .semibold)
+        label.textColor = .secondaryLabelColor
+        label.setContentCompressionResistancePriority(.required, for: .horizontal)
+        label.widthAnchor.constraint(equalToConstant: 40).isActive = true
 
-        let value = NSTextField(
-            labelWithString: "\(remainingPercentText(window.remainingPercent))  \(unavailableDetailText(window.remainingText, percent: window.remainingPercent))"
+        let percent = NSTextField(labelWithString: remainingPercentText(window.remainingPercent))
+        percent.font = .systemFont(ofSize: 22, weight: .bold)
+        percent.textColor = barColor(for: window.alertStage)
+        percent.alignment = .right
+        percent.setContentCompressionResistancePriority(.required, for: .horizontal)
+        percent.widthAnchor.constraint(equalToConstant: 64).isActive = true
+
+        let resetText = NSTextField(
+            labelWithString: unavailableDetailText(window.remainingText, percent: window.remainingPercent)
         )
-        value.font = .systemFont(ofSize: 12, weight: .medium)
-        value.textColor = .secondaryLabelColor
+        resetText.font = .systemFont(ofSize: 12, weight: .medium)
+        resetText.textColor = .secondaryLabelColor
+        resetText.lineBreakMode = .byWordWrapping
+        resetText.maximumNumberOfLines = 2
+        resetText.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        resetText.alignment = .right
 
-        let row = NSStackView(views: [label, NSView(), value])
+        let valueColumn = NSStackView(views: [percent, resetText])
+        valueColumn.orientation = .vertical
+        valueColumn.alignment = .trailing
+        valueColumn.spacing = 2
+
+        let row = NSStackView(views: [label, NSView(), valueColumn])
         row.orientation = .horizontal
-        row.alignment = .centerY
+        row.alignment = .top
 
         let track = NSView()
         track.wantsLayer = true
-        track.layer?.backgroundColor = NSColor.separatorColor.withAlphaComponent(0.3).cgColor
-        track.layer?.cornerRadius = 4
+        track.layer?.backgroundColor = NSColor.separatorColor.withAlphaComponent(0.22).cgColor
+        track.layer?.cornerRadius = 5
         track.translatesAutoresizingMaskIntoConstraints = false
-        track.heightAnchor.constraint(equalToConstant: 8).isActive = true
+        track.heightAnchor.constraint(equalToConstant: 10).isActive = true
 
         let fill = NSView()
         fill.wantsLayer = true
         fill.layer?.backgroundColor = barColor(for: window.alertStage).cgColor
-        fill.layer?.cornerRadius = 4
+        fill.layer?.cornerRadius = 5
         fill.translatesAutoresizingMaskIntoConstraints = false
         track.addSubview(fill)
 
@@ -231,15 +286,15 @@ final class UsageRowView: NSView {
         let stack = NSStackView(views: [row, track])
         stack.orientation = .vertical
         stack.alignment = .leading
-        stack.spacing = 6
+        stack.spacing = 8
         stack.translatesAutoresizingMaskIntoConstraints = false
         addSubview(stack)
 
         NSLayoutConstraint.activate([
-            stack.leadingAnchor.constraint(equalTo: leadingAnchor),
-            stack.trailingAnchor.constraint(equalTo: trailingAnchor),
-            stack.topAnchor.constraint(equalTo: topAnchor),
-            stack.bottomAnchor.constraint(equalTo: bottomAnchor)
+            stack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
+            stack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),
+            stack.topAnchor.constraint(equalTo: topAnchor, constant: 12),
+            stack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -12)
         ])
     }
 
@@ -251,21 +306,40 @@ final class ProviderCardView: NSView {
     init(status: ProviderStatus) {
         super.init(frame: .zero)
         wantsLayer = true
-        layer?.backgroundColor = NSColor.controlBackgroundColor.withAlphaComponent(0.95).cgColor
-        layer?.cornerRadius = 14
+        layer?.backgroundColor = NSColor.controlBackgroundColor.withAlphaComponent(0.96).cgColor
+        layer?.cornerRadius = 16
         layer?.borderWidth = 1
-        layer?.borderColor = NSColor.separatorColor.cgColor
+        layer?.borderColor = NSColor.separatorColor.withAlphaComponent(0.75).cgColor
 
         let title = NSTextField(labelWithString: status.name)
-        title.font = .systemFont(ofSize: 16, weight: .bold)
+        title.font = .systemFont(ofSize: 18, weight: .bold)
+
+        let summary = NSTextField(labelWithString: stageSummaryText(for: status))
+        summary.font = .systemFont(ofSize: 11, weight: .semibold)
+        summary.textColor = .secondaryLabelColor
+        summary.alignment = .center
+        summary.wantsLayer = true
+        summary.drawsBackground = true
+        summary.backgroundColor = stageBadgeColor(status.windows.map(\.alertStage).contains("reserve") ? "reserve" : status.windows.map(\.alertStage).contains("handoff") ? "handoff" : status.windows.map(\.alertStage).contains("prepare") ? "prepare" : status.windows.map(\.alertStage).contains("unavailable") ? "unavailable" : "normal")
+        summary.isBezeled = false
 
         let rows = status.windows.map { UsageRowView(window: $0) }
         let rowsStack = NSStackView(views: rows)
         rowsStack.orientation = .vertical
         rowsStack.alignment = .leading
-        rowsStack.spacing = 12
+        rowsStack.distribution = .fillEqually
+        rowsStack.spacing = 10
 
-        let stack = NSStackView(views: [title, rowsStack])
+        let header = NSStackView(views: [title, NSView(), summary])
+        header.orientation = .horizontal
+        header.alignment = .centerY
+
+        let hint = NSTextField(labelWithString: "建議預留 1~2 小時緩衝再換手")
+        hint.font = .systemFont(ofSize: 11, weight: .regular)
+        hint.textColor = .tertiaryLabelColor
+        hint.isHidden = !status.windows.contains { resetBufferHintText($0.remainingText, percent: $0.remainingPercent) != nil }
+
+        let stack = NSStackView(views: [header, rowsStack, hint])
         stack.orientation = .vertical
         stack.alignment = .leading
         stack.spacing = 12
@@ -276,7 +350,9 @@ final class ProviderCardView: NSView {
             stack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
             stack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
             stack.topAnchor.constraint(equalTo: topAnchor, constant: 16),
-            stack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -16)
+            stack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -16),
+            summary.heightAnchor.constraint(equalToConstant: 24),
+            summary.widthAnchor.constraint(greaterThanOrEqualToConstant: 72)
         ])
     }
 
@@ -369,7 +445,8 @@ final class MiniContentView: NSView {
 }
 
 final class FloatingQuotaWindow: NSObject, NSApplicationDelegate {
-    private let fullWindowSize = NSSize(width: 500, height: 380)
+    private let fullWindowSize = NSSize(width: 560, height: 420)
+    private let minimumFullWindowSize = NSSize(width: 420, height: 320)
     private let miniWindowSize = NSSize(width: 260, height: 64)
     private var window: NSPanel!
     private let cardsStack = NSStackView()
@@ -389,10 +466,18 @@ final class FloatingQuotaWindow: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupWindow()
+        // 先把空殼視窗推到前景，確保使用者一定看得到，
+        // 之後 render() 再填內容。原本順序「先 render 再 bringWindowToFront」
+        // 在第一次跑時，render() 內部 `card.widthAnchor.constraint(equalTo: contentStack.widthAnchor)`
+        // 在 card 還沒進 view hierarchy 就 activate，會丟 NSException 被 run loop 吞掉，
+        // 導致 bringWindowToFront 跟著被跳過、視窗永遠不出來。
+        bringWindowToFront()
         render()
         startAutoRefresh()
-        NSApp.activate(ignoringOtherApps: true)
-        window.makeKeyAndOrderFront(nil)
+        bringWindowToFront()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
+            self?.bringWindowToFront()
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -464,32 +549,47 @@ final class FloatingQuotaWindow: NSObject, NSApplicationDelegate {
         let rect = NSRect(x: 0, y: 0, width: fullWindowSize.width, height: fullWindowSize.height)
         window = NSPanel(
             contentRect: rect,
-            styleMask: [.titled, .closable, .miniaturizable, .fullSizeContentView],
+            styleMask: [.nonactivatingPanel, .titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
         window.title = "配額守門員"
-        window.level = .floating
         window.isFloatingPanel = true
+        window.isReleasedWhenClosed = false
         window.hidesOnDeactivate = false
-        window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
         window.titlebarAppearsTransparent = true
-        window.center()
+        // 關鍵：level 一定要在 isFloatingPanel 之後設，不然會被 floating(3) 蓋掉。
+        // statusBar level 會浮在全螢幕視窗 / Dock / menu bar 之上，
+        // 配 .nonactivatingPanel + canJoinAllSpaces + fullScreenAuxiliary，
+        // 才能在任何 Space 都看得到浮動窗。
+        window.level = .statusBar
+        placeWindowAtTopRight(size: fullWindowSize)
 
+        // 用 .hudWindow + .withinWindow 是為了：
+        // 1) 即使 panel 是 .nonactivatingPanel（不會 active），背景仍然會被畫出來，
+        //    避免整個視窗看起來變全透明而「以為消失」。
+        // 2) .withinWindow 不依賴桌面內容，即使視窗位置背後是空的也能正常顯示。
         let visual = NSVisualEffectView(frame: rect)
-        visual.material = .sidebar
-        visual.blendingMode = .behindWindow
+        visual.material = .hudWindow
+        visual.blendingMode = .withinWindow
         visual.state = .active
+        visual.wantsLayer = true
+        // 再墊一層底色保險。萬一 VisualEffectView 因為任何原因沒渲染，
+        // 這個底色會讓視窗仍然看得到（不會變成完全透明）。
+        visual.layer?.backgroundColor = NSColor.windowBackgroundColor.withAlphaComponent(0.92).cgColor
         window.contentView = visual
+        window.isOpaque = false
+        window.backgroundColor = NSColor.clear
 
         let title = NSTextField(labelWithString: "Codex Pro × Claude Code")
-        title.font = .systemFont(ofSize: 20, weight: .bold)
+        title.font = .systemFont(ofSize: 17, weight: .bold)
 
         updatedLabel.font = .systemFont(ofSize: 11, weight: .medium)
         updatedLabel.textColor = .secondaryLabelColor
 
         cardsStack.orientation = .vertical
-        cardsStack.alignment = .leading
+        cardsStack.alignment = .centerX
         cardsStack.spacing = 12
 
         handoffButton.target = self
@@ -506,12 +606,18 @@ final class FloatingQuotaWindow: NSObject, NSApplicationDelegate {
 
         let footer = NSStackView(views: [miniModeButton, handoffButton])
         footer.orientation = .horizontal
-        footer.alignment = .leading
+        footer.alignment = .centerY
+        footer.distribution = .fillEqually
+        footer.spacing = 10
+        miniModeButton.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        handoffButton.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        miniModeButton.heightAnchor.constraint(equalToConstant: 32).isActive = true
+        handoffButton.heightAnchor.constraint(equalToConstant: 32).isActive = true
 
         contentStack = NSStackView(views: [header, cardsStack, footer])
         contentStack.orientation = .vertical
-        contentStack.alignment = .leading
-        contentStack.spacing = 14
+        contentStack.alignment = .centerX
+        contentStack.spacing = 16
         contentStack.translatesAutoresizingMaskIntoConstraints = false
         visual.addSubview(contentStack)
 
@@ -533,7 +639,38 @@ final class FloatingQuotaWindow: NSObject, NSApplicationDelegate {
             miniContainerView.bottomAnchor.constraint(equalTo: visual.bottomAnchor)
         ]
         NSLayoutConstraint.activate(fullModeConstraints + miniModeConstraints)
-        window.minSize = fullWindowSize
+        window.minSize = minimumFullWindowSize
+    }
+
+    private func placeWindowAtTopRight(size: NSSize) {
+        guard let screen = preferredScreen() else { return }
+        let visibleFrame = screen.visibleFrame
+        let origin = NSPoint(
+            x: visibleFrame.maxX - size.width - 20,
+            y: visibleFrame.maxY - size.height - 20
+        )
+        window.setFrame(NSRect(origin: origin, size: size), display: true)
+    }
+
+    private func preferredScreen() -> NSScreen? {
+        // 優先放到「使用者目前游標所在的螢幕」，這樣多螢幕情境下
+        // 浮動窗一定出現在使用者眼前那塊。
+        let cursor = NSEvent.mouseLocation
+        if let here = NSScreen.screens.first(where: { NSPointInRect(cursor, $0.frame) }) {
+            return here
+        }
+        // 退而求其次：menu bar 主螢幕（frame.origin == .zero）。
+        if let primary = NSScreen.screens.first(where: { $0.frame.origin == .zero }) {
+            return primary
+        }
+        return NSScreen.main ?? NSScreen.screens.first
+    }
+
+    private func bringWindowToFront() {
+        NSApp.activate(ignoringOtherApps: true)
+        NSRunningApplication.current.activate(options: [.activateAllWindows, .activateIgnoringOtherApps])
+        window.orderFrontRegardless()
+        window.makeKeyAndOrderFront(nil)
     }
 
     private func render() {
@@ -547,8 +684,11 @@ final class FloatingQuotaWindow: NSObject, NSApplicationDelegate {
             for item in statuses {
                 let card = ProviderCardView(status: item)
                 card.translatesAutoresizingMaskIntoConstraints = false
-                card.widthAnchor.constraint(equalToConstant: 464).isActive = true
+                // 一定要先 addArrangedSubview 再 activate constraint，
+                // 不然 card 還沒進 view hierarchy 跟 contentStack 沒有共同祖先，
+                // activate 會丟 NSException 被吃掉，整個流程斷在這。
                 cardsStack.addArrangedSubview(card)
+                card.widthAnchor.constraint(equalTo: contentStack.widthAnchor).isActive = true
             }
             resizeWindowToFitContent()
         }
@@ -585,11 +725,14 @@ final class FloatingQuotaWindow: NSObject, NSApplicationDelegate {
             window.styleMask.insert(.titled)
             window.styleMask.insert(.closable)
             window.styleMask.insert(.miniaturizable)
+            window.styleMask.insert(.resizable)
             window.title = "配額守門員"
-            window.minSize = fullWindowSize
+            window.minSize = minimumFullWindowSize
 
             if let storedFrame = fullModeFrame {
                 window.setFrame(storedFrame, display: true, animate: false)
+            } else {
+                placeWindowAtTopRight(size: fullWindowSize)
             }
             visual.layoutSubtreeIfNeeded()
             render()
@@ -604,6 +747,7 @@ final class FloatingQuotaWindow: NSObject, NSApplicationDelegate {
         window.styleMask.remove(.titled)
         window.styleMask.remove(.closable)
         window.styleMask.remove(.miniaturizable)
+        window.styleMask.remove(.resizable)
         window.minSize = miniWindowSize
 
         var miniFrame = window.frame
@@ -718,12 +862,18 @@ final class FloatingQuotaWindow: NSObject, NSApplicationDelegate {
     private func resizeWindowToFitContent() {
         guard let contentView = window.contentView else { return }
         contentView.layoutSubtreeIfNeeded()
+        let targetWidth = max(window.minSize.width, contentStack.fittingSize.width + 36)
         let targetHeight = max(window.minSize.height, contentStack.fittingSize.height + 36)
         var frame = window.frame
-        let delta = targetHeight - frame.size.height
-        guard abs(delta) > 1 else { return }
-        frame.origin.y -= delta
-        frame.size.height = targetHeight
+        let resizedWidth = max(frame.size.width, targetWidth)
+        let resizedHeight = max(frame.size.height, targetHeight)
+        let deltaWidth = resizedWidth - frame.size.width
+        let deltaHeight = resizedHeight - frame.size.height
+        if abs(deltaWidth) <= 1 && abs(deltaHeight) <= 1 { return }
+        frame.origin.x -= deltaWidth / 2
+        frame.origin.y -= deltaHeight
+        frame.size.width = resizedWidth
+        frame.size.height = resizedHeight
         window.setFrame(frame, display: true, animate: false)
     }
 

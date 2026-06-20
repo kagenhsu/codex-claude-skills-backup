@@ -57,14 +57,18 @@ sleep 0.3
 
 log "啟動 serve_console.py（背景，port ${PORT_START}~$((PORT_START + PORT_TRIES - 1))）"
 rm -f "$URL_FILE"
-nohup "$PYTHON_BIN" "$REPO_DIR/scripts/serve_console.py" \
+# 重要：不能 disown — 因為 LaunchAgent 一旦 payload 自己 exit，
+# launchd 會把整個 process group 清掉（包含 nohup 過的子 process）。
+# 解法是：payload 不 exit，最後用 wait 把 serve / swift 兩個 PID 接住，
+# 只要其中一個活著，payload 就活著，launchd 就不會收。
+"$PYTHON_BIN" "$REPO_DIR/scripts/serve_console.py" \
   --root "$REPO_DIR" \
   --host 127.0.0.1 \
   --port "$PORT_START" \
   --tries "$PORT_TRIES" \
   --write-url-file "$URL_FILE" \
   >> "$LOG_DIR/serve_console.log" 2>&1 &
-disown
+SERVE_PID=$!
 
 # 等 serve_console 真的把 URL 寫出來且 listen 起來，最多等 8 秒。
 URL=""
@@ -87,16 +91,25 @@ else
 fi
 
 # 3. 桌面浮動小視窗：之前殘留的先收掉再重啟一次，確保資料是新的。
+SWIFT_PID=""
 if [[ -n "$SWIFT_BIN" ]]; then
   /usr/bin/pkill -f "quota_guard_floating.swift" >/dev/null 2>&1 || true
   sleep 0.3
   log "啟動 quota_guard_floating.swift（背景）"
-  nohup "$SWIFT_BIN" "$REPO_DIR/scripts/quota_guard_floating.swift" \
+  "$SWIFT_BIN" "$REPO_DIR/scripts/quota_guard_floating.swift" \
     >> "$LOG_DIR/floating.log" 2>&1 &
-  disown
+  SWIFT_PID=$!
 else
   log "找不到 swift，跳過桌面浮動小視窗。請執行 xcode-select --install。"
 fi
 
-log "==== autostart 完成 ===="
+log "==== autostart 完成；payload 進入 wait 等兩個子 process（讓 launchd 看到 payload 還活著，不會清掉 children） ===="
+
+# 任何一個 child 死了 payload 跟著結束 → launchd 會把另一個也收掉，
+# 但這是「至少其中一個壞掉」的情況，使用者本來就要重新觸發。
+if [[ -n "$SWIFT_PID" ]]; then
+  wait "$SERVE_PID" "$SWIFT_PID"
+else
+  wait "$SERVE_PID"
+fi
 exit 0
