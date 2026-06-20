@@ -16,6 +16,16 @@ import webbrowser
 from pathlib import Path
 
 
+def write_text_file(path: str | None, text: str) -> None:
+    if not path:
+        return
+    target = Path(path).expanduser()
+    target.parent.mkdir(parents=True, exist_ok=True)
+    tmp = target.with_suffix(target.suffix + ".tmp")
+    tmp.write_text(text, encoding="utf-8")
+    tmp.replace(target)
+
+
 def pick_port(host: str, start: int, tries: int) -> int:
     for port in range(start, start + tries):
         with contextlib.closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sock:
@@ -171,8 +181,13 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Serve the Codex console locally.")
     parser.add_argument("--root", default=".", help="Console root directory")
     parser.add_argument("--host", default="127.0.0.1", help="Host to bind")
-    parser.add_argument("--port", type=int, default=8000, help="Preferred port")
-    parser.add_argument("--tries", type=int, default=20, help="How many ports to try")
+    parser.add_argument("--port", type=int, default=7000, help="Preferred port")
+    parser.add_argument("--tries", type=int, default=1000, help="How many ports to try")
+    parser.add_argument(
+        "--write-url-file",
+        default="",
+        help="Optional file path for persisting the selected local URL",
+    )
     parser.add_argument(
         "--open-browser",
         action="store_true",
@@ -203,6 +218,7 @@ def main() -> int:
     )
     server = http.server.ThreadingHTTPServer((args.host, port), handler)
     url = f"http://{args.host}:{port}/index.html"
+    write_text_file(args.write_url_file, url + "\n")
 
     print("本地控制台已啟動。")
     print(f"請打開：{url}")

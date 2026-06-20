@@ -4,8 +4,18 @@
 
 ## 未發布
 
+### 新增
+
+- macOS：新增「開機自動啟動」一鍵安裝。雙擊 `安裝開機自動啟動 (macOS).command` 後，每次登入就會自動跑本地控制台 + 桌面浮動小視窗，不用再手動雙擊任何按鈕。底層是 `~/Library/LaunchAgents/com.kagenhsu.quota-guardian.autostart.plist`，要關掉雙擊 `移除開機自動啟動 (macOS).command` 即可。log 在 `~/Library/Logs/QuotaGuardian/`。
+- Windows：新增三個 `.bat` 入口（`開啟配額守門員.bat` / `更新並開啟控制台.bat` / `開啟控制台與配額守門員.bat`）對齊 macOS 上的同名按鈕，第一次讓 Windows 使用者也能雙擊就用。
+- Windows：新增「開機自動啟動」一鍵安裝（`安裝開機自動啟動 (Windows).bat`）。底層在 Startup folder 放一個指向 `%APPDATA%\QuotaGuardian\launcher.vbs` 的捷徑，登入後完全不跳黑色 cmd 視窗。
+- Windows：新增桌面浮動小視窗 `scripts/quota_guard_floating.py`（Tkinter 版）。資料來源跟 swift 版一樣是 `quota_guard_snapshot.py`，文案、顏色、刷新頻率、「複製切換／最終交接提示詞」按鈕都對齊 swift 版。
+
 ### 改善與修正
 
+- v2.5 補修 macOS 開機自動啟動：LaunchAgent 不再直接執行 `~/Documents/...` 內的 repo，改為安裝時同步 runtime 到 `~/Library/Application Support/QuotaGuardian/runtime/` 後再啟動，避開 `Operation not permitted`。
+- v2.5 補修本地控制台埠策略：`serve_console.py` 與自動啟動 payload 改為優先使用 `127.0.0.1:7000~7999`，避免撞上其他常見本機開發服務的 8000。
+- Windows 自動啟動 payload 修正 `py.exe -w` 啟動方式，避免把 `py.exe -w` 當成單一執行檔路徑。
 - 配額守門員補強 Claude Code context proxy：`latest_session_usage_proxy()` 不再只看 3 個最新 session 檔，避免新開多個尚未收到 assistant 回覆的 session 時誤判成沒有可用 context 資料。
 - 浮動窗改為依內容自動撐高，避免 Claude Code 視窗從 2 行變 3 行後卡片擠到 footer。
 
