@@ -4,6 +4,7 @@ set -euo pipefail
 LABEL="com.kagenhsu.quota-guardian.autostart"
 PLIST_PATH="$HOME/Library/LaunchAgents/${LABEL}.plist"
 RUNTIME_DIR="$HOME/Library/Application Support/QuotaGuardian"
+RUNTIME_REPO_DIR="$RUNTIME_DIR/runtime/codex-claude-skills-backup"
 
 if [[ -f "$PLIST_PATH" ]]; then
   launchctl bootout "gui/$(id -u)" "$PLIST_PATH" >/dev/null 2>&1 || true
@@ -17,7 +18,10 @@ fi
 /usr/bin/pkill -f "quota_guard_floating.swift" >/dev/null 2>&1 || true
 /usr/bin/pkill -f "serve_console.py.*codex-claude-skills-backup" >/dev/null 2>&1 || true
 rm -f "$RUNTIME_DIR/autostart_macos_payload.sh"
-rm -rf "$RUNTIME_DIR/runtime"
+rm -rf "$RUNTIME_REPO_DIR"
+if [[ -d "$RUNTIME_DIR/runtime" ]] && [[ -z "$(find "$RUNTIME_DIR/runtime" -mindepth 1 -maxdepth 1 -print -quit 2>/dev/null)" ]]; then
+  rmdir "$RUNTIME_DIR/runtime" >/dev/null 2>&1 || true
+fi
 
 echo
 echo "提醒：本地控制台網址（serve_console.py）若還在背景跑，"

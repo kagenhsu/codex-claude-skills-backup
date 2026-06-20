@@ -2,11 +2,11 @@
 
 任務名稱：v2.5 — 開機自動啟動 + Windows 版桌面浮動小視窗
 
-目前階段：✅ Claude Code 第一版完成；等 Codex 複查 + 補修 + 本地 commit；尚未 push
+目前階段：✅ Codex 複查 + 補修完成；已本地 commit；尚未 push
 
 狀態：使用者明確要求修補「每次開機都要找 AI 修配額守門員」的痛點，並要求避開 8000 與其他本機開發服務衝突
 
-最後更新時間：2026-06-20 Claude Code 完成檔案落地
+最後更新時間：2026-06-20 Codex 完成複查、實機驗證與最小補修
 
 ## 本輪已完成事項
 
@@ -57,29 +57,28 @@
 - `NEXT-AI-TASK.md` 改寫成 v2.5 給 Codex 複查的版本。
 - 本檔（`DUAL-AI-STATE.md`）更新為當前狀態。
 
-## 驗證結果（Claude Code 自驗）
+## 驗證結果
 
 - `bash -n` 通過：autostart_macos_payload.sh / install_macos_autostart.sh / uninstall_macos_autostart.sh / 安裝開機自動啟動 (macOS).command / 移除開機自動啟動 (macOS).command。
 - `python3 -c "import ast; ast.parse(...)"` 通過：scripts/quota_guard_floating.py。
 - 模擬 plist 內容 `plutil -lint` 通過：路徑含中文 + 空格無 escape 問題。
 - helper 邏輯抽出測試：`color_for_stage('reserve')` → `#E63946`、`build_handoff_prompt()` 對齊 swift 版開頭文案、`final_handoff_needed()` 在 reserve stage 觸發 True、`next_ai_name()` 挑 percent 最高的。
+- Codex 真機跑過 `bash scripts/install_macos_autostart.sh` → `launchctl print gui/$UID/com.kagenhsu.quota-guardian.autostart` 顯示 `state = running`、`active count = 1`，payload 實際從 `~/Library/Application Support/QuotaGuardian/runtime/codex-claude-skills-backup` 啟動。
+- `~/Library/Logs/QuotaGuardian/autostart.log` 確認有 `==== autostart 完成；payload 進入 wait ... ====`，且本地控制台實際寫出 `http://127.0.0.1:7000/index.html`，`curl` 可回 200。
+- Codex 真機跑過 `bash scripts/uninstall_macos_autostart.sh` → plist 移除、`launchctl print` 回 `Could not find service`。
 
-## 已知尚未驗證（請 Codex 補）
+## 已知尚未驗證 / 未解決問題
 
-- macOS install + uninstall 已在真機 launchctl 流程實跑；仍要確認不同機器上 `7000~7999` 與 runtime copy 行為是否一致。
 - Windows 全部檔案沒實機跑（這台是 Mac）。Codex 如果手上有 Win 機可實機驗一次最好；不然請靜態審 PowerShell here-string / VBS 雙引號 / .bat unicode 路徑三件事。
+- 本輪靜態審看過 Windows 腳本：VBS here-string 的雙引號寫法正確；`Invoke-WebRequest` 等待 8 秒在本機觀測值夠用，但在登入時較慢的 Windows 機器上仍有可能太短，若日後出現「有啟動但沒自動開瀏覽器」再優先從這裡加長。
+- `NEXT-AI-TASK.md` 裡引用的 `memory/project_quota_guardian_baseline.md` / `memory/feedback_read_handoff_now_first.md` 目前不在 repo 內；這次複查改以實際保護檔案 `scripts/quota_guard_snapshot.py`、`scripts/quota_guard_floating.swift` 與 `.handoff-now.md` 準則為準。
 
 ## 下一步
 
-- Codex 跑 `NEXT-AI-TASK.md` 裡的「驗證指令」+ 視 baseline 守則修補。
-- 沒問題就建本地 commit：`v2.5：開機自動啟動 + Windows 版桌面浮動小視窗`。
-- 回報 commit hash 與 `git status --short --branch`。
+- 若使用者有 Windows 機，補跑一次 `安裝開機自動啟動 (Windows).bat`，確認瀏覽器 + Tkinter 小窗都會自動出現。
+- 本地 commit 已建立；實際 commit hash 以 git 回報為準。
+- 回報 commit hash 與 `git status --short --branch`，由使用者決定是否 push。
 - **不要 push**，等使用者明確授權。
-
-## 未解決問題
-
-- v2.2 的 commit 仍未 push（GitHub Pages 線上 demo 還是 v2.1）。本輪 v2.5 不主動補 push v2.2 — 由使用者一次決定要不要 push v2.2 + v2.5。
-- Codex 若實機驗證後發現需要把 swift 版改成支援「也偵測 Tkinter 同行 process」之類的整合，請先回報，**不要自動動 swift**（baseline 禁區）。
 
 ## 凍結期規則（沿用 v2.2）
 

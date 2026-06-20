@@ -14,6 +14,7 @@
 ### 改善與修正
 
 - v2.5 補修 macOS 開機自動啟動：LaunchAgent 不再直接執行 `~/Documents/...` 內的 repo，改為安裝時同步 runtime 到 `~/Library/Application Support/QuotaGuardian/runtime/` 後再啟動，避開 `Operation not permitted`。
+- v2.5 補修 macOS 移除腳本：`移除開機自動啟動 (macOS)` 現在只刪 `codex-claude-skills-backup` 自己的 runtime copy，不再整包刪掉 `QuotaGuardian/runtime/`。
 - v2.5 補修本地控制台埠策略：`serve_console.py` 與自動啟動 payload 改為優先使用 `127.0.0.1:7000~7999`，避免撞上其他常見本機開發服務的 8000。
 - Windows 自動啟動 payload 修正 `py.exe -w` 啟動方式，避免把 `py.exe -w` 當成單一執行檔路徑。
 - 配額守門員補強 Claude Code context proxy：`latest_session_usage_proxy()` 不再只看 3 個最新 session 檔，避免新開多個尚未收到 assistant 回覆的 session 時誤判成沒有可用 context 資料。
