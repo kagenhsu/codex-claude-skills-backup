@@ -292,3 +292,61 @@
   - 使用 dual-ai-workflow 開始三AI工作流，任務是：【任務描述】
   - 這是另一個 AI 的輸出，依 dual-ai-workflow 接續下一階段
   notes: 本專案自製；Codex 與 Claude Code 需同步到 ~/.codex/skills、~/.claude/skills 或各環境實際 skill 路徑；Claude Desktop 不安裝第三方 skills，請用提示詞庫手動套用
+- name: last30days
+  category: 資料研究與搜尋
+  risk: 中
+  summary: 研究任意主題最近 30 天的社群討論與網路訊號，綜合 Reddit、X、YouTube、Hacker News、Polymarket、GitHub 與網頁資料，整理成有引用的重點摘要
+  triggers:
+  - 使用 last30days 研究【主題】最近 30 天大家在討論什麼
+  - 用 last30days 比較【產品 A】vs【產品 B】最近一個月的社群反應
+  - 使用 last30days 幫我整理【人物／公司】最近 30 天的重要動向
+  notes: 來源 https://github.com/mvanhorn/last30days-skill 。此 skill 內含大量腳本，會連外查詢多個平台；首次執行可能掃描瀏覽器 cookies、寫入 ~/.config/last30days/.env、保存報告到 ~/Documents/Last30Days，且缺少 yt-dlp 時可能嘗試用 Homebrew 安裝，使用前先確認可接受這些行為
+- name: imagegen
+  category: 系統內建
+  risk: 低
+  summary: 系統內建圖片生成與修圖 skill，適合產生新圖片、修改既有圖片、做視覺變體或透明背景素材
+  triggers:
+  - 用 imagegen 幫我生成一張【圖片描述】
+  - 用 imagegen 把這張圖改成【風格／用途】
+  notes: Codex 內建 skill，不需要另外安裝；一般會優先走內建圖片工具
+- name: openai-docs
+  category: 系統內建
+  risk: 低
+  summary: 系統內建 OpenAI 官方文件查詢 skill，適合查 OpenAI API、模型選型、Codex 用法與官方最新文件
+  triggers:
+  - 用 openai-docs 查 OpenAI Responses API 怎麼用
+  - 用 openai-docs 幫我找 Codex 官方文件
+  notes: Codex 內建 skill，不需要另外安裝；偏官方文件與最新版資訊查詢
+- name: plugin-creator
+  category: 系統內建
+  risk: 中
+  summary: 系統內建外掛建立 skill，可幫你建立 Codex plugin 基本目錄、plugin.json 與 marketplace 設定
+  triggers:
+  - 用 plugin-creator 幫我建立一個新 plugin：【名稱】
+  - 用 plugin-creator 幫我補齊這個 plugin 的基本結構
+  notes: Codex 內建 skill，不需要另外安裝；會建立或修改本機 plugin 檔案結構，適合做外掛開發時使用
+- name: skill-creator
+  category: 系統內建
+  risk: 低
+  summary: 系統內建 skill 設計助手，幫你規劃新 skill 的結構、觸發規則、說明檔與附屬資源
+  triggers:
+  - 用 skill-creator 幫我設計一個新 skill：【用途】
+  - 用 skill-creator 幫我優化這個 SKILL.md
+  notes: Codex 內建 skill，不需要另外安裝；偏 skill 設計方法與結構建議，不是安裝器
+- name: skill-installer
+  category: 系統內建
+  risk: 中
+  summary: 系統內建 skill 安裝助手，可從 GitHub 或 curated 清單把 skill 安裝到 Codex skills 目錄
+  triggers:
+  - 用 skill-installer 幫我安裝這個 GitHub skill：【網址】
+  - 用 skill-installer 列出目前可安裝的 skills
+  notes: Codex 內建 skill，不需要另外安裝；會下載或複製 skill 到 ~/.codex/skills，安裝前仍建議先跑安檢
+- name: taste-skill
+  category: 前端設計與重構
+  risk: 低
+  summary: 反模板化的前端設計 skill，適合做 landing page、作品集與既有網站重設計，強調先讀需求、選對設計語言，再做有層次的版面、字體、配色與互動
+  triggers:
+  - 用 taste-skill 幫我做一個不要 AI 感很重的首頁設計
+  - 用 taste-skill 重構這個網站的前端視覺與版面
+  - 用 taste-skill 幫我規劃這個 landing page 的設計方向再實作
+  notes: 來源 https://github.com/Leonxlnx/taste-skill 。本次只安裝主 skill `skills/taste-skill`；安檢時未見會自動讀取憑證、上傳私密資料或執行外部下載腳本。內容主要是前端設計規則，若真的照指引安裝第三方 UI 套件，仍會依專案情況產生一般前端依賴變更

@@ -1,0 +1,23 @@
+{
+  "workspace_root": ".",
+  "poll_seconds": 60,
+  "thresholds": {
+    "warn": 80,
+    "handoff": 90,
+    "critical": 95
+  },
+  "providers": {
+    "claude": {
+      "path": "auto",
+      "format": "auto"
+    },
+    "codex": {
+      "path": "auto",
+      "format": "auto"
+    }
+  },
+  "output": {
+    "state_file": ".quota-guard-state.json",
+    "handoff_file": "QUOTA-HANDOFF.md"
+  }
+}

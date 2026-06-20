@@ -1,5 +1,7 @@
 __pycache__/
 *.pyc
 .DS_Store
+.quota-guard-state.json
+QUOTA-HANDOFF.md
 skills/*
 !skills/dual-ai-workflow/
