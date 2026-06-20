@@ -1,8 +1,22 @@
 # Codex / Claude Skills Console
 
-本專案是一個可攜式的 Codex / Claude Code skills 安裝包，加上一個本機 HTML 控制台。
+本專案目前主軸是「配額守門員 + 控制台同步更新」。
 
-同事可以直接下載本 repo，或用一行指令把 skills 安裝到自己的電腦。
+它不是只有 skills 備份包，而是一套把 Codex / Claude Code 常用 skills、提示詞、本機 HTML 控制台，以及配額守門員啟動入口整理在一起的可攜式工作台。
+
+你可以把它當成：
+
+- 一份可攜式安裝包
+- 一個本機控制台
+- 一套配額 / reset / 接續工作流的整理入口
+
+同事可以直接下載本 repo，或用一行指令把 skills 與控制台環境安裝到自己的電腦。
+
+## 目前重點
+
+- 配額守門員相關檔案與啟動入口
+- 控制台 `data/*.yaml` 與 `index.html` 同步更新
+- Codex / Claude Code 常用提示詞與工作交接流程
 
 ## 一行安裝
 
