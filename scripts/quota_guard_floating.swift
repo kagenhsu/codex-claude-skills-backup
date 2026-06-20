@@ -464,6 +464,18 @@ final class FloatingQuotaWindow: NSObject, NSApplicationDelegate {
     private var isMini = false
     private var fullModeFrame: NSRect?
 
+    // 任務交接 banner（dual-AI handoff）— 跟既有「配額切換」按鈕是兩件事：
+    //   - 既有 handoffButton：Claude/Codex 配額快爆，要切到另一邊繼續打同一份工作
+    //   - 這個 banner：NEXT-AI-TASK.md 被更新，下一棒 AI 該接手他自己的活了
+    // 資料源：~/Library/Application Support/QuotaGuardian/handoff-state.json，
+    // 由 scripts/handoff_watcher.py 寫入。狀態 consumed=true 就隱藏。
+    private let handoffBannerContainer = NSView()
+    private let handoffBannerLabel = NSTextField(labelWithString: "")
+    private let handoffBannerSubLabel = NSTextField(labelWithString: "")
+    private let handoffInjectButton = NSButton(title: "▶ 切換並貼上", target: nil, action: nil)
+    private let handoffDismissButton = NSButton(title: "忽略", target: nil, action: nil)
+    private var lastSeenHandoffWrittenAt: Double = 0
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupWindow()
         // 先把空殼視窗推到前景，確保使用者一定看得到，
@@ -614,7 +626,57 @@ final class FloatingQuotaWindow: NSObject, NSApplicationDelegate {
         miniModeButton.heightAnchor.constraint(equalToConstant: 32).isActive = true
         handoffButton.heightAnchor.constraint(equalToConstant: 32).isActive = true
 
-        contentStack = NSStackView(views: [header, cardsStack, footer])
+        // ===== 任務交接 banner（預設隱藏，refreshHandoffBanner 控制） =====
+        handoffBannerContainer.wantsLayer = true
+        handoffBannerContainer.layer?.cornerRadius = 10
+        handoffBannerContainer.layer?.backgroundColor = NSColor.systemOrange.withAlphaComponent(0.18).cgColor
+        handoffBannerContainer.layer?.borderColor = NSColor.systemOrange.withAlphaComponent(0.55).cgColor
+        handoffBannerContainer.layer?.borderWidth = 1
+        handoffBannerContainer.translatesAutoresizingMaskIntoConstraints = false
+        handoffBannerContainer.isHidden = true
+
+        handoffBannerLabel.font = .systemFont(ofSize: 14, weight: .bold)
+        handoffBannerLabel.textColor = .labelColor
+        handoffBannerLabel.lineBreakMode = .byTruncatingTail
+        handoffBannerSubLabel.font = .systemFont(ofSize: 11, weight: .regular)
+        handoffBannerSubLabel.textColor = .secondaryLabelColor
+        handoffBannerSubLabel.lineBreakMode = .byTruncatingTail
+
+        let bannerTextStack = NSStackView(views: [handoffBannerLabel, handoffBannerSubLabel])
+        bannerTextStack.orientation = .vertical
+        bannerTextStack.alignment = .leading
+        bannerTextStack.spacing = 2
+
+        handoffInjectButton.target = self
+        handoffInjectButton.action = #selector(handoffInject)
+        handoffInjectButton.bezelStyle = .rounded
+        handoffInjectButton.font = .systemFont(ofSize: 12, weight: .semibold)
+        handoffInjectButton.heightAnchor.constraint(equalToConstant: 28).isActive = true
+
+        handoffDismissButton.target = self
+        handoffDismissButton.action = #selector(handoffDismiss)
+        handoffDismissButton.bezelStyle = .rounded
+        handoffDismissButton.font = .systemFont(ofSize: 11, weight: .regular)
+        handoffDismissButton.heightAnchor.constraint(equalToConstant: 28).isActive = true
+
+        let bannerButtonStack = NSStackView(views: [handoffDismissButton, handoffInjectButton])
+        bannerButtonStack.orientation = .horizontal
+        bannerButtonStack.spacing = 6
+
+        let bannerStack = NSStackView(views: [bannerTextStack, NSView(), bannerButtonStack])
+        bannerStack.orientation = .horizontal
+        bannerStack.alignment = .centerY
+        bannerStack.spacing = 8
+        bannerStack.translatesAutoresizingMaskIntoConstraints = false
+        handoffBannerContainer.addSubview(bannerStack)
+        NSLayoutConstraint.activate([
+            bannerStack.leadingAnchor.constraint(equalTo: handoffBannerContainer.leadingAnchor, constant: 12),
+            bannerStack.trailingAnchor.constraint(equalTo: handoffBannerContainer.trailingAnchor, constant: -10),
+            bannerStack.topAnchor.constraint(equalTo: handoffBannerContainer.topAnchor, constant: 8),
+            bannerStack.bottomAnchor.constraint(equalTo: handoffBannerContainer.bottomAnchor, constant: -8),
+        ])
+
+        contentStack = NSStackView(views: [header, cardsStack, handoffBannerContainer, footer])
         contentStack.orientation = .vertical
         contentStack.alignment = .centerX
         contentStack.spacing = 16
@@ -650,6 +712,20 @@ final class FloatingQuotaWindow: NSObject, NSApplicationDelegate {
             y: visibleFrame.maxY - size.height - 20
         )
         window.setFrame(NSRect(origin: origin, size: size), display: true)
+        ensureWindowVisible()
+    }
+
+    private func ensureWindowVisible() {
+        let current = window.frame
+        if NSScreen.screens.contains(where: { $0.visibleFrame.intersects(current) }) {
+            return
+        }
+        guard let fallback = NSScreen.main?.visibleFrame ?? NSScreen.screens.first?.visibleFrame else { return }
+        let safeOrigin = NSPoint(
+            x: max(fallback.minX + 20, min(current.origin.x, fallback.maxX - current.size.width - 20)),
+            y: max(fallback.minY + 20, min(current.origin.y, fallback.maxY - current.size.height - 20))
+        )
+        window.setFrame(NSRect(origin: safeOrigin, size: current.size), display: true, animate: false)
     }
 
     private func preferredScreen() -> NSScreen? {
@@ -731,6 +807,7 @@ final class FloatingQuotaWindow: NSObject, NSApplicationDelegate {
 
             if let storedFrame = fullModeFrame {
                 window.setFrame(storedFrame, display: true, animate: false)
+                ensureWindowVisible()
             } else {
                 placeWindowAtTopRight(size: fullWindowSize)
             }
@@ -754,6 +831,7 @@ final class FloatingQuotaWindow: NSObject, NSApplicationDelegate {
         miniFrame.origin.y += miniFrame.height - miniWindowSize.height
         miniFrame.size = miniWindowSize
         window.setFrame(miniFrame, display: true, animate: false)
+        ensureWindowVisible()
         visual.layoutSubtreeIfNeeded()
         renderMini()
     }
@@ -763,6 +841,25 @@ final class FloatingQuotaWindow: NSObject, NSApplicationDelegate {
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(prompt, forType: .string)
         updatedLabel.stringValue = finalHandoffNeeded() ? "已複製最終交接提示詞" : "已複製切換提示詞"
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) { [weak self] in
+            self?.updatedLabel.stringValue = "更新 \(self?.timeString() ?? "")"
+        }
+    }
+
+    @objc private func handoffInject() {
+        let prompt = handoffPrompt()
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(prompt, forType: .string)
+        updatedLabel.stringValue = "已複製交接提示詞"
+        handoffBannerContainer.isHidden = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) { [weak self] in
+            self?.updatedLabel.stringValue = "更新 \(self?.timeString() ?? "")"
+        }
+    }
+
+    @objc private func handoffDismiss() {
+        handoffBannerContainer.isHidden = true
+        updatedLabel.stringValue = "已忽略交接提醒"
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) { [weak self] in
             self?.updatedLabel.stringValue = "更新 \(self?.timeString() ?? "")"
         }
@@ -875,6 +972,7 @@ final class FloatingQuotaWindow: NSObject, NSApplicationDelegate {
         frame.size.width = resizedWidth
         frame.size.height = resizedHeight
         window.setFrame(frame, display: true, animate: false)
+        ensureWindowVisible()
     }
 
     private func renderMini() {

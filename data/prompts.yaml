@@ -533,6 +533,62 @@
 
     請不要依賴聊天記憶；以 DUAL-AI-STATE.md 和目前工作目錄的實際檔案為準。
     如果額度已不足以 build 或 commit，請明確說「先保進度，尚未完成 build / commit」，不要硬做高風險操作。
+- title: Quota / Reset / 使用狀態檢查
+  category: 工作交接 / 接續專案
+  usage: 每 10 分鐘讀真實 quota，依本輪 5 小時剩餘 % 決定繼續、整理進度、或強制收尾換手。
+  flow: common
+  stage: status
+  tags: [quota, reset, 使用狀態, 交接, handoff]
+  id: quota-reset-usage-check
+  name: Quota / Reset / 使用狀態檢查
+  targets: [Codex, Claude Code]
+  purpose: 每 10 分鐘讀真實 quota，依本輪 5 小時剩餘 % 決定要繼續、整理進度、還是強制收尾換手。
+  pain_point: 配額快見底卻沒提醒，會在還沒整理進度、還沒產生交接摘要前被卡住，收尾品質差、換手資訊不完整。
+  data_sources:
+    - ~/.claude/cctokmon-state.json (主)
+    - codex-claude-skills-backup/scripts/quota_guard_snapshot.py (fallback)
+  thresholds:
+    green: ">45 — 一句帶過"
+    yellow: "45~30 — 黃燈提醒"
+    orange: "30~10 — 橘燈，立即整理 + 草擬交接"
+    red: "<10 — 紅燈，建議 /handoff-now"
+  risks:
+    - 不重做 snapshot.py / floating.swift / bridge.sh（禁區）
+    - 不自動寫 .handoff-now.md，只建議
+    - fallback 全失敗時不可編造百分比
+    - 資料 > 90s 必須標 ⚠️ 不是最新
+  frequency: 每 10 分鐘
+  related_memory:
+    - claude-code-quota-guard-thresholds
+    - read-handoff-now-first
+    - quota-guardian-baseline
+  prompt: |-
+    請先檢查 Codex 與 Claude Code 目前 quota / reset / 使用狀態，重點看 5 小時 / 本輪限制窗。
+
+    資料來源與規則：
+    1. 先讀 `~/.claude/cctokmon-state.json`。
+    2. 若主來源不足，再用 `codex-claude-skills-backup/scripts/quota_guard_snapshot.py` 當 fallback。
+    3. 不可重做或改寫 `snapshot.py` / `floating.swift` / `bridge.sh`。
+    4. fallback 全失敗時，不可編造百分比；要直接說明缺哪個資料來源失敗。
+    5. 若資料時間距現在超過 90 秒，必須標註 `⚠️ 不是最新`。
+
+    判斷門檻：
+    - `> 45%`：只做簡短回報。
+    - `45% ~ 30%`：提醒整理進度、準備交接、不要開新大任務。
+    - `30% ~ 10%`：立即整理進度 + 產生交接摘要 + 停止新任務。
+    - `< 10%`：進入強制收尾模式，建議 `/handoff-now`。
+
+    限制：
+    - 不要自動寫 `.handoff-now.md`，只提供建議。
+    - 不要做額外大改或開新任務。
+    - 如果 Codex 或 Claude Code 任一方資料缺失，要分開說明，不要混成單一結論。
+
+    請固定輸出五行繁體中文：
+    1. 階段：綠燈 / 黃燈 / 橘燈 / 紅燈，並說明判定依據。
+    2. CC / Codex：各自剩餘 %、reset 時間、是否在本輪限制窗內。
+    3. 建議動作：現在該繼續、整理進度、草擬交接，或直接強制收尾。
+    4. 本週狀態：若有本週配額或週期資訊，一句話帶出；沒有就明說查無可靠資料。
+    5. 資料時間：列出資料時間；若超過 90 秒，加上 `⚠️ 不是最新`。
 - title: 單一 AI 精簡 1 規劃
   category: 單一 AI 精簡
   usage: 只用一個 AI 做小系統或小功能時，先請它列出最小可行做法。

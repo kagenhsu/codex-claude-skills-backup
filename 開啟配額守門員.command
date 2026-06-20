@@ -32,3 +32,16 @@ disown
 
 # 給 swift 一點時間把視窗推到前景，再讓 Terminal 視窗自行收掉。
 sleep 1
+
+# 某些多螢幕 / Space 座標下，Swift 視窗會真的啟動但落在畫面外。
+# 這裡用 System Events 做最後一道保險，把它拉回主畫面可視區。
+/usr/bin/osascript <<'APPLESCRIPT' >/dev/null 2>&1 || true
+tell application "System Events"
+  tell process "swift-frontend"
+    set frontmost to true
+    try
+      set position of window "配額守門員" to {900, 80}
+    end try
+  end tell
+end tell
+APPLESCRIPT
