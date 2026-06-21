@@ -321,6 +321,7 @@
   notes: 推薦 Python／JavaScript 教學給初學者；來源 github.com/codecrafters-io/build-your-own-x（514k stars，MIT）
 - name: codegraph
   category: 程式碼智能
+  type: mcp
   risk: 低
   summary: 本地 SQLite 程式碼知識圖譜 MCP 伺服器，預先索引所有符號、呼叫邊與檔案，提供比 grep/read 省 58% token 的程式碼查詢；支援符號搜尋、呼叫鏈追蹤、影響範圍分析，100% 本地執行不需 API key
   triggers:
@@ -341,3 +342,13 @@
   - 使用 meeting-audio-project-assistant 把會議內容轉成工程師可以執行的開發規格
   - 使用 meeting-audio-project-assistant 幫我整理主管看的會議摘要
   notes: 已安裝到 Codex 與 Claude Code；初版只提供安全流程與整理規則，不會自動轉錄、不會上傳雲端。客戶或個資內容預設禁止上雲，逐字稿與整理稿要分開保存
+- name: cowart
+  category: 圖像與簡報
+  type: plugin
+  risk: 高
+  summary: 插件型本地無限畫布工具，能在 Codex 裡開 tldraw 畫布、放 AI 圖片框、依標註改圖，並把資料寫到目前專案的 canvas/ 目錄
+  triggers:
+  - 用 cowart 幫我開這個專案的本地畫布
+  - 用 cowart 把這張圖放進選取的 AI 圖片框
+  - 用 cowart 根據我的標註截圖產生修正版圖片
+  notes: 來源 github.com/zhongerxin/cowart。這不是一般可直接丟進 ~/.codex/skills 或 ~/.claude/skills 的單純 skill，而是 Codex 插件 + MCP + 本地服務；目前僅收錄為候選外掛，尚未安裝。安檢未見明顯竊取 ~/.ssh、.env 或 API key 的程式碼，但啟動腳本會自動 npm install 外部依賴，且會讀寫目前專案的 canvas/ 目錄，也會啟本地服務與 MCP；若要使用，應改走 Codex plugin marketplace 的原生安裝流程，不建議當成雙端 skill 直裝

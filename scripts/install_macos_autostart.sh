@@ -12,7 +12,8 @@ set -euo pipefail
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PAYLOAD_SOURCE="$REPO_DIR/scripts/autostart_macos_payload.sh"
 RUNTIME_DIR="$HOME/Library/Application Support/QuotaGuardian"
-RUNTIME_REPO_DIR="$RUNTIME_DIR/runtime/codex-claude-skills-backup"
+REPO_NAME="$(basename "$REPO_DIR")"
+RUNTIME_REPO_DIR="$RUNTIME_DIR/runtime/$REPO_NAME"
 PAYLOAD="$RUNTIME_DIR/autostart_macos_payload.sh"
 
 if [[ ! -f "$PAYLOAD_SOURCE" ]]; then
