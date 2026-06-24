@@ -1,43 +1,45 @@
 ﻿<#
 .SYNOPSIS
-    Ralph Loop 最小可行版本 — Maker 多輪開發，搭配 final-review.ps1 做收尾把關。
+    Ralph Loop 最小可行版本（Codex 專用版）— Maker 多輪開發，搭配選用的 final-review.ps1 做收尾把關。
 
 .DESCRIPTION
     跟 final-review.ps1 是互補的兩支腳本：
-      loop.ps1（這支）  多輪開發/修補，Maker = Claude Code，每輪都跑。
-      final-review.ps1  只在準備上架前手動跑一次，Checker = Codex，審查累積的全部改動。
+      loop.ps1（這支）  多輪開發/修補，Maker = Codex，每輪都跑。
+      final-review.ps1  選用升級（預設不必跑），只在準備上架前手動跑一次，
+                        Checker = Claude Code，審查累積的全部改動。
     角色分工固定，不會因為額度方案互換。
 
     Loop Contract:
-      Trigger        手動執行（你打這支腳本才會跑）
+      Trigger        手動執行（每次有新任務/新階段時，你自己打這支腳本啟動一組輪次）
       Scope          嚴格沙箱：只能動 -AllowedPaths 內的檔案，不能碰 main/master 分支，
                       不能碰 -ForbiddenPaths（.env、金鑰、CI 設定等），不能刪檔。
       Budget         輪數上限 (-MaxRounds) 「或」時間上限 (-MaxMinutes)，先到的先停。
       Stop Condition 測試全過 / 連續 N 輪同一個錯誤 / 連續 N 輪沒有任何 diff /
-                      踩到禁區或刪檔，四種狀況任一發生立刻停。
-      Report         終端機輸出 + 寫入 progress.txt 雙軌紀錄。
+                      踩到禁區或刪檔 / 完成一個開發階段（STAGE_COMPLETE），
+                      五種狀況任一發生立刻停。
+      Report         終端機輸出 + 寫入 progress.txt 雙軌紀錄（含「目前開發階段」清單）。
 
 .PARAMETER ProjectRoot
     要套用這個 Loop 的目標專案路徑（這個 loop.ps1 本身放在 loop-engineering/ 範本資料夾，
     實際使用時把整個 loop-engineering/ 資料夾複製到目標專案，或用這個參數指過去）。
 
 .PARAMETER AgentCommand
-    呼叫的 AI CLI 指令，預設 "claude"（Claude Code CLI 的 -p 非互動模式）。
-    Maker 角色固定是 Claude Code，這個參數通常不需要改。
+    呼叫的 AI CLI 指令，預設 "codex"。Maker 角色固定是 Codex，這個參數通常不需要改
+    （依你實際安裝的 Codex CLI 語法調整，例如可能要改成 codex exec 或加上其他參數）。
 
 .PARAMETER TestCommand
     這個專案的測試指令，例如 "npm test" 或 "pytest"。留空則跳過測試判定（測試結果記為 SKIP）。
 
 .EXAMPLE
     ./loop.ps1 -ProjectRoot "C:\path\to\your-project" -TestCommand "npm test" -MaxRounds 10 -MaxMinutes 120
-    # 做完一組輪次、準備上架前，再跑：
+    # 做完一組輪次、準備上架前，如果決定要啟用 Maker-Checker 選用升級，再跑：
     ./final-review.ps1 -ProjectRoot "C:\path\to\your-project"
 #>
 
 param(
     [string]$ProjectRoot = ".",
-    [string]$AgentCommand = "claude",
-    [string]$FallbackAgentCommand = "codex",
+    [string]$AgentCommand = "codex",
+    [string]$FallbackAgentCommand = "claude",
     [string]$PromptFile = "maker-prompt.md",
     [string]$ProgressFile = "progress.txt",
     [string]$TestCommand = "",
@@ -104,8 +106,8 @@ for ($round = 1; $round -le $MaxRounds; $round++) {
     $beforeCommit = (git rev-parse HEAD).Trim()
 
     # --- 執行這一輪：把 prompt.md 整份內容餵給 AI agent ---
-    # 容錯規則：Maker（預設 Claude Code）暫時不能用時（額度用完、CLI 噴錯等），
-    # 自動換成 -FallbackAgentCommand（預設 Codex）頂上去，並把「這輪是誰頂替」清楚寫進 progress.txt，
+    # 容錯規則：Maker（預設 Codex）暫時不能用時（額度用完、CLI 噴錯等），
+    # 自動換成 -FallbackAgentCommand（預設 Claude Code）頂上去，並把「這輪是誰頂替」清楚寫進 progress.txt，
     # 不能悄悄發生。這個情況常發生（額度互有空檔），所以這不是例外處理，是常態設計。
     $promptContent = Get-Content $PromptFile -Raw
     $usedAgent = $AgentCommand
@@ -123,7 +125,14 @@ for ($round = 1; $round -le $MaxRounds; $round++) {
         }
     }
     Write-Log "Round $round 實際執行 Maker 的是: $usedAgent$(if ($usedAgent -ne $AgentCommand) { '（頂替）' })"
-    $output | Out-String | Add-Content -Path $ProgressFile
+    $outputText = $output | Out-String
+    $outputText | Add-Content -Path $ProgressFile
+
+    # --- 階段性剎車：Maker 是否在這一輪回報完成了一個開發階段 ---
+    # 對應 progress.txt 最上面的「目前開發階段（里程碑）」清單，由 maker-prompt.md 規定
+    # Maker 每輪都要寫 STAGE_COMPLETE: yes/no。偵測到 yes 時，這一輪仍會走完正常的
+    # commit/測試流程，但結束後會強制停下來等人工確認，不會自動接著做下一階段。
+    $stageComplete = $outputText -match "STAGE_COMPLETE:\s*yes"
 
     # --- Scope 剎車 1：是否刪除了既有檔案 ---
     $deletedFiles = git diff --diff-filter=D --name-only $beforeCommit
@@ -219,6 +228,11 @@ for ($round = 1; $round -le $MaxRounds; $round++) {
 
     if ($sameErrorStreak -ge $MaxSameErrorStreak) {
         $stopReason = "連續 $MaxSameErrorStreak 輪同一個錯誤（$lastErrorSignature），強制停止，等待人工確認"
+        break
+    }
+
+    if ($stageComplete) {
+        $stopReason = "Round $round 回報完成一個開發階段（STAGE_COMPLETE: yes），依設定強制停下等人工確認，再開下一組輪次"
         break
     }
 

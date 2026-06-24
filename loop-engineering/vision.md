@@ -31,22 +31,22 @@
 
 - 預算用完、或連續犯同一個錯誤達到剎車條件時，**Loop 不能自己延長或重新計算「再給自己一次機會」**，一定要停下來等人工確認後才能重新啟動下一組輪次。
 - 任何一輪只要踩到上面的禁區，視為立即觸發 Stop Condition，比輪數/時間預算更高優先。
+- **新增的第五種剎車：階段完成強制停**。為了解決「開發到一半忘記卡在哪個階段」的痛點，`progress.txt` 最上面多了一塊「目前開發階段（里程碑）」清單。Maker 每輪結束時要對照這份清單，判斷這一輪是否讓某個階段從未完成變成完成；如果是，要在輪次紀錄寫一行 `STAGE_COMPLETE: yes`，`loop.ps1` 偵測到這個標記就會在這輪 commit 完後立刻停下來，等人工確認要不要接著做下一階段，不會自己接著往下衝。這跟測試 PASS/FAIL 是獨立的判斷——一個階段可能測試還沒全過，但已經是該停下來給人看一眼的時間點。
 
-## Maker-Checker 雙重把關（已啟用）
+## Maker 角色：Codex 專用版
 
-角色分工固定，不會因為額度方案（PRO X5 / Max X5）互換：
+這一版 Loop 是「Codex 專用」——平時每一輪動手做事的 Maker 固定是 **Codex**，不是 Claude Code。
 
-- **Maker（每一輪都跑）= Claude Code**，負責 `loop.ps1` 的多輪開發/修補。
-- **Checker（只在收尾、準備上架前跑一次）= Codex**，負責 `final-review.ps1` 審查從分支分歧點到目前累積的全部改動，不是每輪都審。
+- `loop.ps1` 預設 `-AgentCommand "codex"`，備援 `-FallbackAgentCommand "claude"`。
+- Codex 額度用完或 CLI 暫時噴錯時，自動換 Claude Code 頂上這一輪，且**一定要在 progress.txt 寫明「這輪是誰頂替」**，不能悄悄發生。
 
-這樣分工的理由：Claude Code 額度較常在手邊、適合每輪都呼叫；Codex 額度較大但頻率沒那麼高，留給收尾前的總體把關，同時呼應「收尾上架」的語意——平時開發階段不需要每輪都驚動 Codex。
+## Maker-Checker 雙重把關（選用升級，目前未啟用）
 
-Checker 的限制：只能讀程式碼、寫審查結果（`checker-verdict.txt` 跟 `progress.txt`），**不能修改任何程式碼**，腳本會偵測並擋下違規。Checker 判定 REJECT 時，Maker 在下一組輪次的基礎上補修正，不會回頭撤銷已經 commit 的歷史。
+`final-review.ps1` / `final-checker-prompt.md` 仍保留在這個資料夾裡，但**這一版預設不啟用**——先把單一 Maker（Codex）跑穩，要不要加 Checker 是之後的決定（看是否要升級到 Maker-Checker 模式）。
 
-### 容錯（角色頂替）
+如果之後決定啟用，角色建議**對調**成：
 
-這個情況常發生：Maker 或 Checker 其中一邊額度用完、CLI 暫時不能用。
-- `loop.ps1` 預設 Maker = Claude Code，備援 = Codex（`-FallbackAgentCommand`）。
-- `final-review.ps1` 預設 Checker = Codex，備援 = Claude Code（`-FallbackCheckerCommand`）。
+- **Checker 預設改成 Claude Code**，備援 Codex（`final-review.ps1` 的 `-CheckerCommand` / `-FallbackCheckerCommand` 預設已先改好）。
+- 理由：Maker 已經是 Codex，如果 Checker 預設也是 Codex，等於同一個 AI 審查自己做的東西，獨立性打折。換成 Claude Code 收尾，才有真正不同視角的把關。
 
-主力失敗時自動切備援頂替，但**一定要在 progress.txt 寫明「這輪/這次是誰頂替」**，不能悄悄發生——尤其 Checker 由 Claude Code 頂替時，等於是同一個 AI 審查（可能也參與過）自己做的東西，獨立性打折，要讓使用者知道、自己評估可信度。
+Checker 的限制不變：只能讀程式碼、寫審查結果（`checker-verdict.txt` 跟 `progress.txt`），**不能修改任何程式碼**，腳本會偵測並擋下違規。Checker 判定 REJECT 時，Maker 在下一組輪次的基礎上補修正，不會回頭撤銷已經 commit 的歷史。主力失敗時自動切備援頂替，同樣要寫明「這次是誰頂替」。

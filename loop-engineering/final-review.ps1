@@ -3,15 +3,16 @@
     收尾把關（Final Gate）— 在準備 push / 上架前，跑一次 Codex 審查整段累積改動。
 
 .DESCRIPTION
-    跟 loop.ps1 是互補的兩支腳本，不是取代關係：
-      loop.ps1         多輪開發/修補，Maker = Claude Code，每輪都跑，預算用輪數+時間控制。
+    跟 loop.ps1 是互補的兩支腳本，不是取代關係（Codex 專用版，Maker-Checker 為選用升級，預設未啟用）：
+      loop.ps1         多輪開發/修補，Maker = Codex，每輪都跑，預算用輪數+時間控制。
       final-review.ps1 只在你覺得「這組輪次做完了、準備上架」時手動跑一次，
-                        Checker = Codex，審查範圍是「從分支分歧點到現在累積的全部 diff」，
+                        Checker = Claude Code，審查範圍是「從分支分歧點到現在累積的全部 diff」，
                         不是某一輪而已。
 
-    角色分工是固定的，不會因為額度方案（PRO X5 / Max X5）互換：
-      Maker（每輪）  = Claude Code
-      Checker（收尾）= Codex
+    角色分工固定，不會因為額度方案（PRO X5 / Max X5）互換：
+      Maker（每輪）  = Codex
+      Checker（收尾）= Claude Code
+    （理由：Maker 已經是 Codex，Checker 換成 Claude Code 才有獨立視角，不是同一個 AI 審查自己。）
 
     安全規則跟 loop.ps1 一致：不能在 main/master 上跑、Checker 不能改程式碼（只能寫
     checker-verdict.txt 跟 progress.txt）、不 push、不刪檔。
@@ -26,8 +27,8 @@
 
 param(
     [string]$ProjectRoot = ".",
-    [string]$CheckerCommand = "codex",
-    [string]$FallbackCheckerCommand = "claude",
+    [string]$CheckerCommand = "claude",
+    [string]$FallbackCheckerCommand = "codex",
     [string]$CheckerPromptFile = "final-checker-prompt.md",
     [string]$ProgressFile = "progress.txt",
     [string]$VerdictFile = "checker-verdict.txt",
@@ -99,11 +100,11 @@ if (Test-Path $VerdictFile) { Remove-Item $VerdictFile -Force }
 $promptTemplate = Get-Content $CheckerPromptFile -Raw
 $prompt = $promptTemplate.Replace("{{BASE_REF}}", $BaseRef)
 
-# 容錯規則：Checker（預設 Codex）暫時不能用時，自動換成 -FallbackCheckerCommand（預設 Claude Code）
+# 容錯規則：Checker（預設 Claude Code）暫時不能用時，自動換成 -FallbackCheckerCommand（預設 Codex）
 # 頂上去做收尾審查，並把「這次是誰頂替」清楚寫進 progress.txt，不能悄悄發生。
 $usedChecker = $CheckerCommand
 try {
-    # 注意：依你實際安裝的 Codex CLI 語法調整這一行（例如改成 codex exec、或加上其他必要參數）
+    # 注意：依你實際安裝的 CLI 語法調整這一行（例如 Codex 要改成 codex exec、或加上其他必要參數）
     $checkerOutput = & $CheckerCommand -p $prompt 2>&1
 } catch {
     Write-Log "[頂替] $CheckerCommand 無法執行（$($_.Exception.Message)），改用備援 $FallbackCheckerCommand 頂上這次收尾審查"
@@ -116,7 +117,7 @@ try {
         exit 1
     }
 }
-Write-Log "本次收尾審查實際執行的是: $usedChecker$(if ($usedChecker -ne $CheckerCommand) { '（頂替，注意：原本固定分工是 Codex 做收尾審查，這次換人審查，結果可信度請自行評估）' })"
+Write-Log "本次收尾審查實際執行的是: $usedChecker$(if ($usedChecker -ne $CheckerCommand) { '（頂替，注意：原本固定分工是 Claude Code 做收尾審查，這次換人審查，結果可信度請自行評估）' })"
 $checkerOutput | Out-String | Add-Content -Path $ProgressFile
 
 # --- Checker 不能改程式碼，只能動 VerdictFile 跟 ProgressFile ---
