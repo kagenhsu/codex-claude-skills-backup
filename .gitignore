@@ -2,10 +2,13 @@ __pycache__/
 *.pyc
 .DS_Store
 server-*.log
+server_test.log
 
 # 私密資料與個人工作區
 .claude/
+private/
 .private/
+index.private.html
 相關資料/
 
 # 私用提示詞與私用 skill
@@ -21,6 +24,7 @@ skills/*
 !skills/dual-ai-workflow/
 !skills/plan-progress/
 !skills/handoff-now/
+!skills/meeting-audio-project-assistant/
 
 # 緊急現場交接快照（含對話內容，不外流）
 .handoff-now.md

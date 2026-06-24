@@ -134,12 +134,17 @@ class QuietConsoleHandler(http.server.SimpleHTTPRequestHandler):
             return
 
         try:
-            subprocess.Popen(
-                ["/bin/bash", str(launcher)],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                cwd=str(launcher.parent),
-            )
+            popen_kwargs: dict = {
+                "stdout": subprocess.DEVNULL,
+                "stderr": subprocess.DEVNULL,
+                "cwd": str(launcher.parent),
+            }
+            if os.name == "nt":
+                command = ["cmd", "/c", str(launcher)]
+                popen_kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
+            else:
+                command = ["/bin/bash", str(launcher)]
+            subprocess.Popen(command, **popen_kwargs)
         except Exception as exc:
             self._send_json(500, {"ok": False, "error": str(exc)})
             return
@@ -197,7 +202,8 @@ def main() -> int:
 
     root = Path(args.root).resolve()
     index_path = root / "index.html"
-    quota_guardian_launcher = root / "開啟配額守門員.command"
+    launcher_name = "開啟配額守門員.bat" if os.name == "nt" else "開啟配額守門員.command"
+    quota_guardian_launcher = root / launcher_name
     if not index_path.exists():
         print(f"找不到 index.html：{index_path}", file=sys.stderr)
         return 1

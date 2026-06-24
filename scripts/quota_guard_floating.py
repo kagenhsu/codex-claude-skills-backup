@@ -55,12 +55,19 @@ def python_bin() -> str:
 def fetch_snapshot() -> dict:
     """呼叫 quota_guard_snapshot.py，拿回 providers/windows 結構。"""
     try:
+        popen_kwargs: dict = {
+            "capture_output": True,
+            "text": True,
+            "timeout": 15,
+            "cwd": str(ROOT),
+        }
+        if sys.platform == "win32":
+            # python.exe 是主控台子系統執行檔；從沒有主控台的 pythonw GUI 行程呼叫時，
+            # Windows 預設會跳出一個黑色主控台視窗再馬上關掉（每 30 秒刷新就閃一次）。
+            popen_kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
         result = subprocess.run(
             [python_bin(), str(SNAPSHOT_SCRIPT)],
-            capture_output=True,
-            text=True,
-            timeout=15,
-            cwd=str(ROOT),
+            **popen_kwargs,
         )
         if result.returncode != 0:
             return {"error": result.stderr.strip() or "snapshot 失敗", "providers": []}
