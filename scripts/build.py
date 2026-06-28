@@ -639,7 +639,28 @@ TEMPLATE = r'''<!DOCTYPE html>
   .daily-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px;}
   .daily-card{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:10px;}
   .daily-card h4{font-size:1rem;}
+  .daily-card-actions{display:grid; gap:8px; margin-top:auto;}
+  .copy-btn.secondary-btn{background:#eef2ff; color:#24438f;}
+  .copy-btn.secondary-btn:hover{background:#dde7ff;}
   .daily-safety{background:rgba(46,164,79,.1); border:1px solid rgba(46,164,79,.22); border-radius:12px; padding:10px; color:#17612d; font-size:.84rem; line-height:1.6;}
+  .daily-modal{position:fixed; inset:0; z-index:60; display:flex; align-items:center; justify-content:center; padding:18px;}
+  .daily-modal-backdrop{position:absolute; inset:0; background:rgba(15,23,42,.45);}
+  .daily-modal-card{position:relative; width:min(760px,100%); max-height:min(88vh,920px); overflow:auto; background:#fff; border-radius:18px; border:1px solid rgba(148,163,184,.35); box-shadow:0 28px 80px rgba(15,23,42,.24); padding:18px;}
+  .daily-modal-head{display:flex; justify-content:space-between; gap:12px; align-items:flex-start; margin-bottom:12px;}
+  .daily-modal-close{border:none; background:#eef2f7; color:#334155; border-radius:999px; padding:8px 12px; cursor:pointer; font-size:.82rem;}
+  .daily-modal-step{font-size:.78rem; color:var(--muted);}
+  .daily-modal-title{font-size:1.1rem; margin-top:4px;}
+  .daily-modal-body{display:grid; gap:12px;}
+  .daily-modal-question{border:1px solid var(--border); border-radius:14px; padding:14px; background:#fcfdff;}
+  .daily-modal-question h4{font-size:1rem; margin-bottom:6px;}
+  .daily-choice-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:8px; margin-top:10px;}
+  .daily-choice-btn{border:1px solid #cbd5e1; background:#fff; color:#1e293b; border-radius:10px; padding:10px 12px; text-align:left; cursor:pointer; font-size:.84rem; line-height:1.45;}
+  .daily-choice-btn.active{border-color:#2f6fed; background:#edf4ff; color:#1d4ed8;}
+  .daily-modal-input,.daily-modal-textarea{width:100%; border:1px solid #cbd5e1; border-radius:10px; padding:10px 12px; font:inherit; margin-top:10px; background:#fff;}
+  .daily-modal-textarea{min-height:120px; resize:vertical;}
+  .daily-modal-preview{background:#f8fafc; border:1px solid #dbe3ef; border-radius:14px; padding:14px;}
+  .daily-modal-actions{display:flex; flex-wrap:wrap; gap:8px; justify-content:space-between; margin-top:4px;}
+  .daily-modal-actions .group{display:flex; flex-wrap:wrap; gap:8px;}
   .online-banner{background:linear-gradient(135deg,#eaf3ff,#f3e8ff); border:1px solid #c7d5ee; border-radius:10px; padding:12px 14px; margin-bottom:14px; box-shadow:var(--shadow); display:flex; gap:12px; align-items:flex-start; flex-wrap:wrap;}
   .online-banner b{display:block; margin-bottom:4px;}
   .online-banner .grow{flex:1; min-width:240px;}
@@ -814,7 +835,12 @@ const PROJECT_PATH = __PROJECT_PATH__;
 const PROJECT_URL = __PROJECT_URL__;
 const BACKUP_PROMPTS = __BACKUP_PROMPTS_JSON__;
 const QUOTA_GUARDIAN_STATUS = __QUOTA_GUARDIAN_STATUS_JSON__;
-let tab = "guide", cat = "全部", q = "", flowMode = "dualai", dailyMode = "全部", captureMode = "prompt", progressMode = "status", selectedProject = null, progressPickerMessage = "", progressNextPromptOpen = false, installGuideTopic = "codex", progressFlow = "dual";
+const TAB_STORAGE_KEY="skill-console-active-tab";
+const VALID_TABS=["guide","installGuide","customSkill","automation","daily","progress","prompts","skills","backup"];
+function restoreTab(){const stored=localStorage.getItem(TAB_STORAGE_KEY)||"";return VALID_TABS.includes(stored)?stored:"guide"}
+let tab = restoreTab(), cat = "全部", q = "", flowMode = "dualai", dailyMode = "全部", captureMode = "prompt", progressMode = "status", selectedProject = null, progressPickerMessage = "", progressNextPromptOpen = false, installGuideTopic = "codex", progressFlow = "dual";
+let dailyWizardState = {cardId:"", step:0, answers:{}};
+let promptWizardState = {promptKey:"", step:0, answers:{}};
 const FLOW_META = {
   dualai:{label:"二刀流協作",title:"二刀流工作流提示詞",lead:"適合重要系統修改：Claude Code（VS Code）是主力工程師，負責規劃、分段實作、測試與修正；Codex 負責審查、修改建議、複審，最後也由 Codex 做存檔收尾（因為 Codex 在終端機顯示『哪裡要改』對新手最直觀）。"},
   solo:{label:"單一 AI 使用",title:"單一 AI 使用提示詞",lead:"同事只有單一 AI 時，也能用這些提示詞讓 AI 先釐清、再分段執行、最後提醒是否需要審查。"},
@@ -825,6 +851,14 @@ const STAGE_META = {
   solo:{entry:["入口","只用一個 AI 時先用這張說明工作方式"],"1":["第 1 步","釐清任務與目標"],"2":["第 2 步","提出方案、先不修改"],"3":["第 3 步","分段執行並自我檢查"],"4":["第 4 步","收尾、整理驗證與 commit 建議"]}
 };
 const FLOW_ORDER = {dualai:["entry","1","2","3","4","5","handoff","status","context-compact","archive"],solo:["entry","1","2","3","4"]};
+const DAILY_COMMON_QUESTIONS = [
+  {id:"goal_mode",label:"你這次主要想做什麼？",type:"choice",options:["先整理想法","直接產生可複製提示詞","先規劃再做","先比對 / 分析","我不確定，請幫我判斷"]},
+  {id:"input_mode",label:"你手上的資料大概是哪一種？",type:"choice",options:["只有一個模糊想法","一段文字 / 筆記","網址 / 文章 / 文件","錯誤訊息 / 問題描述","已有完整需求","其他"]},
+  {id:"audience_mode",label:"這段提示詞主要要幫誰使用？",type:"choice",options:["我自己","主管 / 老闆","客戶 / 外部對象","工程師 / 設計師 / 同事","一般大眾 / 粉絲","我不確定"]},
+  {id:"reply_mode",label:"你希望 AI 怎麼回？",type:"choice",options:["最短可執行版","條列重點版","先問我再做","一步一步教學版","專業完整版本"]},
+  {id:"risk_mode",label:"你希望 AI 先怎麼處理風險？",type:"choice",options:["先講風險，不直接動手","可以直接先產出草稿","先做最小版本","不確定，請 AI 自己判斷"]},
+  {id:"extra_notes",label:"還有沒有要補充的情境或限制？",type:"textarea",placeholder:"選填，例如：先不要改檔、不要出現太多術語、要用繁體中文。"}
+];
 const DAILY_PROMPT_SECTIONS = [
   {title:"開發系統",hint:"寫程式、修 bug、讀專案時先用這區。",cards:[
     {title:"雙 AI 討論新專案方向",when:"只有一個模糊想法，想先聊成可規劃的新專案或新系統時。",prompt:`我有一個新專案或新系統想法，請先陪我討論與規劃，不要直接寫程式、不要直接改檔案。
@@ -1033,7 +1067,151 @@ const DAILY_PROMPT_SECTIONS = [
 - 如果你需要執行任何指令，必須先問我。`}
   ]},
   {title:"生成圖片提示詞",hint:"要用 Codex / 圖像 skill 產生圖片前，先把主題、風格、比例與限制講清楚。",cards:[
-    {title:"幫我把想法整理成圖片提示詞",when:"你只有模糊想法，想先變成可拿去生圖的 prompt。",prompt:`請幫我把下面的想法整理成高品質圖片生成提示詞。
+    {title:"生成海報 / 傳單提示詞",when:"要做活動宣傳、招生、促銷、展覽、課程或品牌曝光的海報與傳單時。",questions:[
+      {id:"promo_purpose",label:"宣傳用途",type:"choice",options:["活動宣傳","課程 / 招生","產品促銷","服務介紹","品牌形象","其他"]},
+      {id:"promo_format",label:"輸出形式",type:"choice",options:["海報","傳單","海報 + 傳單同時要"]},
+      {id:"promo_style",label:"視覺風格",type:"choice",options:["專業商務","文青質感","科技未來感","活潑吸睛","高級精品感","可愛親和","其他"]},
+      {id:"promo_audience",label:"目標受眾",type:"choice",options:["一般消費者","學生","家長","上班族","老闆 / 主管","特定社群"]},
+      {id:"promo_ratio",label:"圖片比例 / 尺寸",type:"choice",options:["A4 傳單直式","4:5 社群宣傳海報","1:1 方形","9:16 直式看板","16:9 橫式","我不確定，請你建議"]},
+      {id:"promo_text_zone",label:"是否需要保留文字區",type:"choice",options:["需要大標題區","需要標題 + 內文區","幾乎不要文字，只留視覺","我不確定，請你建議"]},
+      {id:"promo_brand",label:"品牌素材狀況",type:"choice",options:["有品牌色 / Logo / 指定元素","有參考圖或現成文案","沒有，請你自由提案"]}
+    ],prompt:`請先不要直接生成海報或傳單圖片，先用「選擇題」逐題問我，幫我把需求問清楚後，再整理成可直接生圖的提示詞。
+
+請依序用選擇題問我，每次 1 題：
+1. 宣傳用途
+- A. 活動宣傳
+- B. 課程 / 招生
+- C. 產品促銷
+- D. 服務介紹
+- E. 品牌形象
+- F. 其他（讓我補充）
+2. 輸出形式
+- A. 海報
+- B. 傳單
+- C. 海報 + 傳單同時要
+3. 視覺風格
+- A. 專業商務
+- B. 文青質感
+- C. 科技未來感
+- D. 活潑吸睛
+- E. 高級精品感
+- F. 可愛親和
+- G. 其他（讓我補充）
+4. 目標受眾
+- A. 一般消費者
+- B. 學生
+- C. 家長
+- D. 上班族
+- E. 老闆 / 主管
+- F. 特定社群（讓我補充）
+5. 圖片比例 / 尺寸
+- A. A4 傳單直式
+- B. 4:5 社群宣傳海報
+- C. 1:1 方形
+- D. 9:16 直式看板
+- E. 16:9 橫式
+- F. 我不確定，請你建議
+6. 是否需要保留文字區
+- A. 需要大標題區
+- B. 需要標題 + 內文區
+- C. 幾乎不要文字，只留視覺
+- D. 我不確定，請你建議
+7. 是否有品牌限制
+- A. 有品牌色 / Logo / 指定元素
+- B. 有參考圖或現成文案
+- C. 沒有，請你自由提案
+
+當我回答完後，請輸出：
+1. 結論 / 建議
+2. 3 到 5 個風險點
+3. 還需要我補充的資訊
+4. 3 個海報 / 傳單圖片生成版本
+- 版本 A：穩健清楚版
+- 版本 B：更吸睛宣傳版
+- 版本 C：更有設計感版
+5. 每個版本都附上：
+- 中文提示詞
+- 英文提示詞
+- 建議比例
+- 構圖說明
+- 負面提示詞
+6. 如果圖片內需要精準文字，請明確提醒我改用後製加字，不要把大量中文字直接交給生圖模型。`}
+    ,{title:"生成社群貼文圖片提示詞",when:"要做 Facebook、Instagram、Threads、LinkedIn、小紅書或一般社群圖卡時。",questions:[
+      {id:"social_purpose",label:"社群用途",type:"choice",options:["活動預告","產品 / 服務宣傳","品牌曝光","新功能 / 新消息公告","知識型圖卡","導流到網站 / 報名頁","其他"]},
+      {id:"social_platform",label:"平台",type:"choice",options:["Instagram","Facebook","Threads","LinkedIn","小紅書","多平台共用"]},
+      {id:"social_style",label:"視覺風格",type:"choice",options:["專業乾淨","活潑吸睛","高級質感","科技感","溫暖生活感","強烈促銷感","其他"]},
+      {id:"social_format",label:"圖片形式",type:"choice",options:["單張貼文圖","方形圖卡","直式封面圖","輪播第一張主視覺","限時動態封面"]},
+      {id:"social_audience",label:"目標對象",type:"choice",options:["新客戶","舊客戶","粉絲","主管 / B2B 對象","特定族群"]},
+      {id:"social_copy_zone",label:"是否需要留白放文案",type:"choice",options:["要明顯標題區","要 CTA / 按鈕視覺區","只要主視覺，不放太多字","我不確定，請你建議"]},
+      {id:"social_brand",label:"品牌素材狀況",type:"choice",options:["已有品牌色","已有 Logo / 產品照","已有文案","都沒有，請你先提方向"]}
+    ],prompt:`請先不要直接生成社群圖片，先用「選擇題」逐題問我，確認宣傳目的與風格後，再整理成可直接生圖的提示詞。
+
+請依序用選擇題問我，每次 1 題：
+1. 社群用途
+- A. 活動預告
+- B. 產品 / 服務宣傳
+- C. 品牌曝光
+- D. 新功能 / 新消息公告
+- E. 知識型圖卡
+- F. 導流到網站 / 報名頁
+- G. 其他（讓我補充）
+2. 平台
+- A. Instagram
+- B. Facebook
+- C. Threads
+- D. LinkedIn
+- E. 小紅書
+- F. 多平台共用
+3. 視覺風格
+- A. 專業乾淨
+- B. 活潑吸睛
+- C. 高級質感
+- D. 科技感
+- E. 溫暖生活感
+- F. 強烈促銷感
+- G. 其他（讓我補充）
+4. 圖片形式
+- A. 單張貼文圖
+- B. 方形圖卡
+- C. 直式封面圖
+- D. 輪播第一張主視覺
+- E. 限時動態封面
+5. 目標對象
+- A. 新客戶
+- B. 舊客戶
+- C. 粉絲
+- D. 主管 / B2B 對象
+- E. 特定族群（讓我補充）
+6. 是否需要留白放文案
+- A. 要明顯標題區
+- B. 要 CTA / 按鈕視覺區
+- C. 只要主視覺，不放太多字
+- D. 我不確定，請你建議
+7. 品牌素材狀況
+- A. 已有品牌色
+- B. 已有 Logo / 產品照
+- C. 已有文案
+- D. 都沒有，請你先提方向
+
+當我回答完後，請輸出：
+1. 結論 / 建議
+2. 3 到 5 個風險點
+3. 還需要我補充的資訊
+4. 3 個社群貼文圖片生成版本
+- 版本 A：穩健通用版
+- 版本 B：更吸睛互動版
+- 版本 C：更有品牌感版
+5. 每個版本都附上：
+- 中文提示詞
+- 英文提示詞
+- 建議平台比例
+- 畫面構圖說明
+- 負面提示詞
+6. 額外補一段：
+- 這張圖適合搭配的貼文語氣
+- 建議 CTA 類型
+- 如果要精準放中文字，應該後製處理哪些文字區塊。`}
+    ,{title:"幫我把想法整理成圖片提示詞",when:"你只有模糊想法，想先變成可拿去生圖的 prompt。",prompt:`請幫我把下面的想法整理成高品質圖片生成提示詞。
 
 圖片想法：
 【貼上你想生成的圖片內容，例如文章封面、產品圖、插畫、社群圖卡】
@@ -1402,21 +1580,47 @@ function homeHtml(){const guardianInstalled=!!QUOTA_GUARDIAN_STATUS.installed;co
 async function openQuotaGuardian(btn){const original=btn.textContent;btn.disabled=true;btn.textContent="開啟中...";try{const res=await fetch("/api/open-quota-guardian",{method:"POST"});if(!res.ok)throw new Error(`HTTP ${res.status}`);const data=await res.json();if(!data.ok)throw new Error(data.error||"open_failed");btn.textContent="已開啟";setTimeout(()=>{btn.textContent=original;btn.disabled=false;},1600)}catch(err){btn.textContent="開啟失敗";setTimeout(()=>{btn.textContent=original;btn.disabled=false;},2200)}}
 async function wakeAI(btn){const original=btn.textContent;const prompt=decodeURIComponent(btn.dataset.wakePrompt||"");const target=btn.dataset.wakeAi||"";btn.disabled=true;btn.textContent="啟動中...";try{const res=await fetch("/api/wake-ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({target,prompt})});if(!res.ok)throw new Error(`HTTP ${res.status}`);const data=await res.json();if(!data.ok)throw new Error(data.error||"wake_failed");btn.textContent="已切換";setTimeout(()=>{btn.textContent=original;btn.disabled=false;},1600)}catch(err){copyText(prompt,btn);btn.textContent="已複製";setTimeout(()=>{btn.textContent=original;btn.disabled=false;},1600)}}
 function bindHome(){document.querySelectorAll("[data-home-tab]").forEach(btn=>btn.onclick=()=>setTab(btn.dataset.homeTab));document.querySelectorAll("[data-open-quota-guardian]").forEach(btn=>btn.onclick=()=>openQuotaGuardian(btn));document.querySelectorAll("[data-wake-ai]").forEach(btn=>btn.onclick=()=>wakeAI(btn))}
-function dailyPromptCard(card){return`<div class="daily-card"><h4>${esc(card.title)}</h4><div class="usage">${esc(card.when)}</div><pre class="prompt-body">${esc(card.prompt)}</pre><button class="copy-btn" data-copy="${encodeURIComponent(card.prompt)}">複製這段提示詞</button></div>`}
+function dailyCardId(sectionIndex,cardIndex){return`${sectionIndex}-${cardIndex}`}
+function dailyFindCard(cardId){for(let sectionIndex=0;sectionIndex<DAILY_PROMPT_SECTIONS.length;sectionIndex+=1){const section=DAILY_PROMPT_SECTIONS[sectionIndex];for(let cardIndex=0;cardIndex<(section.cards||[]).length;cardIndex+=1){const card=section.cards[cardIndex];if(dailyCardId(sectionIndex,cardIndex)===cardId)return{section,sectionIndex,card,cardIndex}}}return null}
+function dailyQuestionList(card){return[...(card.questions||[]),...DAILY_COMMON_QUESTIONS]}
+function dailyAnswerEntry(questionId){return dailyWizardState.answers?.[questionId]||{choice:"",text:""}}
+function dailyAnswerLabel(question){const answer=dailyAnswerEntry(question.id);if(question.type==="choice"){if(answer.choice&&answer.text.trim())return`${answer.choice} / 補充：${answer.text.trim()}`;return answer.choice||answer.text.trim()||"未填寫"}return answer.text.trim()||"未填寫"}
+function builtPromptMissingBlock(questions,answerLabelFn){const missingQuestions=questions.filter(question=>answerLabelFn(question)==="未填寫");return missingQuestions.length?`\n\n目前仍未填寫的欄位：\n${missingQuestions.map(question=>`- ${question.label}`).join("\n")}\n\n處理規則：\n1. 先不要跳過這些欄位。\n2. 請先逐題追問我，直到這些欄位可以補齊。\n3. 問完後，請把我補充的答案填回原始提示詞與對應欄位。\n4. 如果這張提示詞的任務是建立或更新專案資料夾、AGENTS.md、PRD.md、README.md 或其他 .md 檔，請在內容確認後，把補齊後的資訊一併寫入對應檔案。`:"\n\n目前欄位已足夠，若還有模糊處，再用最少問題補問後直接執行。"}
+function dailyChoiceButton(question,option){const active=dailyAnswerEntry(question.id).choice===option?" active":"";return`<button class="daily-choice-btn${active}" type="button" data-daily-choice="${esc(question.id)}" data-choice-value="${esc(option)}">${esc(option)}</button>`}
+function dailyQuestionHtml(question){const answer=dailyAnswerEntry(question.id);const inputTag=question.type==="textarea"?"textarea":"input";const inputClass=question.type==="textarea"?"daily-modal-textarea":"daily-modal-input";const inputAttrs=question.type==="textarea"?`placeholder="${esc(question.placeholder||"可留空，之後再補")}"`:`type="text" value="${esc(answer.text)}" placeholder="${esc(question.placeholder||"可留空，之後再補")}"`;const inputBody=question.type==="textarea"?`<textarea class="${inputClass}" data-daily-text="${esc(question.id)}" placeholder="${esc(question.placeholder||"可留空，之後再補")}">${esc(answer.text)}</textarea>`:`<input class="${inputClass}" data-daily-text="${esc(question.id)}" ${inputAttrs}>`;return`<div class="daily-modal-question"><div class="daily-modal-step">逐題整理需求</div><h4>${esc(question.label)}</h4>${question.type==="choice"?`<div class="daily-choice-grid">${(question.options||[]).map(option=>dailyChoiceButton(question,option)).join("")}</div>`:""}${inputBody}</div>`}
+function dailyBuiltPrompt(card){const questions=dailyQuestionList(card);const questionLines=questions.map(question=>`- ${question.label}：${dailyAnswerLabel(question)}`).join("\n");const missingBlock=builtPromptMissingBlock(questions,dailyAnswerLabel);return`請先根據下面這些回答整理需求，不要直接忽略空白欄位。若資訊不足，先用最少問題補問，再執行後面的原始提示詞。${missingBlock}\n\n卡片：${card.title}\n適用情境：${card.when}\n\n使用者回答：\n${questionLines}\n\n原始提示詞：\n${card.prompt}`}
+function dailyWizardHtml(){if(!dailyWizardState.cardId)return"";const meta=dailyFindCard(dailyWizardState.cardId);if(!meta)return"";const {card}=meta;const questions=dailyQuestionList(card);const previewStep=questions.length;const step=Math.min(dailyWizardState.step,previewStep);if(step>=previewStep){const prompt=dailyBuiltPrompt(card);return`<div class="daily-modal" id="dailyWizard"><div class="daily-modal-backdrop" data-daily-close="1"></div><div class="daily-modal-card"><div class="daily-modal-head"><div><div class="daily-modal-step">完成自動生成提示詞</div><div class="daily-modal-title">${esc(card.title)}</div><div class="summary">${esc(card.when)}</div></div><button class="daily-modal-close" type="button" data-daily-close="1">關閉</button></div><div class="daily-modal-body"><div class="daily-modal-preview"><div class="summary"><b>這就是要交給 AI 的最終提示詞</b></div><pre class="prompt-body" id="dailyWizardPrompt">${esc(prompt)}</pre></div><div class="daily-modal-actions"><div class="group"><button class="copy-btn secondary-btn" type="button" data-daily-back="1">回上一題</button></div><div class="group"><button class="copy-btn" type="button" id="dailyWizardCopy" data-copy="${encodeURIComponent(prompt)}">複製自動生成提示詞</button></div></div></div></div></div>`}const question=questions[step];return`<div class="daily-modal" id="dailyWizard"><div class="daily-modal-backdrop" data-daily-close="1"></div><div class="daily-modal-card"><div class="daily-modal-head"><div><div class="daily-modal-step">第 ${step+1} 題 / 共 ${questions.length} 題</div><div class="daily-modal-title">${esc(card.title)}</div><div class="summary">${esc(card.when)}</div></div><button class="daily-modal-close" type="button" data-daily-close="1">關閉</button></div><div class="daily-modal-body">${dailyQuestionHtml(question)}<div class="daily-modal-actions"><div class="group">${step>0?`<button class="copy-btn secondary-btn" type="button" data-daily-back="1">上一題</button>`:""}<button class="copy-btn secondary-btn" type="button" data-daily-close="1">先關閉</button></div><div class="group"><button class="copy-btn" type="button" data-daily-next="1">${step===questions.length-1?"完成並自動生成提示詞":"下一題"}</button></div></div></div></div></div>`}
+function dailyPromptCard(card,sectionIndex,cardIndex){const cardId=dailyCardId(sectionIndex,cardIndex);return`<div class="daily-card"><h4>${esc(card.title)}</h4><div class="usage">${esc(card.when)}</div><pre class="prompt-body">${esc(card.prompt)}</pre><div class="daily-card-actions"><button class="copy-btn" type="button" data-daily-open="${esc(cardId)}">開始互動式自動生成提示詞</button></div></div>`}
 function dailyModeButtons(){const modes=["全部",...DAILY_PROMPT_SECTIONS.map(section=>section.title)];return`<div class="flow-switch">${modes.map(mode=>`<button class="flow-btn ${dailyMode===mode?"active":""}" onclick="dailyMode='${esc(mode)}';render()">${esc(mode)}</button>`).join("")}</div>`}
-function dailyHtml(){const sections=DAILY_PROMPT_SECTIONS.filter(section=>dailyMode==="全部"||section.title===dailyMode);return`<div class="wide-sop"><div class="daily-hero"><h2>日常工作不知道怎麼問，就先從這裡複製</h2><p>這頁是新手版提示詞，不用先懂二刀流或專案文件。你只要選「現在想做什麼」，複製卡片給 Codex 或 Claude Code，就能開始請 AI 幫忙。</p><div class="daily-principles"><div class="daily-principle"><b>先講目的</b><div class="summary">告訴 AI 你想完成什麼，不只是丟一堆資料。</div></div><div class="daily-principle"><b>先看再做</b><div class="summary">要求 AI 先分析、先規劃，確認後再修改。</div></div><div class="daily-principle"><b>重要檔案先保護</b><div class="summary">涉及電腦檔案時，先備份、先列計畫，不直接動檔。</div></div></div></div>${dailyModeButtons()}${sections.map(section=>`<section class="daily-section"><div class="daily-section-head"><div><h3>${esc(section.title)}</h3><div class="summary">${esc(section.hint)}</div></div>${section.safety?`<div class="daily-safety">${esc(section.safety)}</div>`:""}</div><div class="daily-grid">${section.cards.map(dailyPromptCard).join("")}</div></section>`).join("")}</div>`}
-function bindDaily(){document.querySelectorAll("[data-daily-mode]").forEach(btn=>btn.onclick=()=>{dailyMode=btn.dataset.dailyMode;render()})}
+function dailyHtml(){const sections=DAILY_PROMPT_SECTIONS.map((section,sectionIndex)=>({...section,__sectionIndex:sectionIndex})).filter(section=>dailyMode==="全部"||section.title===dailyMode);return`<div class="wide-sop"><div class="daily-hero"><h2>日常工作不知道怎麼問，就先從這裡開始</h2><p>這頁改成互動式自動生成提示詞。你先點卡片，系統會用小視窗一題一題讓你選擇或補充需求，最後再自動組成可直接貼給 Codex 或 Claude Code 的提示詞。</p><div class="daily-principles"><div class="daily-principle"><b>先講目的</b><div class="summary">告訴 AI 你想完成什麼，不只是丟一堆資料。</div></div><div class="daily-principle"><b>先看再做</b><div class="summary">要求 AI 先分析、先規劃，確認後再修改。</div></div><div class="daily-principle"><b>重要檔案先保護</b><div class="summary">涉及電腦檔案時，先備份、先列計畫，不直接動檔。</div></div></div></div>${dailyModeButtons()}${sections.map(section=>`<section class="daily-section"><div class="daily-section-head"><div><h3>${esc(section.title)}</h3><div class="summary">${esc(section.hint)}</div></div>${section.safety?`<div class="daily-safety">${esc(section.safety)}</div>`:""}</div><div class="daily-grid">${section.cards.map((card,cardIndex)=>dailyPromptCard(card,section.__sectionIndex,cardIndex)).join("")}</div></section>`).join("")}${dailyWizardHtml()}</div>`}
+function bindDaily(){document.querySelectorAll("[data-daily-mode]").forEach(btn=>btn.onclick=()=>{dailyMode=btn.dataset.dailyMode;render()});document.querySelectorAll("[data-daily-open]").forEach(btn=>btn.onclick=()=>{dailyWizardState={cardId:btn.dataset.dailyOpen||"",step:0,answers:{}};render()});document.querySelectorAll("[data-daily-close]").forEach(btn=>btn.onclick=()=>{dailyWizardState={cardId:"",step:0,answers:{}};render()});document.querySelectorAll("[data-daily-choice]").forEach(btn=>btn.onclick=()=>{const id=btn.dataset.dailyChoice||"";const prev=dailyAnswerEntry(id);dailyWizardState.answers[id]={...prev,choice:btn.dataset.choiceValue||""};render()});document.querySelectorAll("[data-daily-text]").forEach(el=>el.oninput=()=>{const id=el.dataset.dailyText||"";const prev=dailyAnswerEntry(id);dailyWizardState.answers[id]={...prev,text:el.value||""}});document.querySelectorAll("[data-daily-back]").forEach(btn=>btn.onclick=()=>{dailyWizardState.step=Math.max(0,dailyWizardState.step-1);render()});document.querySelectorAll("[data-daily-next]").forEach(btn=>btn.onclick=()=>{const meta=dailyFindCard(dailyWizardState.cardId);if(!meta)return;const total=dailyQuestionList(meta.card).length;dailyWizardState.step=Math.min(total,dailyWizardState.step+1);render()})}
+const PROMPT_WIZARD_QUESTIONS=[{id:"goal",label:"你這次最想讓 AI 幫你做什麼？",type:"choice",options:["先幫我釐清需求","先幫我規劃步驟","直接幫我產出內容","先幫我檢查風險或問題"],placeholder:"可補充這次真正要完成的目標"},{id:"materials",label:"你現在手上有什麼資料？",type:"choice",options:["我已經有完整資料","我只有部分資料","我只有一個模糊想法","我要 AI 先告訴我還缺什麼"],placeholder:"可補充檔案、網址、背景或限制"},{id:"style",label:"你希望 AI 先怎麼做？",type:"choice",options:["先問我關鍵問題","先看內容再規劃","先列風險再動手","直接做初版給我看"],placeholder:"可補充你偏好的互動方式"},{id:"limits",label:"這次有沒有不能碰的限制？",type:"choice",options:["先不要直接改檔","先不要安裝或部署","先不要刪東西","沒有，先做初版"],placeholder:"可補充任何風險、限制或驗收標準"}];
+function promptFindByKey(key){return DATA.prompts.find(p=>promptKey(p)===key)||null}
+function promptPlaceholderStructuredLabel(beforeText){const equalsLabel=beforeText.match(/(?:^|[，。、；;：:]\s*)([^【：:=\n]+?)\s*=\s*$/);if(equalsLabel?.[1])return equalsLabel[1].trim();const colonLabel=beforeText.match(/(?:^|[，。、；;]\s*)([^【：:\n=]+?)\s*[：:]\s*$/);if(colonLabel?.[1])return colonLabel[1].trim();return""}
+function promptPlaceholderLabel(beforeText,rawValue,lineIndex,matchIndex){const structuredLabel=promptPlaceholderStructuredLabel(beforeText);if(structuredLabel)return structuredLabel.replace(/^[\s\-*•]+/,"").replace(/^\d+[.)、]\s*/,"").trim();return rawValue||`欄位${lineIndex+1}-${matchIndex+1}`}
+function promptPlaceholderOptions(rawValue,hasStructuredLabel){if(!hasStructuredLabel||!/\s\/\s/.test(rawValue))return[];const parts=rawValue.split("/").map(option=>option.trim()).filter(Boolean);if(parts.length<2||parts.length>8)return[];return parts.every(option=>option.length<=16)?parts:[]}
+function promptPlaceholderQuestions(promptItem){const seen=new Set();return(promptItem.prompt||"").split("\n").flatMap((line,lineIndex)=>Array.from(line.matchAll(/【([^】]*)】/g)).map((match,matchIndex)=>{const rawToken=match[0];const rawValue=(match[1]||"").trim();const beforeText=line.slice(0,match.index||0);const structuredLabel=promptPlaceholderStructuredLabel(beforeText);const fieldLabel=promptPlaceholderLabel(beforeText,rawValue,lineIndex,matchIndex);const dedupeKey=`${fieldLabel}::${rawToken}::${lineIndex}::${matchIndex}`;if(seen.has(dedupeKey))return null;seen.add(dedupeKey);const options=promptPlaceholderOptions(rawValue,!!structuredLabel);return{id:`placeholder_${lineIndex}_${matchIndex}`,label:fieldLabel,type:"text",placeholder:fieldLabel?`請輸入 ${fieldLabel}`:`請補充此欄位`,options,rawToken,lineIndex,matchIndex}}).filter(Boolean))}
+function promptWizardQuestions(promptItem){return[...PROMPT_WIZARD_QUESTIONS,...promptPlaceholderQuestions(promptItem)]}
+function promptWizardAnswerEntry(questionId){return promptWizardState.answers?.[questionId]||{choice:"",text:""}}
+function promptWizardAnswerLabel(question){const answer=promptWizardAnswerEntry(question.id);if(answer.choice&&answer.text.trim())return`${answer.choice} / 補充：${answer.text.trim()}`;return answer.choice||answer.text.trim()||"未填寫"}
+function promptWizardMissingQuestions(promptItem){return promptWizardQuestions(promptItem).filter(question=>promptWizardAnswerLabel(question)==="未填寫")}
+function promptWizardChoiceButton(question,option){const active=promptWizardAnswerEntry(question.id).choice===option?" active":"";return`<button class="daily-choice-btn${active}" type="button" data-prompt-choice="${esc(question.id)}" data-choice-value="${esc(option)}">${esc(option)}</button>`}
+function promptWizardQuestionHtml(question){const answer=promptWizardAnswerEntry(question.id);const choiceGrid=question.options?.length?`<div class="daily-choice-grid">${question.options.map(option=>promptWizardChoiceButton(question,option)).join("")}</div>`:"";return`<div class="daily-modal-question"><div class="daily-modal-step">逐題選擇需求</div><h4>${esc(question.label)}</h4>${choiceGrid}<input class="daily-modal-input" data-prompt-text="${esc(question.id)}" type="text" value="${esc(answer.text)}" placeholder="${esc(question.placeholder||"可留空，之後再補")}"></div>`}
+function promptWizardFilledPrompt(promptItem){const lines=(promptItem.prompt||"").split("\n");const placeholderGroups=new Map();promptPlaceholderQuestions(promptItem).forEach(question=>{if(typeof question.lineIndex!=="number"||typeof question.matchIndex!=="number")return;const key=String(question.lineIndex);const existing=placeholderGroups.get(key)||[];existing.push(question);placeholderGroups.set(key,existing)});placeholderGroups.forEach((questions,key)=>{const lineIndex=Number(key);const line=lines[lineIndex]||"";const matches=Array.from(line.matchAll(/【([^】]*)】/g));if(!matches.length)return;const replacements=new Map();questions.forEach(question=>{const answer=promptWizardAnswerEntry(question.id);const value=(answer.text||"").trim()||answer.choice||"";if(value)replacements.set(question.matchIndex,value)});if(!replacements.size)return;let rebuilt="";let cursor=0;matches.forEach((match,idx)=>{const start=match.index||0;const token=match[0];rebuilt+=line.slice(cursor,start);rebuilt+=replacements.has(idx)?replacements.get(idx):token;cursor=start+token.length});rebuilt+=line.slice(cursor);lines[lineIndex]=rebuilt});return lines.join("\n")}
+function promptWizardBuiltPrompt(promptItem){const questions=promptWizardQuestions(promptItem);const questionLines=questions.map(question=>`- ${question.label}：${promptWizardAnswerLabel(question)}`).join("\n");const missingBlock=builtPromptMissingBlock(questions,promptWizardAnswerLabel);return`請先根據下面這些回答理解我的需求，不要直接忽略空白欄位。若資訊不足，先用最少問題補問，再執行後面的原始提示詞。${missingBlock}\n\n提示詞標題：${promptItem.title}\n用途：${promptItem.usage||"未填寫"}\n分類：${promptItem.category||"未分類"}\n\n使用者回答：\n${questionLines}\n\n原始提示詞：\n${promptWizardFilledPrompt(promptItem)}`}
+function promptWizardHtml(){if(!promptWizardState.promptKey)return"";const promptItem=promptFindByKey(promptWizardState.promptKey);if(!promptItem)return"";const questions=promptWizardQuestions(promptItem);const previewStep=questions.length;const step=Math.min(promptWizardState.step,previewStep);if(step>=previewStep){const prompt=promptWizardBuiltPrompt(promptItem);return`<div class="daily-modal" id="promptWizard"><div class="daily-modal-backdrop" data-prompt-close="1"></div><div class="daily-modal-card"><div class="daily-modal-head"><div><div class="daily-modal-step">完成自動生成提示詞</div><div class="daily-modal-title">${esc(promptItem.title)}</div><div class="summary">${esc(promptItem.usage||"這張提示詞卡片")}</div></div><button class="daily-modal-close" type="button" data-prompt-close="1">關閉</button></div><div class="daily-modal-body"><div class="daily-modal-preview"><div class="summary"><b>這就是要交給 AI 的最終提示詞</b></div><pre class="prompt-body" id="promptWizardPrompt">${esc(prompt)}</pre></div><div class="daily-modal-actions"><div class="group"><button class="copy-btn secondary-btn" type="button" data-prompt-back="1">回上一題</button></div><div class="group"><button class="copy-btn" type="button" id="promptWizardCopy" data-copy="${encodeURIComponent(prompt)}">複製自動生成提示詞</button></div></div></div></div></div>`}const question=questions[step];return`<div class="daily-modal" id="promptWizard"><div class="daily-modal-backdrop" data-prompt-close="1"></div><div class="daily-modal-card"><div class="daily-modal-head"><div><div class="daily-modal-step">第 ${step+1} 題 / 共 ${questions.length} 題</div><div class="daily-modal-title">${esc(promptItem.title)}</div><div class="summary">${esc(promptItem.usage||"這張提示詞卡片")}</div></div><button class="daily-modal-close" type="button" data-prompt-close="1">關閉</button></div><div class="daily-modal-body">${promptWizardQuestionHtml(question)}<div class="daily-modal-actions"><div class="group">${step>0?`<button class="copy-btn secondary-btn" type="button" data-prompt-back="1">上一題</button>`:""}<button class="copy-btn secondary-btn" type="button" data-prompt-close="1">先關閉</button></div><div class="group"><button class="copy-btn" type="button" data-prompt-next="1">${step===questions.length-1?"完成並自動生成提示詞":"下一題"}</button></div></div></div></div></div>`}
+function bindPromptLibrary(){document.querySelectorAll("[data-prompt-open]").forEach(btn=>btn.onclick=()=>{promptWizardState={promptKey:btn.dataset.promptOpen||"",step:0,answers:{}};render()});document.querySelectorAll("[data-prompt-close]").forEach(btn=>btn.onclick=()=>{promptWizardState={promptKey:"",step:0,answers:{}};render()});document.querySelectorAll("[data-prompt-choice]").forEach(btn=>btn.onclick=()=>{const id=btn.dataset.promptChoice||"";const prev=promptWizardAnswerEntry(id);promptWizardState.answers[id]={...prev,choice:btn.dataset.choiceValue||""};render()});document.querySelectorAll("[data-prompt-text]").forEach(el=>el.oninput=()=>{const id=el.dataset.promptText||"";const prev=promptWizardAnswerEntry(id);promptWizardState.answers[id]={...prev,text:el.value||""}});document.querySelectorAll("[data-prompt-back]").forEach(btn=>btn.onclick=()=>{promptWizardState.step=Math.max(0,promptWizardState.step-1);render()});document.querySelectorAll("[data-prompt-next]").forEach(btn=>btn.onclick=()=>{const promptItem=promptFindByKey(promptWizardState.promptKey);if(!promptItem)return;const total=promptWizardQuestions(promptItem).length;promptWizardState.step=Math.min(total,promptWizardState.step+1);render()})}
 function skillCard(s){const triggers=(s.triggers||[]).map(t=>`<div class="trigger"><code>${esc(t)}</code><button class="copy-btn" data-copy="${encodeURIComponent(t)}">複製</button></div>`).join("");return`<div class="card"><h3>${esc(s.name)} <span class="badge ${riskCls[s.risk]||"low"}">${esc(s.risk)}風險</span> <span class="cat-tag">${esc(s.category)}</span></h3><div class="summary">${esc(s.summary)}</div>${s.notes?`<div class="notes">${esc(s.notes)}</div>`:""}${triggers}</div>`}
 function stageLabel(p){if(!p.flow||!p.stage)return"通用";const meta=STAGE_META[p.flow]?.[p.stage];return meta?meta[0]:p.stage}
 function promptKey(p){return `${p.flow||"common"}::${p.stage||""}::${p.title}`}
-function promptCard(p){return`<div class="card" data-prompt-key="${esc(promptKey(p))}"><h3>${esc(p.title)} <span class="stage-tag">${esc(stageLabel(p))}</span> <span class="cat-tag">${esc(p.category)}</span></h3><div class="usage">${esc(p.usage)}</div><pre class="prompt-body">${esc(p.prompt)}</pre><button class="copy-btn" data-copy="${encodeURIComponent(p.prompt)}">複製</button></div>`}
+function promptCard(p){return`<div class="card" data-prompt-key="${esc(promptKey(p))}"><h3>${esc(p.title)} <span class="stage-tag">${esc(stageLabel(p))}</span> <span class="cat-tag">${esc(p.category)}</span></h3><div class="usage">${esc(p.usage)}</div><pre class="prompt-body">${esc(p.prompt)}</pre><button class="copy-btn" type="button" data-prompt-open="${esc(promptKey(p))}">開始互動式自動生成提示詞</button></div>`}
 function comboPrompt(combo){const lines=[`以下是「${combo.title}」。`,combo.usage||"", ""];const missing=[];(combo.steps||[]).forEach((step,idx)=>{const prompt=DATA.prompts.find(p=>p.title===step.prompt_title);if(!prompt){missing.push(step.prompt_title);return}if(step.custom_intro)lines.push(step.custom_intro,"");lines.push(`--- Prompt ${idx+1}：${prompt.title} ---`,prompt.prompt,"")});if(missing.length)lines.unshift(`提醒：找不到以下提示詞，已略過：${missing.join("、")}`,"");return lines.join("\n").trim()}
 function comboCard(combo){const missing=(combo.steps||[]).filter(step=>!DATA.prompts.some(p=>p.title===step.prompt_title)).map(step=>step.prompt_title);const steps=(combo.steps||[]).map(step=>`<li>${esc(step.prompt_title)}</li>`).join("");const text=comboPrompt(combo);return`<div class="combo-card"><h3>${esc(combo.title)} <span class="cat-tag">${esc(combo.category||"組合包")}</span></h3><div class="usage">${esc(combo.usage||"")}</div>${missing.length?`<div class="warning">缺少提示詞：${esc(missing.join("、"))}</div>`:""}<ol class="combo-steps">${steps}</ol><button class="copy-btn" data-copy="${encodeURIComponent(text)}">複製整包（${(combo.steps||[]).length} 張）</button></div>`}
 function combosHtml(){const combos=DATA.combos||[];if(!combos.length)return"";return`<section class="flow-section"><div class="section-head"><h2>常用組合包</h2><span class="hint">一鍵複製常用流程</span></div><div class="combo-grid">${combos.map(comboCard).join("")}</div></section>`}
 function workflowGuide(){if(flowMode==="dualai")return`<div class="workflow-guide"><div class="guide-item"><div class="guide-label">Codex</div><div class="guide-text">主力工程師：規劃、分段實作、測試、修正與延伸開發。</div></div><div class="guide-item"><div class="guide-label">Claude Code（VS Code）</div><div class="guide-text">審查員：看 diff、抓風險、提出 P0/P1/P2 問題與修改建議。</div></div></div>`;if(flowMode==="solo")return`<div class="workflow-guide"><div class="guide-item"><div class="guide-label">先規劃</div><div class="guide-text">讓單一 AI 先讀文件並列出做法。</div></div><div class="guide-item"><div class="guide-label">再實作</div><div class="guide-text">只做最小必要修改，避免一次改太大。</div></div><div class="guide-item"><div class="guide-label">要自檢</div><div class="guide-text">請 AI 用審查角度檢查結果。</div></div></div>`;return`<div class="workflow-guide"><div class="guide-item"><div class="guide-label">專案啟動</div><div class="guide-text">AGENTS、PRD、交接摘要與規劃模板。</div></div><div class="guide-item"><div class="guide-label">工程常用</div><div class="guide-text">Git、API、部署與資料庫模板。</div></div><div class="guide-item"><div class="guide-label">Skill 管理</div><div class="guide-text">新增 skill、資安檢查與提示詞收錄。</div></div></div>`}
 function flowButtons(){return`<div class="flow-switch">${Object.entries(FLOW_META).map(([key,m])=>`<button class="flow-btn ${flowMode===key?"active":""}" data-flow="${key}">${m.label}</button>`).join("")}</div>`}
 function promptLibraryCaptureBlock(){return`<details class="doc-fold skill-capture-fold"><summary><div class="doc-fold-title"><b>把新提示詞收進提示詞庫</b><span>新手版：貼上內容 → 複製提示詞 → 交給 Codex 幫你整理、收錄、重建。</span></div><span class="doc-fold-arrow">›</span></summary><div class="doc-fold-body"><div class="workflow-guide" style="margin:12px 0 14px"><div class="guide-item"><div class="guide-label">用途</div><div class="guide-text">看到好用提示詞時，不用自己整理 YAML，先用這裡產生交辦內容。</div></div><div class="guide-item"><div class="guide-label">先做</div><div class="guide-text">把標題、用途和提示詞原文補進去，其他格式交給 Codex 幫你收。</div></div><div class="guide-item"><div class="guide-label">結果</div><div class="guide-text">複製提示詞後，Codex 會把內容收進提示詞庫並重建頁面。</div></div></div>${captureHtml("prompt",false)}</div></details>`}
-function renderPromptFlow(){const visible=DATA.prompts.filter(p=>(p.flow||"common")==="common"&&(cat==="全部"||p.category===cat)&&match(p,["title","usage","category","prompt","flow","stage"]));if(!visible.length)return`<div class="empty">找不到符合條件的提示詞。</div>`;if(cat==="全部"){const groups=[...new Set(visible.map(p=>p.category))];return groups.map(group=>{const items=visible.filter(p=>p.category===group);return`<section class="flow-section"><div class="section-head"><h2>${esc(group)}</h2><span class="hint">${items.length} 則</span></div><div class="grid">${items.map(promptCard).join("")}</div></section>`}).join("")}return`<div class="grid">${visible.map(promptCard).join("")}</div>`}
+function renderPromptFlow(){const visible=DATA.prompts.filter(p=>(p.flow||"common")==="common"&&(cat==="全部"||p.category===cat)&&match(p,["title","usage","category","prompt","flow","stage"]));if(!visible.length)return`<div class="empty">找不到符合條件的提示詞。</div>${promptWizardHtml()}`;if(cat==="全部"){const groups=[...new Set(visible.map(p=>p.category))];return`${groups.map(group=>{const items=visible.filter(p=>p.category===group);return`<section class="flow-section"><div class="section-head"><h2>${esc(group)}</h2><span class="hint">${items.length} 則</span></div><div class="grid">${items.map(promptCard).join("")}</div></section>`}).join("")}${promptWizardHtml()}`}return`<div class="grid">${visible.map(promptCard).join("")}</div>${promptWizardHtml()}`}
 function skillLibraryCaptureBlock(){return`<details class="doc-fold skill-capture-fold"><summary><div class="doc-fold-title"><b>把新 Skill 收進 Skill庫</b><span>新手版：貼上網址 → 複製提示詞 → 交給 Codex 幫你安檢、安裝、收錄。</span></div><span class="doc-fold-arrow">›</span></summary><div class="doc-fold-body"><div class="workflow-guide" style="margin:12px 0 14px"><div class="guide-item"><div class="guide-label">用途</div><div class="guide-text">看到新 Skill 時，不用自己整理格式，先用這裡產生交辦提示詞。</div></div><div class="guide-item"><div class="guide-label">先做</div><div class="guide-text">只要貼 GitHub URL 或本機資料夾路徑，其他欄位交給 Codex 幫你處理。</div></div><div class="guide-item"><div class="guide-label">結果</div><div class="guide-text">複製提示詞後，Codex 會先跑安檢；安全才安裝並收進 Skill庫。</div></div></div>${captureHtml("skill",false)}</div></details>`}
 function renderSkillLibrary(){const items=DATA.skills.filter(s=>(cat==="全部"||s.category===cat)&&match(s,["name","summary","category","triggers","notes"]));return items.length?`<div class="grid">${items.map(skillCard).join("")}</div>`:`<div class="empty">找不到符合條件的 skill。</div>`}
 function cmdRow(label,cmd){return`<div class="trigger"><div style="flex:1"><div class="usage">${esc(label)}</div><code>${esc(cmd)}</code></div><button class="copy-btn" data-copy="${encodeURIComponent(cmd)}">複製指令</button></div>`}
@@ -1794,8 +1998,8 @@ function updateCustomSkill(){customSkillRead();const contentEl=document.getEleme
 function bindCustomSkill(){document.querySelectorAll("[data-custom-skill-input]").forEach(el=>el.oninput=el.onchange=updateCustomSkill);document.querySelectorAll("[data-wake-ai]").forEach(btn=>btn.onclick=()=>wakeAI(btn));const copy=document.getElementById("customSkillCopy");if(copy)copy.onclick=()=>copyText(document.getElementById("customSkillPrompt")?.textContent||"",copy);const reset=document.getElementById("customSkillReset");if(reset)reset.onclick=()=>{localStorage.removeItem("custom-skill-builder");const contentEl=document.getElementById("content");if(contentEl){contentEl.innerHTML=customSkillHtml();bindCustomSkill()}}}
 function updateAutomation(){const d=automationRead();const out=document.getElementById("automationPrompt");const copy=document.getElementById("automationCopy");const prompt=automationPromptText(d);if(out)out.textContent=prompt;if(copy)copy.dataset.copy=encodeURIComponent(prompt)}
 function bindAutomation(){updateAutomation();const fold=document.getElementById("automationFormFold");if(fold)fold.ontoggle=()=>localStorage.setItem("automation-form-open",fold.open?"open":"closed");document.querySelectorAll("[data-automation-input]").forEach(el=>el.oninput=el.onchange=updateAutomation);document.querySelectorAll("[data-automation-tab]").forEach(btn=>btn.onclick=()=>setTab(btn.dataset.automationTab));document.querySelectorAll("[data-automation-load]").forEach(btn=>btn.onclick=()=>{const item=automationRecords()[Number(btn.dataset.automationLoad)];if(!item)return;localStorage.setItem("automation-builder-draft",JSON.stringify({...AUTOMATION_DEFAULTS,...item}));localStorage.setItem("automation-form-open","open");const contentEl=document.getElementById("content");contentEl.innerHTML=automationHtml();bindAutomation()});document.querySelectorAll("[data-automation-delete]").forEach(btn=>btn.onclick=()=>{const index=Number(btn.dataset.automationDelete);const items=automationRecords();items.splice(index,1);saveAutomationRecords(items);const contentEl=document.getElementById("content");contentEl.innerHTML=automationHtml();bindAutomation()});const save=document.getElementById("automationSave");if(save)save.onclick=()=>{const d=automationRead();const items=automationRecords();const record={...d,prompt:automationPromptText(d),createdAt:new Date().toLocaleString("zh-TW",{hour12:false})};items.unshift(record);saveAutomationRecords(items);const contentEl=document.getElementById("content");contentEl.innerHTML=automationHtml();bindAutomation()};const reset=document.getElementById("automationReset");if(reset)reset.onclick=()=>{localStorage.removeItem("automation-builder-draft");localStorage.setItem("automation-form-open","open");const contentEl=document.getElementById("content");contentEl.innerHTML=automationHtml();bindAutomation()};const copy=document.getElementById("automationCopy");if(copy)copy.onclick=()=>copyText(document.getElementById("automationPrompt")?.textContent||"",copy)}
-function render(){const chips=document.getElementById("chips"),content=document.getElementById("content"),countLine=document.getElementById("countLine"),search=document.querySelector(".search"),searchSlot=document.getElementById("searchSlot");if(tab==="prompts")flowMode="common";const progressTabBtn=document.querySelector('[data-tab="progress"]');if(progressTabBtn)progressTabBtn.textContent=progressFlow==="solo"?"專案開發（單刀）":"專案開發（雙刀）";renderOnlineBanner();renderLaunchTip();renderIntro();const showSearch=tab==="skills"||tab==="prompts";if(search){if(showSearch&&searchSlot){search.style.display="flex";searchSlot.appendChild(search)}else{search.style.display="none"}}chips.innerHTML=cats().map(c=>`<button class="chip ${c===cat?"active":""}" data-cat="${esc(c)}">${esc(c)}</button>`).join("");chips.querySelectorAll(".chip").forEach(ch=>ch.onclick=()=>{cat=ch.dataset.cat;if(tab==="prompts"&&cat!=="全部")flowMode="common";render()});if(tab==="backup"){countLine.textContent="";content.innerHTML=backupHtml();return}if(tab==="installGuide"){countLine.textContent="";content.innerHTML=installGuideHtml();bindInstallGuide();return}if(tab==="guide"){countLine.textContent="";content.innerHTML=homeHtml();bindHome();return}if(tab==="daily"){countLine.textContent="";content.innerHTML=dailyHtml();return}if(tab==="customSkill"){countLine.textContent="";content.innerHTML=customSkillHtml();bindCustomSkill();return}if(tab==="automation"){countLine.textContent="";content.innerHTML=automationHtml();bindAutomation();return}if(tab==="progress"){countLine.textContent="";content.innerHTML=progressHtml();bindProgress();return}if(tab==="skills"){const items=DATA.skills.filter(s=>(cat==="全部"||s.category===cat)&&match(s,["name","summary","category","triggers","notes"]));countLine.textContent=`共 ${items.length} 個 skill`;content.innerHTML=renderSkillLibrary();bindCapture();return}if(tab==="prompts"){const commonPrompts=DATA.prompts.filter(p=>(p.flow||"common")==="common");const count=commonPrompts.filter(p=>(cat==="全部"||p.category===cat)&&match(p,["title","usage","category","prompt","flow","stage"])).length;countLine.textContent=`目前顯示 ${count} 則提示詞，總共 ${commonPrompts.length} 則`;content.innerHTML=renderPromptFlow();bindCapture()}}
-function setTab(next){document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));document.querySelector(`[data-tab="${next}"]`)?.classList.add("active");tab=next;cat="全部";render()}
+function render(){const chips=document.getElementById("chips"),content=document.getElementById("content"),countLine=document.getElementById("countLine"),search=document.querySelector(".search"),searchSlot=document.getElementById("searchSlot");if(tab==="prompts")flowMode="common";const progressTabBtn=document.querySelector('[data-tab="progress"]');if(progressTabBtn)progressTabBtn.textContent=progressFlow==="solo"?"專案開發（單刀）":"專案開發（雙刀）";renderOnlineBanner();renderLaunchTip();renderIntro();const showSearch=tab==="skills"||tab==="prompts";if(search){if(showSearch&&searchSlot){search.style.display="flex";searchSlot.appendChild(search)}else{search.style.display="none"}}chips.innerHTML=cats().map(c=>`<button class="chip ${c===cat?"active":""}" data-cat="${esc(c)}">${esc(c)}</button>`).join("");chips.querySelectorAll(".chip").forEach(ch=>ch.onclick=()=>{cat=ch.dataset.cat;if(tab==="prompts"&&cat!=="全部")flowMode="common";render()});if(tab==="backup"){countLine.textContent="";content.innerHTML=backupHtml();return}if(tab==="installGuide"){countLine.textContent="";content.innerHTML=installGuideHtml();bindInstallGuide();return}if(tab==="guide"){countLine.textContent="";content.innerHTML=homeHtml();bindHome();return}if(tab==="daily"){countLine.textContent="";content.innerHTML=dailyHtml();bindDaily();return}if(tab==="customSkill"){countLine.textContent="";content.innerHTML=customSkillHtml();bindCustomSkill();return}if(tab==="automation"){countLine.textContent="";content.innerHTML=automationHtml();bindAutomation();return}if(tab==="progress"){countLine.textContent="";content.innerHTML=progressHtml();bindProgress();return}if(tab==="skills"){const items=DATA.skills.filter(s=>(cat==="全部"||s.category===cat)&&match(s,["name","summary","category","triggers","notes"]));countLine.textContent=`共 ${items.length} 個 skill`;content.innerHTML=renderSkillLibrary();bindCapture();return}if(tab==="prompts"){const commonPrompts=DATA.prompts.filter(p=>(p.flow||"common")==="common");const count=commonPrompts.filter(p=>(cat==="全部"||p.category===cat)&&match(p,["title","usage","category","prompt","flow","stage"])).length;countLine.textContent=`目前顯示 ${count} 則提示詞，總共 ${commonPrompts.length} 則`;content.innerHTML=renderPromptFlow();bindCapture();bindPromptLibrary()}}
+function setTab(next){document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));document.querySelector(`[data-tab="${next}"]`)?.classList.add("active");tab=next;localStorage.setItem(TAB_STORAGE_KEY,tab);cat="全部";render()}
 document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>setTab(t.dataset.tab));document.getElementById("searchBox").addEventListener("input",e=>{q=e.target.value.trim();render()});render();
 </script>
 </body>
