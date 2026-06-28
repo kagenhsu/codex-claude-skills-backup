@@ -1,0 +1,7 @@
+interface:
+  display_name: "錄音到專案推進助理"
+  short_description: "將錄音或逐字稿整理成會議記錄、風險、待辦與開發規劃。"
+  default_prompt: "Use $meeting-audio-project-assistant to turn this meeting recording or transcript into safe Traditional Chinese meeting notes, risks, action items, and project planning."
+
+policy:
+  allow_implicit_invocation: true

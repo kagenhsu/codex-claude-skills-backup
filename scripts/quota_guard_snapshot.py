@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 import json
+import os
 import shutil
 import subprocess
 import sys
+import urllib.error
+import urllib.parse
+import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -20,10 +24,24 @@ CLAUDE_PROJECTS_DIR = Path.home() / ".claude" / "projects"
 CLAUDE_DEFAULT_CONTEXT_TOKENS = 200_000
 APPLICATIONS_DIR = Path("/Applications")
 
+# Claude 官方 OAuth usage 端點 — 跟 Claude Code／token-monitor 用的是同一組，
+# 直接問 Anthropic 伺服器拿真正即時的 5 小時 / 7 天用量，不依賴 Claude Code
+# 自己主動回報（那個常常是舊快取，見 claude_provider() 的說明）。
+CLAUDE_CREDENTIALS_FILE = Path.home() / ".claude" / ".credentials.json"
+CLAUDE_USAGE_URL = "https://api.anthropic.com/api/oauth/usage"
+CLAUDE_OAUTH_TOKEN_URL = "https://console.anthropic.com/v1/oauth/token"
+CLAUDE_OAUTH_CLIENT_ID = "9d1c250a-e61b-44d9-88ed-5944d1962f5e"
+CLAUDE_OAUTH_CACHE = Path.home() / ".claude" / "cctokmon-oauth-cache.json"
+CLAUDE_OAUTH_CACHE_TTL_SECONDS = 5 * 60  # 跟官方 API 之間留 5 分鐘節流，避免每 30 秒刷新就打一次
+QUOTA_GUARD_USER_AGENT = "quota-guard/0.1.0 (+local; read-only usage check)"
+
 
 def load_json(path: Path):
+    # 一定要明確指定 encoding="utf-8"：Windows 上 read_text() 預設用系統
+    # 地區碼頁（例如繁體中文的 cp950），會把標準 UTF-8 JSON 解壞或直接丟
+    # UnicodeDecodeError，導致這裡整份資料被吃掉、靜默退回 cache/unavailable。
     try:
-        return json.loads(path.read_text())
+        return json.loads(path.read_text(encoding="utf-8"))
     except Exception:
         return None
 
@@ -31,7 +49,7 @@ def load_json(path: Path):
 def save_json(path: Path, payload):
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
+        path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         return True
     except Exception:
         return False
@@ -142,7 +160,12 @@ def alert_stage_from_remaining_percent(percent):
 
 
 def codex_installed():
-    return shutil.which("codex") is not None or (APPLICATIONS_DIR / "Codex.app").exists() or CODEX_QUOTA_FILE.exists()
+    return (
+        shutil.which("codex") is not None
+        or (APPLICATIONS_DIR / "Codex.app").exists()
+        or CODEX_QUOTA_FILE.exists()
+        or resolve_codex_binary() is not None
+    )
 
 
 def claude_installed():
@@ -172,6 +195,18 @@ def resolve_codex_binary():
     home_bundled = Path.home() / "Applications" / "Codex.app" / "Contents" / "Resources" / "codex"
     if home_bundled.exists():
         return str(home_bundled)
+    # 5) Windows 版 Codex 桌面 App：codex.exe 裝在
+    #    %LOCALAPPDATA%\OpenAI\Codex\bin\<隨機 hash>\codex.exe，不會自動進 PATH。
+    #    hash 子目錄會隨版本更新變動，所以用 glob 找，挑最近修改的那份。
+    local_app_data = os.environ.get("LOCALAPPDATA")
+    if local_app_data:
+        windows_candidates = sorted(
+            Path(local_app_data).glob("OpenAI/Codex/bin/*/codex.exe"),
+            key=lambda p: p.stat().st_mtime if p.exists() else 0,
+            reverse=True,
+        )
+        if windows_candidates:
+            return str(windows_candidates[0])
     return None
 
 
@@ -180,13 +215,17 @@ def read_codex_rate_limits():
     if not binary:
         return None
     try:
-        process = subprocess.Popen(
-            [binary, "app-server", "--stdio"],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
-            text=True,
-        )
+        popen_kwargs = {
+            "stdin": subprocess.PIPE,
+            "stdout": subprocess.PIPE,
+            "stderr": subprocess.DEVNULL,
+            "text": True,
+        }
+        if sys.platform == "win32":
+            # codex.exe 是主控台子系統執行檔；這支腳本常被沒有主控台的 pythonw
+            # 浮動視窗每 30 秒呼叫一次，沒加這個旗標會一直閃出黑色主控台視窗。
+            popen_kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
+        process = subprocess.Popen([binary, "app-server", "--stdio"], **popen_kwargs)
     except Exception:
         return None
 
@@ -320,7 +359,7 @@ def extract_json_object(line):
 def read_claude_rate_limit_log():
     for path in CLAUDE_LOG_FILES:
         try:
-            lines = path.read_text(errors="ignore").splitlines()
+            lines = path.read_text(encoding="utf-8", errors="ignore").splitlines()
         except Exception:
             continue
 
@@ -408,7 +447,7 @@ def latest_session_usage_proxy():
 
     for _, jsonl in candidates:
         try:
-            lines = jsonl.read_text(errors="ignore").splitlines()
+            lines = jsonl.read_text(encoding="utf-8", errors="ignore").splitlines()
         except OSError:
             continue
         for line in reversed(lines):
@@ -528,7 +567,182 @@ def read_claude_cache():
     }
 
 
+def _extract_claude_oauth_fields(raw):
+    if not isinstance(raw, dict):
+        return None
+    oauth = raw.get("claudeAiOauth") or raw.get("oauth") or raw
+    if not isinstance(oauth, dict):
+        return None
+    access_token = oauth.get("accessToken")
+    if not access_token:
+        return None
+    return {
+        "access_token": str(access_token),
+        "refresh_token": str(oauth["refreshToken"]) if oauth.get("refreshToken") else None,
+    }
+
+
+def read_claude_oauth_credentials():
+    """讀 Claude Code 自己的 OAuth 憑證檔（唯讀，絕不寫回）。
+
+    跟 token-monitor 讀的是同一份檔案、同一組欄位名稱
+    （claudeAiOauth.accessToken / refreshToken）。
+    """
+    raw = load_json(CLAUDE_CREDENTIALS_FILE)
+    return _extract_claude_oauth_fields(raw)
+
+
+def _http_json_request(url, *, method="GET", headers=None, data=None, timeout=8):
+    req = urllib.request.Request(url, method=method, data=data, headers=headers or {})
+    with urllib.request.urlopen(req, timeout=timeout) as resp:  # noqa: S310 — 固定 https 官方網域
+        body = resp.read().decode("utf-8")
+    return json.loads(body)
+
+
+def _refresh_claude_access_token(refresh_token):
+    """換新的 access token，只在記憶體內用一次，不寫回 ~/.claude/.credentials.json。"""
+    if not refresh_token:
+        return None
+    body = urllib.parse.urlencode(
+        {
+            "grant_type": "refresh_token",
+            "refresh_token": refresh_token,
+            "client_id": CLAUDE_OAUTH_CLIENT_ID,
+        }
+    ).encode("utf-8")
+    try:
+        payload = _http_json_request(
+            CLAUDE_OAUTH_TOKEN_URL,
+            method="POST",
+            headers={
+                "content-type": "application/x-www-form-urlencoded",
+                "accept": "application/json",
+                "user-agent": QUOTA_GUARD_USER_AGENT,
+            },
+            data=body,
+        )
+    except Exception:
+        return None
+    token = payload.get("access_token")
+    return str(token) if token else None
+
+
+def _call_claude_usage_api(access_token):
+    return _http_json_request(
+        CLAUDE_USAGE_URL,
+        headers={
+            "accept": "application/json",
+            "authorization": f"Bearer {access_token}",
+            "anthropic-beta": "oauth-2025-04-20",
+            "user-agent": QUOTA_GUARD_USER_AGENT,
+        },
+    )
+
+
+def fetch_claude_oauth_usage_live():
+    """直接問 Anthropic 官方 usage API 拿真即時用量（跟 token-monitor 同一個端點）。
+
+    成功回傳 {"five_hour": {...}, "seven_day": {...}}（跟 read_claude_rate_limit_log()
+    的 windows 形狀一致，都有 utilization / resets_at，可以共用
+    claude_window_from_fallback() 那套換算）；任何失敗都回 None，讓上層退回舊邏輯。
+    """
+    credentials = read_claude_oauth_credentials()
+    if not credentials:
+        return None
+    access_token = credentials["access_token"]
+    try:
+        usage = _call_claude_usage_api(access_token)
+    except urllib.error.HTTPError as exc:
+        if exc.code == 401 and credentials.get("refresh_token"):
+            new_token = _refresh_claude_access_token(credentials["refresh_token"])
+            if not new_token:
+                return None
+            try:
+                usage = _call_claude_usage_api(new_token)
+            except Exception:
+                return None
+        else:
+            return None
+    except Exception:
+        return None
+
+    five_hour = usage.get("five_hour") if isinstance(usage, dict) else None
+    seven_day = usage.get("seven_day") if isinstance(usage, dict) else None
+    if not five_hour and not seven_day:
+        return None
+    return {"five_hour": five_hour or {}, "seven_day": seven_day or {}}
+
+
+def read_claude_oauth_usage():
+    """跟官方 API 之間留 5 分鐘節流快取，避免浮動視窗每 30 秒刷新就打一次。"""
+    cached = load_json(CLAUDE_OAUTH_CACHE)
+    if isinstance(cached, dict):
+        fetched_at = cached.get("fetched_at")
+        usage = cached.get("usage")
+        if isinstance(usage, dict) and isinstance(fetched_at, (int, float)):
+            now = datetime.now(timezone.utc).timestamp()
+            if now - fetched_at < CLAUDE_OAUTH_CACHE_TTL_SECONDS:
+                return usage
+
+    usage = fetch_claude_oauth_usage_live()
+    if usage is not None:
+        save_json(
+            CLAUDE_OAUTH_CACHE,
+            {"fetched_at": datetime.now(timezone.utc).timestamp(), "usage": usage},
+        )
+        return usage
+
+    # 官方 API 暫時打不到（離線、token 失效等）：節流期內沿用上一次抓到的真實值，
+    # 過期才整個放棄、讓上層退回 statusline 自報的舊邏輯。
+    if isinstance(cached, dict) and isinstance(cached.get("usage"), dict):
+        return cached["usage"]
+    return None
+
+
+def claude_windows_from_oauth_usage(five_hour, seven_day):
+    # 注意：這個官方 usage 端點的 utilization 是 0~100 的百分比
+    # （實測 75.0 / 46.0 這種值），跟 rate_limit_error log 那邊 0~1 小數的
+    # utilization 不是同一種單位，所以這裡要用 remaining_percent_from_used()，
+    # 不能套 remaining_percent_from_utilization()。
+    five_hour_reset = next_cycle_timestamp(iso_to_timestamp(five_hour.get("resets_at")), 5 * 3600)
+    seven_day_reset = next_cycle_timestamp(iso_to_timestamp(seven_day.get("resets_at")), 7 * 24 * 3600)
+    return [
+        {
+            "title": "本輪",
+            "remaining_percent": remaining_percent_from_used(five_hour.get("utilization")),
+            "remaining_text": remaining_text_from_timestamp(five_hour_reset),
+            "alert_stage": alert_stage_from_remaining_percent(
+                remaining_percent_from_used(five_hour.get("utilization"))
+            ),
+        },
+        {
+            "title": "本週",
+            "remaining_percent": remaining_percent_from_used(seven_day.get("utilization")),
+            "remaining_text": remaining_text_from_timestamp(seven_day_reset),
+            "alert_stage": alert_stage_from_remaining_percent(
+                remaining_percent_from_used(seven_day.get("utilization"))
+            ),
+        },
+    ]
+
+
 def claude_provider():
+    # 最優先：直接問 Anthropic 官方 OAuth usage API（跟 token-monitor 同一招），
+    # 比 Claude Code 自己在 statusline 回報的 rate_limits 準，因為那個常常是
+    # 上一次 Claude Code 自己注意到限制時的舊快照，不會隨對話即時更新。
+    oauth_usage = read_claude_oauth_usage()
+    if oauth_usage:
+        windows = claude_windows_from_oauth_usage(
+            oauth_usage.get("five_hour") or {}, oauth_usage.get("seven_day") or {}
+        )
+        if cacheable_claude_windows(windows):
+            write_claude_cache(windows, "claude-oauth-usage")
+        return {
+            "name": "Claude Code",
+            "source": "claude-oauth-usage",
+            "windows": windows,
+        }
+
     data = load_json(CLAUDE_STATE)
     proxy = context_window_proxy(data) if isinstance(data, dict) else None
     if proxy is None:

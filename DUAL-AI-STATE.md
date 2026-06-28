@@ -1,89 +1,62 @@
 # DUAL-AI-STATE
 
-任務名稱：v2.5 — 開機自動啟動 + Windows 版桌面浮動小視窗
+任務名稱：Loop 提示詞產生器 — 從獨立頁面整合進主控台（`index.html` 新分頁）
 
-目前階段：✅ Codex 複查 + 補修完成；已本地 commit；尚未 push
+目前階段：✅ Maker（Claude Code）實作完成，Checker（子 AI 代打 Codex）獨立審查通過
 
-狀態：使用者明確要求修補「每次開機都要找 AI 修配額守門員」的痛點，並要求避開 8000 與其他本機開發服務衝突
+狀態：使用者前一天做出的「Loop 提示詞產生器」原本是獨立檔案 `loop-prompt-builder.html`，靠導覽列 `↗` 連結在新分頁打開。使用者反映「應該要跟 index.html 綁定在一起才對」，要求把它變成主控台本身的一個分頁，而不是另一個獨立頁面。目前 Codex 不在線，依使用者指示由 Claude Code 同時扮演 Maker（實作）與安排 Checker（子 AI 審查）兩個角色。
 
-最後更新時間：2026-06-20 Codex 完成複查、實機驗證與最小補修
+最後更新時間：2026-06-24（子 AI Checker 複審通過，待使用者決定 commit / push）
+
+## Checker（子 AI 代打 Codex）獨立審查結論
+
+判定：**通過**
+
+實際查證動作（Checker 自己重新做的，不是只信任 Maker 的自我報告）：
+- `git diff HEAD -- scripts/build.py`：確認新增約 175 行純粹是 Loop 提示詞分頁邏輯，沒有偏離任務範圍的改動。
+- 逐一 grep 新增的 13 個 DOM id（`loopPainPoint`／`loopTool`／`loopTrigger`／`loopScope`／`loopBudget`／`loopStopCondition`／`loopReport`／`loopMakerChecker`／`loopExtra`／`loopTaskTypeGroup`／`loopPromptOutput`／`loopPromptCopy`／`loopPromptReset`），各自只出現 1 次；對整份檔案 `id="..."` 做 `sort | uniq -c`，無重複，**無 ID 衝突**。
+- XSS 檢查：`loopPromptHtml()` 用 `esc()` 跳脫所有使用者輸入；`updateLoopPrompt()` 用 `textContent`（不是 `innerHTML`）寫回即時預覽，**比舊版獨立檔案更安全，無 XSS 風險**。
+- 逐行確認 `render()` 裡每個分支都自帶 `return`，`loopPrompt` 分支不會被前面分支提早擋住。
+- `grep -rln "loop-prompt-builder.html" .`（排除 `.git/`）只命中 `DUAL-AI-STATE.md`／`index.html`（嵌入的狀態說明 JSON）／`server_test.log`（舊日誌），都是敘述性文字，不是程式碼引用；確認檔案本身已刪除。
+- `git status --porcelain` 確認 `.gitignore`／`quota_guard_*`／`serve_console.py`／`install_claude_quota_bridge.py` 等另一條獨立工作的檔案維持原狀，本次整合**沒有誤動**到無關檔案。
+
+保留事項：Checker 受環境暫時性分類器中斷，沒能自己重跑 `python scripts/build.py` 與 Playwright 動態測試，只做了靜態程式碼審查。動態測試（build 成功、`node --check` 語法通過、Playwright headless 實機操作六要素表單＋切換分頁＋複製按鈕，console 零錯誤）已由 Maker（Claude Code）在審查前完成，兩邊合起來視為完整覆蓋。
+
+附帶觀察（與本次無關，不影響本次判定）：
+- `scripts/serve_console.py` 的 `_activate_first_available_app()` 在 Windows 上會讓 `/api/wake-ai` 回 500，是既有缺口。
+- `loopPromptData()` 對 `localStorage` 內容做了寬容的型別正規化（字串轉陣列），是好的防禦性寫法。
+
+## Checker 通過之後，Maker 自己又抓到並修掉一個從原始檔案帶過來的 P1
+
+Checker 判定通過、寫完上面這段後，Maker（Claude Code）自己跑「預設狀態下的範例輸出」做最後人工核對時，發現 `loopPromptText()` 裡 `d.makerChecker.includes("雙重")` 這個判斷式有 bug：選項「先用最簡單的 Ralph Loop 就好（**不用**雙重把關）」這個字串本身也包含「雙重」兩個字，導致即使使用者選的是「不要雙重把關」，輸出的第四段還是會誤判成「因為我選了雙重把關」，跟使用者實際選擇相反。這個 bug 是從原始獨立檔案 `loop-prompt-builder.html` 逐字搬過來的既有問題，不是這次整合新增的，但這次有機會順手修掉。
+
+修法：把判斷字串從 `"雙重"` 改成更精確的 `"雙重確認"`（只有「我要 Maker-Checker 雙重確認」這個選項含有這個字串，「不用雙重把關」不含），已修正並重新跑過 `python scripts/build.py` + `node --check` + Playwright 預設狀態輸出核對，確認修好後輸出邏輯正確（選「不用雙重把關」時走「第四段：之後要不要升級」分支，不再誤判）。
 
 ## 本輪已完成事項
 
-### macOS — 開機自動啟動（LaunchAgent）
+- 把 `loop-prompt-builder.html`（336 行獨立檔案，含自己的 `<head>`/CSS/`<script>`）整段邏輯改寫成 `scripts/build.py` 裡的一個分頁模組，套用控制台既有的設計語言（`.workflow-guide`/`.guide-item`、`.form-grid`/`.field`、`.builder-preview`、`optionsHtml()`、`copyText()`），不再有自己獨立的 CSS/modal。
+- 新增：`PAGE_INTROS.loopPrompt`、`LOOP_*` 常數（任務類型/工具/Trigger/Budget/Stop Condition/Report/Maker-Checker 選項）、`loopPromptData()`／`loopPromptRead()`（沿用原本 `localStorage` key `loop-prompt-builder`，使用者原本存的設定不會跑掉）、`loopAskLine()`／`loopPromptText()`（提示詞組字邏輯逐字保留原版）、`loopPromptHtml()`／`updateLoopPrompt()`／`bindLoopPrompt()`，並在 `render()` 加上 `tab==="loopPrompt"` 分支。
+- 導覽列原本的 `<a href="loop-prompt-builder.html" target="_blank">Loop 提示詞 ↗</a>` 改成 `<button data-tab="loopPrompt">Loop 提示詞</button>`；首頁（`guide` 分頁）原本的「建立 Loop 提示詞 ↗」外部連結按鈕也改成 `data-home-tab="loopPrompt"`，點擊後用既有的 `setTab()` 切分頁，不再開新視窗。
+- 刪除已變成重複內容的獨立檔案 `loop-prompt-builder.html`（已徵得使用者同意保持刪除狀態，不恢復）。
+- 順手修掉前一版的 P2：原獨立頁用 `innerHTML` 插入使用者填的「痛點敘述」（自我 XSS 風險）；新版的即時預覽改用 `textContent` 寫入，表單欄位值一律經過 `esc()` 跳脫，這個風險已不存在。
 
-- 新增 `scripts/autostart_macos_payload.sh`：登入後實際跑的腳本。負責 build.py、起 serve_console.py、等 `7000~7999` 內的控制台 ready 後開瀏覽器、起 swift 浮動窗。
-- 新增 `scripts/install_macos_autostart.sh`：寫 `~/Library/LaunchAgents/com.kagenhsu.quota-guardian.autostart.plist` 並 bootstrap，立即 kickstart 跑一次。安裝時會同步一份 runtime 到 `~/Library/Application Support/QuotaGuardian/runtime/codex-claude-skills-backup`，避開 `launchd` 直接讀取 `~/Documents/...` 時的 `Operation not permitted`。
-- 新增 `scripts/uninstall_macos_autostart.sh`：bootout、刪 plist、刪 runtime copy、pkill 同 repo 的 swift 浮窗與 serve_console。
-- 新增使用者按鈕 `安裝開機自動啟動 (macOS).command` / `移除開機自動啟動 (macOS).command`。
+## 本輪驗證
 
-### Windows — Tkinter 浮動小視窗（swift 版不能跑 Win）
-
-- 新增 `scripts/quota_guard_floating.py`：always-on-top Tk 視窗。
-  - 資料來源跟 swift 版完全相同（`quota_guard_snapshot.py`）。
-  - 顏色映射：normal → 綠、prepare → 黃、handoff → 橘、reserve → 紅、unavailable → 灰，與 swift `barColor()` 對齊。
-  - 「複製切換提示詞」/「複製最終交接提示詞」按鈕文案逐字對齊 swift `handoffPrompt()`。
-  - reserve 階段自動複製最終交接提示詞，UI 行為跟 swift 一致。
-  - 30 秒刷新一次。
-  - **Mac 仍走 swift 版**，這支只給 Win 用。
-
-### Windows — 三個對齊 Mac 的 .bat 入口
-
-- `開啟配額守門員.bat`：起 pythonw 浮動視窗，先用 CIM kill 殘留 instance。
-- `更新並開啟控制台.bat`：python build.py + serve_console.py --open-browser。
-- `開啟控制台與配額守門員.bat`：浮動視窗丟背景跑，控制台 exec 風格在當前視窗跑。
-
-### Windows — 開機自動啟動
-
-- `scripts/autostart_windows_payload.ps1`：登入後背景跑的 PowerShell payload。
-  - pythonw + `-WindowStyle Hidden` 啟動，完全不跳 console。
-  - 避開 8000，改從 `7000~7999` 中挑第一個可用埠，跟 mac 對齊。
-  - 殘留 instance 用 `Get-CimInstance Win32_Process` 撈 CommandLine 找（避免 Get-Process 在 PS 5 拿不到 CommandLine 的陷阱）。
-- `scripts/install_windows_autostart.ps1`：寫 `%APPDATA%\QuotaGuardian\launcher.vbs`，再到 Startup folder 放 .lnk 指向 wscript + 那支 vbs。VBS 是為了完全不跳黑框（只用 `-WindowStyle Hidden` 還是會閃）。
-- `scripts/uninstall_windows_autostart.ps1`：刪 .lnk + .vbs + CIM 收掉殘留 instance。
-- 使用者按鈕 `安裝開機自動啟動 (Windows).bat` / `移除開機自動啟動 (Windows).bat`。
-
-### 沒動的禁區（按 `memory/project_quota_guardian_baseline.md` 守 baseline）
-
-- `scripts/quota_guard_snapshot.py`：**0 行變動**。
-- `scripts/quota_guard_floating.swift`：**0 行變動**。
-- `~/.claude/cctokmon-bridge.sh`：**0 行變動**。
-- `scripts/install_claude_quota_bridge.py`：**0 行變動**。
-- 既有的 `.command` 三個按鈕：**0 行變動**，使用者手動雙擊的流程跟以前一模一樣。
-
-### 文件更新
-
-- `CHANGELOG.md`「未發布」加上四條新增條目。
-- `NEXT-AI-TASK.md` 改寫成 v2.5 給 Codex 複查的版本。
-- 本檔（`DUAL-AI-STATE.md`）更新為當前狀態。
-
-## 驗證結果
-
-- `bash -n` 通過：autostart_macos_payload.sh / install_macos_autostart.sh / uninstall_macos_autostart.sh / 安裝開機自動啟動 (macOS).command / 移除開機自動啟動 (macOS).command。
-- `python3 -c "import ast; ast.parse(...)"` 通過：scripts/quota_guard_floating.py。
-- 模擬 plist 內容 `plutil -lint` 通過：路徑含中文 + 空格無 escape 問題。
-- helper 邏輯抽出測試：`color_for_stage('reserve')` → `#E63946`、`build_handoff_prompt()` 對齊 swift 版開頭文案、`final_handoff_needed()` 在 reserve stage 觸發 True、`next_ai_name()` 挑 percent 最高的。
-- Codex 真機跑過 `bash scripts/install_macos_autostart.sh` → `launchctl print gui/$UID/com.kagenhsu.quota-guardian.autostart` 顯示 `state = running`、`active count = 1`，payload 實際從 `~/Library/Application Support/QuotaGuardian/runtime/codex-claude-skills-backup` 啟動。
-- `~/Library/Logs/QuotaGuardian/autostart.log` 確認有 `==== autostart 完成；payload 進入 wait ... ====`，且本地控制台實際寫出 `http://127.0.0.1:7000/index.html`，`curl` 可回 200。
-- Codex 真機跑過 `bash scripts/uninstall_macos_autostart.sh` → plist 移除、`launchctl print` 回 `Could not find service`。
+- `python scripts/build.py` 成功：`OK: ... built with 50 skills / 51 prompts / 4 combos`。
+- 抽出 `index.html` 內嵌的整段 `<script>`，跑 `node --check` 確認無語法錯誤。
+- 啟動本機 `serve_console.py`，用 Playwright（headless Chromium）實機操作：點「Loop 提示詞」分頁 → 確認概念卡片／六要素卡片／表單欄位／即時預覽／複製按鈕／清空按鈕全部存在 → 在痛點欄位輸入文字，確認預覽即時更新含該文字 → 勾選任務類型 checkbox，確認預覽同步更新 → 點複製按鈕，按鈕文字從「複製提示詞」變成「已複製」沒有報錯 → 切到 `guide`／`installGuide`／`skills` 分頁再切回 `loopPrompt`，確認沒有任何 regression、瀏覽器 console 全程零錯誤（`CONSOLE_ERRORS []`）。
 
 ## 已知尚未驗證 / 未解決問題
 
-- Windows 全部檔案沒實機跑（這台是 Mac）。Codex 如果手上有 Win 機可實機驗一次最好；不然請靜態審 PowerShell here-string / VBS 雙引號 / .bat unicode 路徑三件事。
-- 本輪靜態審看過 Windows 腳本：VBS here-string 的雙引號寫法正確；`Invoke-WebRequest` 等待 8 秒在本機觀測值夠用，但在登入時較慢的 Windows 機器上仍有可能太短，若日後出現「有啟動但沒自動開瀏覽器」再優先從這裡加長。
-- `NEXT-AI-TASK.md` 裡引用的 `memory/project_quota_guardian_baseline.md` / `memory/feedback_read_handoff_now_first.md` 目前不在 repo 內；這次複查改以實際保護檔案 `scripts/quota_guard_snapshot.py`、`scripts/quota_guard_floating.swift` 與 `.handoff-now.md` 準則為準。
+- `/api/wake-ai` 在 Windows 上回 500（`activate_unsupported`）：既有功能既有缺口，與本次整合無關，未變動。
+- 工作目錄裡仍有另一條獨立進行中、跟 Loop 提示詞無關的工作（`scripts/quota_guard_snapshot.py` 等 Windows 相容性 + 即時用量 API），本次整合刻意不動它，`git status` 因此不會是乾淨狀態。
+- macOS 上的人工視覺確認（雙擊打開、肉眼看排版）尚未做，這台是 Windows 機器；建議使用者自己開一次確認排版／字體在 macOS 上沒有跑掉。
 
 ## 下一步
 
-- 若使用者有 Windows 機，補跑一次 `安裝開機自動啟動 (Windows).bat`，確認瀏覽器 + Tkinter 小窗都會自動出現。
-- 本地 commit 已建立；實際 commit hash 以 git 回報為準。
-- 回報 commit hash 與 `git status --short --branch`，由使用者決定是否 push。
-- **不要 push**，等使用者明確授權。
+- Checker 已複審通過，等使用者決定是否要把這次整合（`scripts/build.py` + `index.html` + 刪除 `loop-prompt-builder.html`）建立成一個新的收尾 commit，以及是否 push。
 
-## 凍結期規則（沿用 v2.2）
+## 凍結期規則（沿用既有專案慣例）
 
 - 除非使用者明確回報具體不便或真實 bug，否則不開新功能。
-- 不主動規劃 v2.6。
-- 不主動補 P2。
-- 不主動改 README / CSS。
-- commit / push / release / GitHub 遠端設定仍須遵守 `dual-ai-workflow` 的 Claude Code 審查閘門 — 本輪由 Codex 自審。
+- commit / push / release / GitHub 遠端設定仍須遵守 `dual-ai-workflow` 的 Claude Code 審查閘門。
